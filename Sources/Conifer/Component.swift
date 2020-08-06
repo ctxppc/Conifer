@@ -13,25 +13,19 @@ public protocol Component {
 	/// The component's body.
 	var body: Body { get }
 	
+	/// The type of nodes represented by instances of `Self`.
+	associatedtype Node
+	
 	/// Updates the node associated with this component.
+	///
+	/// This method has a default implementation that delegates to `body`, which is appropriate for light components. Clients of a Conifer library or framework should not override this method unless explicitly recommended by the library, and instead implement the `body` property.
 	func update(node: Node, context: Context)
-	
-}
-
-extension Never : Component {
-	
-	public var body: Never {
-		fatalError("Component does not have a body")
-	}
-	
-	public func update(node: Node, context: Context) {
-		fatalError("Component does not have a body")
-	}
 	
 }
 
 extension Component where Body == Never {
 	
+	// See protocol.
 	public func update(node: Node, context: Context) {
 		TODO.unimplemented
 	}
