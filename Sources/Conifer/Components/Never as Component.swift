@@ -8,9 +8,4 @@ extension Never : Component {
 		fatalError("Component does not have a body")
 	}
 	
-	// See protocol.
-	public func update(node: Node, context: Context) {
-		fatalError("Component does not have a body")
-	}
-	
 }
