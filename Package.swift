@@ -4,6 +4,7 @@ import PackageDescription
 
 let package = Package(
 	name: "Conifer",
+	platforms: [.macOS(.v10_16), .iOS(.v14), .tvOS(.v14), .watchOS(.v7)],
 	products: [
 		.library(name: "Conifer", targets: ["Conifer"]),
 	],
