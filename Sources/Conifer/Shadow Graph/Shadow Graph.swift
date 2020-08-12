@@ -2,8 +2,13 @@
 
 import DepthKit
 
-/// A data structure resulting from rendering a hierarchy of components.
+/// A data structure consisting of elements rendered by components.
+///
+/// A shadow graph consists of two two intertwined graphs: an element tree starting from a root element (usually rendered by the root component) and a directional acyclic dependency graph. When a component is rendered, the system invokes the component's `update(_:at:)` method, passing a graph and a location
 public struct ShadowGraph<Element : ShadowElement> {
+	
+	/// The graph's elements, keyed by location.
+	private var elementsByLocation = [ShadowGraphLocation : Element]()
 	
 	/// Accesses the element at given location.
 	///
@@ -58,9 +63,6 @@ public struct ShadowGraph<Element : ShadowElement> {
 		}
 		
 	}
-	
-	/// The graph's elements, keyed by location.
-	private var elementsByLocation = [ShadowGraphLocation : Element]()
 	
 	/// Adds given dependency on the element in the graph at given location.
 	///

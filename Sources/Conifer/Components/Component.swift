@@ -1,7 +1,5 @@
 // Conifer © 2019–2020 Constantino Tsarouhas
 
-import DepthKit
-
 /// A value that describes zero or more elements in the shadow graph.
 ///
 /// Components represent domain-specific elements, e.g., paragraphs, views, or (sub)computations. Conifer clients should specialise this protocol to domain-specific types and restrict `Body` to conform to that protocol. For example, a web application framework that works with elements could define the following protocol:
@@ -23,24 +21,32 @@ public protocol Component {
 	
 	/// Updates the shadow graph.
 	///
-	/// The system invokes this method whenever the component's associated element in the shadow graph needs to be created or updated, e.g., after one of its dependencies has changed.
+	/// The system invokes this method whenever the component's associated elements in the shadow graph need to be created or updated. The system proposes a location `proposedLocation`, usually a location within the parent component, where the component's element is expected. In most cases, a component creates or updates the element at this location. A component may create or update elements at other locations, in addition to or or instead of the element at `proposedLocation`. For example, a group component may create multiple successive elements, with the first one at `proposedLocation`.
 	///
-	/// This method has a default implementation that renders `body` directly, which is appropriate for light components.
+	/// Any elements created or updated within this method are associated to `self`. The system automatically deletes these elements (and any descendants) if `self` is removed from the component hierarchy, i.e., if the parent component no longer renders `self`. The component cannot update or delete elements that are not associated to `self`.
 	///
-	/// Any elements in `graph` that are accessed within this method are recorded as dependencies whereas any changed elements are recorded as dependents. Any declared contextual properties are also recorded as dependencies. Implementations of this method must ensure that do not create any cyclical dependencies.
+	/// The shadow graph also contains a dependency graph. Any elements not associated to `self` that are accessed in this method are recorded as dependencies of the component. If any such dependency changes at any point in the future, the system schedules an update pass for `self`, causing this method to be invoked again. Care must be taken to avoid cyclical dependencies; the system limits the number of update passes per transaction per component.
+	///
+	/// - Note: This method has a default implementation that renders `body` directly, which is appropriate for light components. Implementing this method enables manipulating the shadow graph in ways that are not possible or easy with a hierarchy of components. However, care must be taken to avoid creating cyclical dependencies that can cause the rendering process to fail or to behave indeterministically.
 	///
 	/// - Parameter graph: The shadow graph to update.
-	/// - Parameter parentPath: The path in `graph` to the parent of the shadow element representing `self`.
-	func update(_ graph: inout ShadowGraph<ShadowElement>, at parentPath: ShadowGraphLocation)
+	/// - Parameter proposedLocation: The location in `graph` where the component's element is expected.
+	/// - Parameter context: The value produced by `self` during the last update pass, or `nil` if the component is being rendered for the first time.
+	///
+	/// - Returns: A value encapsulating any information required during a future update pass.
+	func update(_ graph: inout ShadowGraph<ShadowElement>, at proposedLocation: ShadowGraphLocation, context: UpdateContext?) -> UpdateContext
 	
-	/// The type of values representing instances of `Self` in the shadow graph.
+	/// An element of the shadow graph, described by an instance of `Self`.
 	associatedtype ShadowElement : Conifer.ShadowElement
+	
+	/// A value that an instance of `Self` can store & retrieve during updates.
+	associatedtype UpdateContext = ()
 	
 }
 
-extension Component {
+extension Component where UpdateContext == () {
 	
-	public func update(_ graph: inout ShadowGraph<ShadowElement>, at parentPath: ShadowGraphLocation) {
+	public func update(_ graph: inout ShadowGraph<ShadowElement>, at parentPath: ShadowGraphLocation, context: ()?) {
 		TODO.unimplemented
 	}
 	
