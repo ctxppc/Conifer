@@ -2,101 +2,53 @@
 
 import DepthKit
 
-/// A data structure consisting of elements rendered by components.
+/// A data structure consisting of artefacts produced by components.
 ///
-/// A shadow graph consists of two two intertwined graphs: an element tree starting from a root element (usually rendered by the root component) and a directional acyclic dependency graph. When a component is rendered, the system invokes the component's `update(_:at:)` method, passing a graph and a location
-public struct ShadowGraph<Element : ShadowElement> {
+/// A shadow graph persists artefacts produced by components during rendering and records their hierarchical structure. In addition, a shadow graph records the dependencies of each artefacts and invalidates artefacts whose dependencies change.
+///
+/// # Rendering Components & Producing Artefacts
+///
+/// A shadow graph is constructed in pre-order. The renderer invokes `render(in:context:)` on the root component, which may produce artefacts and render additional components. The renderer then invokes `render(in:context:)` on the first rendered component, and so on until the complete graph has been traversed. When the shadow graph is updated, the renderer re-renders components whose inputs have changed.
+///
+/// When the `render(in:context:)` method is invoked on a component, the component produces its artefacts in the provided shadow graph by invoking `produce(_:)`. These artefacts are inserted in the shadow graph's current render location.
+public struct ShadowGraph<Artefact> {
 	
-	/// The graph's elements, keyed by location.
-	private var elementsByLocation = [ShadowGraphLocation : Element]()
+	/// The artefacts in the graph, keyed by location.
+	private var artefactsByLocation = [Location : Artefact]()
 	
-	/// Accesses the element at given location.
+	/// The location in the graph where artefacts are rendered.
+	private var renderLocation: Location
+	
+	/// Renders given component at the current location in the graph.
 	///
-	/// - Note: This subscript creates a dependency on the complete element. To create a more fine-grained dependency, use `subscript(_:)` to access the element through a proxy instead.
-	public subscript (elementAt location: ShadowGraphLocation) -> Element {
-		mutating get {
-			addDependency(.full, onElementAt: location)
-			return elementsByLocation[location] !! "Invalid graph location"
-		}
-		set { elementsByLocation[location] = newValue }
-	}
-	
-	/// Accesses the element at given location through a proxy.
+	/// - Parameter component: The component to render.
 	///
-	/// The proxy records all accessed key paths as dependencies.
-	public subscript (location: ShadowGraphLocation) -> ElementProxy {
-		get { .init(element: elementsByLocation[location] !! "Invalid graph location") }
-		set {
-			addDependency(.keyPaths(newValue.accessedKeyPaths), onElementAt: location)
-			elementsByLocation[location] = newValue.element
-		}
+	/// - Returns: The artefacts produced by `component`.
+	public mutating func render<C : Component>(_ component: C, context: C.Context) -> [Artefact] {
+		TODO.unimplemented
 	}
 	
-	/// A value that allows fine-grained access to a shadow element's properties.
-	@dynamicMemberLookup
-	public struct ElementProxy {
-		
-		/// Creates a proxy for given element.
-		fileprivate init(element: Element) {
-			self.element = element
-		}
-		
-		/// The element being proxied.
-		fileprivate var element: Element
-		
-		/// The key paths that have been accessed.
-		fileprivate private(set) var accessedKeyPaths = Set<PartialKeyPath<Element>>()
-		
-		/// Accesses the value at given key path on the proxied element.
-		public subscript <Value>(dynamicMember keyPath: WritableKeyPath<Element, Value>) -> Value {
-			
-			mutating get {
-				accessedKeyPaths.insert(keyPath)
-				return element[keyPath: keyPath]
-			}
-			
-			set {
-				accessedKeyPaths.insert(keyPath)
-				element[keyPath: keyPath] = newValue
-			}
-			
-		}
-		
-	}
-	
-	/// Adds given dependency on the element in the graph at given location.
+	/// Produces given artefact at the current location in the graph.
 	///
-	/// - Parameter dependency: The dependency on the element to add.
-	/// - Parameter location: The location of the element in the graph.
-	private mutating func addDependency(_ dependency: Dependency, onElementAt location: ShadowGraphLocation) {
-		dependenciesByLocation[location, default: .init()].formUnion(with: dependency)
+	/// - Parameter artefact: The artefact to produce.
+	public mutating func produce(_ artefact: Artefact) {
+		TODO.unimplemented
 	}
 	
-	/// The element dependencies, keyed by location.
-	private var dependenciesByLocation = [ShadowGraphLocation : Dependency]()
+	/// Produces given artefact at the current location in the graph, then executes given function that manipulates the artefacts' contents.
+	///
+	/// - Parameter artefact: The artefact to produce.
+	/// - Parameter contents: A function that manipulates the contents of `artefact` in the shadow graph.
+	public mutating func produce(_ artefact: Artefact, contents: (inout ShadowGraph) -> ()) {
+		contents(&self)
+		TODO.unimplemented
+	}
 	
-	/// A dependency on an element in the graph.
-	private enum Dependency {
-		
-		/// Creates an empty dependency.
-		init() {
-			self = .keyPaths([])
-		}
-		
-		/// A dependency on the values at `keyPaths` on the element.
-		case keyPaths(_ keyPaths: Set<PartialKeyPath<Element>>)
-		
-		/// A whole-element dependency on the element.
-		case full
-		
-		/// Unites the dependency from `self` and `other`.
-		mutating func formUnion(with other: Dependency) {
-			switch (self, other) {
-				case let (.keyPaths(a), .keyPaths(b)):	self = .keyPaths(a.union(b))
-				case (.full, _), (_, .full):			self = .full
-			}
-		}
-		
+	/// Produces given artefacts at the current location in the graph.
+	///
+	/// - Parameter artefacts: The artefacts to produce.
+	public mutating func produce<S : Sequence>(_ artefacts: S) where S.Element == Artefact {
+		TODO.unimplemented
 	}
 	
 }

@@ -5,7 +5,9 @@
 /// # Shadow Graph Semantics
 /// 
 /// The conditional component is not represented in the shadow graph; it renders the wrapped component directly at the graph location proposed to the conditional component.
-public enum Either<First : Component, Second : Component> : Component where First.ShadowElement == Second.ShadowElement {
+public enum Either<First : Component, Second : Component> {
+	
+	// TODO
 	
 	/// The first component is rendered.
 	case first(First)
@@ -14,17 +16,15 @@ public enum Either<First : Component, Second : Component> : Component where Firs
 	case second(Second)
 	
 	// See protocol.
-	public var body: Empty<ShadowElement> {
+	public var body: Empty<Artefact, Context> {
 		.init()
 	}
 	
 	// See protocol.
-	public func update(_ graph: inout ShadowGraph<ShadowElement>, at proposedLocation: ShadowGraphLocation, context: ()?) {
-		TODO.unimplemented
-	}
+	public typealias Artefact = First.Artefact
 	
 	// See protocol.
-	public typealias ShadowElement = First.ShadowElement
+	public typealias Context = First.Context
 	
 }
 

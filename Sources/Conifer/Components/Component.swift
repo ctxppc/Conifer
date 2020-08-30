@@ -21,18 +21,17 @@ public protocol Component {
 	/// A component that acts as the body of instances of `Self`.
 	associatedtype Body : Component where Body.Artefact == Artefact, Body.Context == Context
 	
-	/// Creates the artefacts described by `self`.
+	/// Renders the artefacts described by `self`.
 	///
-	/// The system invokes this method whenever the artefacts associated with the component need to be created or updated. The returned artefacts are cached in a shadow graph and invalidated if the context or environment changes.
+	/// The system invokes this method whenever the artefacts associated with the component need to be created or updated. The produced artefacts are cached in the shadow graph and invalidated when the context or environment changes.
 	///
 	/// The component can access dynamic properties declared on `Self`. The system invalidates the component's artefacts whenever any dynamic property's value changes.
 	///
 	/// The default implementation renders `body` directly. In most cases, the default implementation is sufficient and recommended.
 	///
+	/// - Parameter graph: The shadow graph to render the component's artefacts in.
 	/// - Parameter context: A value provided by the component rendering `self`.
-	///
-	/// - Returns: A collection of artefacts described by `self`.
-	func makeArtefacts(context: Context) -> Artefacts
+	func render(in graph: ShadowGraph<Artefact>, context: Context)
 	
 	/// A value provided by a container component when rendering an instance of `Self`.
 	associatedtype Context
@@ -40,14 +39,11 @@ public protocol Component {
 	/// A value produced when rendering an instance of `Self`.
 	associatedtype Artefact
 	
-	/// A collection of artefacts when rendering an instance of `Self`.
-	associatedtype Artefacts : RandomAccessCollection where Artefacts.Element == Artefact
-	
 }
 
 extension Component {
 	
-	public func makeArtefacts(context: Context) -> Artefacts {
+	public func render(in graph: ShadowGraph<Artefact>, context: Context) {
 		TODO.unimplemented
 	}
 	

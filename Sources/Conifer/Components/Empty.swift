@@ -5,16 +5,13 @@
 /// # Shadow Graph Semantics
 ///
 /// The empty component has no representation in the shadow graph.
-public struct Empty<ShadowElement : Conifer.ShadowElement> : Component {
+public struct Empty<Artefact, Context> {
 	
 	// See protocol.
 	public var body: Empty {
 		Empty()
 	}
 	
-	// See protocol.
-	public func update(_ graph: inout ShadowGraph<ShadowElement>, at proposedLocation: ShadowGraphLocation, context: ()?) {
-		// The empty component doesn't affect the shadow graph.
-	}
+	// TODO
 	
 }
