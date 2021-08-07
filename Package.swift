@@ -1,17 +1,17 @@
-// swift-tools-version:5.3
+// swift-tools-version:5.5
 
-// Conifer © 2019–2020 Constantino Tsarouhas
+// Conifer © 2019–2021 Constantino Tsarouhas
 
 import PackageDescription
 
 let package = Package(
 	name: "Conifer",
-	platforms: [.macOS(.v11), .iOS(.v14), .tvOS(.v14), .watchOS(.v7)],
+	platforms: [.macOS(.v12), .iOS(.v15), .tvOS(.v15), .watchOS(.v8)],
 	products: [
 		.library(name: "Conifer", targets: ["Conifer"]),
 	],
 	dependencies: [
-		.package(url: "https://github.com/ctxppc/DepthKit.git", .upToNextMinor(from: "0.8.0")),
+		.package(url: "https://github.com/ctxppc/DepthKit.git", .upToNextMinor(from: "0.9.0")),
 	],
 	targets: [
 		.target(name: "Conifer", dependencies: ["DepthKit"]),

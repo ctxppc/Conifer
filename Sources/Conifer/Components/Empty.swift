@@ -1,4 +1,4 @@
-// Conifer © 2019–2020 Constantino Tsarouhas
+// Conifer © 2019–2021 Constantino Tsarouhas
 
 /// The empty component; a component that represents a component with no body.
 ///

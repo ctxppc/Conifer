@@ -1,4 +1,4 @@
-// Conifer © 2019–2020 Constantino Tsarouhas
+// Conifer © 2019–2021 Constantino Tsarouhas
 
 /// A directed graph encoding the dependencies of elements.
 ///
