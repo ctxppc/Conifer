@@ -2,16 +2,19 @@
 
 /// The empty component; a component that represents a component with no body.
 ///
-/// # Shadow Graph Semantics
+/// ## Shadow Graph Semantics
 ///
-/// The empty component has no representation in the shadow graph.
-public struct Empty<Artefact, Context> {
+/// The empty component's artefact contains no nodes.
+public struct Empty<Artefact : Conifer.Artefact, Context> : Component {
 	
 	// See protocol.
-	public var body: Empty {
+	public var body: Self {
 		Empty()
 	}
 	
-	// TODO
+	// See protocol.
+	public func render(in graph: inout ShadowGraph<Artefact>, context: Context) async {
+		// render nothing
+	}
 	
 }

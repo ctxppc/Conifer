@@ -2,52 +2,42 @@
 
 import DepthKit
 
-/// A data structure consisting of artefacts produced by components.
+/// A data structure consisting of artefacts and vertices produced by components during rendering.
 ///
-/// A shadow graph persists artefacts produced by components during rendering and records their hierarchical structure. In addition, a shadow graph records the dependencies of each artefacts and invalidates artefacts whose dependencies change.
+/// A shadow graph is a tree structure in two views: the artefact view and the vertex view. The artefact view consists of artefacts which mirror the hierarchy of the components. The vertex view consists of vertices which mirror the desired output of the rendering process.
 ///
-/// # Rendering Components & Producing Artefacts
+/// Each artefact consists of zero or more subtrees of vertices. A vertex's children can be other vertices in the same artefact or root vertices of a different artefact. In every artefact except the root artefact, every root vertex is the child of a vertex in another artefact. In root artefacts, root vertices do not have a parent vertex.
 ///
-/// A shadow graph is constructed in pre-order. The renderer invokes `render(in:context:)` on the root component, which may produce artefacts and render additional components. The renderer then invokes `render(in:context:)` on the first rendered component, and so on until the complete graph has been traversed. When the shadow graph is updated, the renderer re-renders components whose inputs have changed.
+/// A shadow graph is constructed in pre-order. The renderer creates an artefact for the root component, then invokes `render(in:context:)` on the component. The component configures the artefact, creates zero or more subtrees of vertices, and renders zero or more components as children of vertices it created. The renderer then proceeds rendering those components.
 ///
-/// When the `render(in:context:)` method is invoked on a component, the component produces its artefacts in the provided shadow graph by invoking `produce(_:)`. These artefacts are inserted in the shadow graph's current render location.
-public struct ShadowGraph<Artefact> {
+/// A shadow graph tracks accesses by a component while it's being rendered and registers these as dependencies. When a dependency changes, the artefact is marked stale. Stale artefacts are re-rendered during the renderer's next rendering pass.
+public struct ShadowGraph<Artefact : Conifer.Artefact> {
+	
+	public typealias Vertex = Artefact.Vertex
 	
 	/// The artefacts in the graph, keyed by location.
 	private var artefactsByLocation = [Location : Artefact]()
 	
-	/// The location in the graph where artefacts are rendered.
-	private var renderLocation: Location
+	/// Inserts given vertex at given location in the graph.
+	///
+	/// - Parameter vertex: The vertex to produce.
+	public mutating func insertVertex(_ vertex: Vertex, at location: Location, in artefact: Artefact) {
+		TODO.unimplemented
+	}
+	
+	/// Removes the vertex at given location from the graph.
+	///
+	/// - Parameter location: The location of the vertex to remove.
+	public mutating func removeVertex(at location: Location, in artefact: Artefact) {
+		TODO.unimplemented
+	}
 	
 	/// Renders given component at the current location in the graph.
 	///
 	/// - Parameter component: The component to render.
 	///
 	/// - Returns: The artefacts produced by `component`.
-	public mutating func render<C : Component>(_ component: C, context: C.Context) -> [Artefact] {
-		TODO.unimplemented
-	}
-	
-	/// Produces given artefact at the current location in the graph.
-	///
-	/// - Parameter artefact: The artefact to produce.
-	public mutating func produce(_ artefact: Artefact) {
-		TODO.unimplemented
-	}
-	
-	/// Produces given artefact at the current location in the graph, then executes given function that manipulates the artefacts' contents.
-	///
-	/// - Parameter artefact: The artefact to produce.
-	/// - Parameter contents: A function that manipulates the contents of `artefact` in the shadow graph.
-	public mutating func produce(_ artefact: Artefact, contents: (inout ShadowGraph) -> ()) {
-		contents(&self)
-		TODO.unimplemented
-	}
-	
-	/// Produces given artefacts at the current location in the graph.
-	///
-	/// - Parameter artefacts: The artefacts to produce.
-	public mutating func produce<S : Sequence>(_ artefacts: S) where S.Element == Artefact {
+	public mutating func render<C : Component>(_ component: C, at location: Location) {
 		TODO.unimplemented
 	}
 	

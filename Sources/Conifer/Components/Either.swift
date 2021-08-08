@@ -2,12 +2,14 @@
 
 /// A conditional component; a component that renders one of two components.
 ///
-/// # Shadow Graph Semantics
+/// Conifer clients that specialise `Component` should add conditional conformance of `Either` to that protocol. For example, a web application framework that specialises `Component` as `Element` should add the following conformance:
+///
+///     extension Either : Element where First : Element, Second : Element {}
+///
+/// ## Shadow Graph Semantics
 /// 
 /// The conditional component is not represented in the shadow graph; it renders the wrapped component directly at the graph location proposed to the conditional component.
-public enum Either<First : Component, Second : Component> {
-	
-	// TODO
+public enum Either<First : Component, Second : Component> : Component {
 	
 	/// The first component is rendered.
 	case first(First)
