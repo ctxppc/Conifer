@@ -4,16 +4,16 @@
 ///
 /// ## Shadow Graph Semantics
 ///
-/// The empty component's artefact contains no nodes.
-public struct Empty<Artefact : Conifer.Artefact, Context> : Component {
+/// The empty component is not represented in the artefact graph: no artefacts are produced during rendering.
+public struct Empty<Artefact : Conifer.Artefact> : Component {
 	
 	// See protocol.
-	public var body: Self {
-		Empty()
+	public var body: Never<Artefact> {
+		fatalError("\(self) has no body.")
 	}
 	
 	// See protocol.
-	public func render(in graph: inout ShadowGraph<Artefact>, context: Context) async {
+	public func render(in graph: inout ShadowGraph<Artefact>, at location: ShadowGraphLocation) async {
 		// render nothing
 	}
 	

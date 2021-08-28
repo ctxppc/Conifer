@@ -14,14 +14,14 @@ public protocol DynamicProperty {
 	/// The provided `graph` contains a single artefact at its current location which can be used as storage.
 	///
 	/// - Throws: `DynamicPropertyError.unsupportedArtefactType` if `Artefact` is not a supported artefact type.
-	func prepare<Artefact>(forRenderingInto graph: ShadowGraph<Artefact>) async
+	func prepare<Artefact>(forRenderingInto graph: ShadowGraph<Artefact>, at graphLocation: ShadowGraphLocation) async throws
 	
 }
 
 enum DynamicPropertyError : LocalizedError {
 	
 	/// A dynamic property is used in a component that renders an artefact type not supported by the dynamic property.
-	case unsupportedArtefactType(Artefact.Type, dynamicProperty: DynamicProperty)
+	case unsupportedArtefactType(Any.Type, dynamicProperty: DynamicProperty)
 	
 	// See protocol.
 	var errorDescription: String? {

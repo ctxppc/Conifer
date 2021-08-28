@@ -4,8 +4,10 @@
 ///
 /// # Shadow Graph Semantics
 ///
-/// The mapping component is not represented in the shadow graph; it renders the generated components directly in the graph, starting from the location proposed to the mapping component.
-public struct ForEach<Data : Collection, Content : Component> {
+/// The mapping component is not represented in the artefact graph; it consecutively renders the generated components at the graph location proposed to the mapping component.
+///
+/// The conditional component has an identity for each generated component, directly derived from the corresponding element's identifier. The identity lives as long as the corresponding element. This means that every generated component has its own state, preserved as long as the data element in the underlying collection exists.
+public struct ForEach<Data : RandomAccessCollection, Identifier : Hashable, Content : Component> {
 	
 	/// Creates a component that produces components produced by `contentProducer` for each element in `data`.
 	public init(_ data: Data, contentProducer: @escaping ContentProducer) {	// TODO: Add component builder annotation
@@ -21,10 +23,16 @@ public struct ForEach<Data : Collection, Content : Component> {
 	public typealias ContentProducer = (Data.Element) -> Content
 	
 	// See protocol.
-	public var body: Empty<Content.Artefact, Content.Context> {
-		.init()
+	public var body: Never<Artefact> {
+		fatalError("\(self) has no body.")
 	}
 	
-	// TODO
+	// See protocol.
+	public func render(in graph: inout ShadowGraph<Artefact>, at location: ShadowGraphLocation) async {
+		TODO.unimplemented
+	}
+	
+	// See protocol.
+	public typealias Artefact = Content.Artefact
 	
 }
