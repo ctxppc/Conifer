@@ -13,6 +13,4 @@ public protocol Artefact {
 	/// An artefact's location in a shadow graph does not change after the artefact is created and can therefore be used as a stable identifier.
 	var graphLocation: ShadowGraphLocation { get }
 	
-	associatedtype Vertex : Conifer.Vertex
-	
 }

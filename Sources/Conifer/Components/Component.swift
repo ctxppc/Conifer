@@ -27,26 +27,26 @@ public protocol Component {
 	/// A component that acts as the body of instances of `Self`.
 	associatedtype Body : Component where Body.Artefact == Artefact
 	
-	/// Renders the artefact described by `self` into `graph`.
+	/// Renders the artefacts described by `self` into `graph`.
 	///
-	/// The system invokes this method when the artefact associated with this component needs to be configured or reconfigured. The component can invoke `produce(_:)` and `render(_:)` to produce artefacts or render subcomponents at the graph location reserved for `self`. The component can also traverse the graph and produce artefacts or render components at other locations in the graph.
+	/// The system invokes this method when the artefacts associated with this component need to be configured or reconfigured. The component can invoke `produce(_:at:)` and `render(_:at:)` to produce artefacts or render subcomponents at the graph location reserved for `self`. The component can also traverse the graph and produce artefacts or render components at other locations in the graph.
 	///
 	/// Similar to `body`, a component can access dynamic properties declared on `Self` during rendering, i.e., during the invocation of this method.
 	///
-	/// The resulting artefact is cached by the shadow graph until this component is invalidated. That is, until `self` is invalidated, any subsequent invocations of `render(_:)` where `self` is being rendered by its containing component do not cause `render(in:at:)` to be invoked on `self`. Instead, the shadow graph inserts the previously rendered artefact.
+	/// The resulting artefacts are cached by the shadow graph until this component is invalidated. That is, until the artefacts produced by `self` are invalidated, any subsequent invocations of `render(_:)` where `self` is being rendered by its containing component do not cause `render(in:at:)` to be invoked on `self`. Instead, the shadow graph inserts the previously rendered artefacts.
 	///
-	/// To determine when to invalidate a component, a shadow graph carefully monitors accesses during the `render(in:at:)` call and registers the accessed values or resources as dependencies of the component being rendered. The following direct and indirect accesses are monitored and may cause an invalidation:
-	/// * If `self` accesses any artefact produced by another component, `self` is invalidated if that other component is also invalidated.
-	/// * If `self` accesses a dynamic property, `self` is invalidated if that dynamic property is also invalidated.
+	/// To determine when to invalidate a component's produced artefacts, a shadow graph carefully monitors accesses during the `render(in:at:)` call and registers the accessed values or resources as dependencies of the component being rendered. The following direct and indirect accesses are monitored and may cause an invalidation:
+	/// * If `self` accesses an artefact produced by another component, `self`'s artefacts are invalidated when that other component's artefact is also invalidated.
+	/// * If `self` accesses a dynamic property, `self` is invalidated when that dynamic property is also invalidated.
 	///
-	/// The default implementation directly renders `body`. In most cases, the default implementation is sufficient and recommended.
+	/// The default implementation directly renders `body` at `location`. In most cases, the default implementation is sufficient and recommended.
 	///
-	/// - Note: This method shouldn't be invoked by components. To render a subcomponent, invoke `render(_:)` on `graph` instead, passing the subcomponent.
+	/// - Note: This method is intended for use by shadow graphs only and shouldn't be invoked by components. To render a subcomponent, invoke `render(_:)` on `graph` instead, passing the subcomponent.
 	///
 	/// - Warning: Do not access mutable storage or external sources directly from within this method, but instead use appropriate property wrappers which conform to `DynamicProperty`. Any accesses to storage or external sources that does not go through such property wrappers cannot be tracked by the shadow graph and may cause cache staleness issues.
 	///
 	/// - Parameter graph: The shadow graph to render the component's artefacts in.
-	/// - Parameter location: The artefact's location.
+	/// - Parameter location: The proposed location for the artefacts to produce.
 	func render(in graph: inout ShadowGraph<Artefact>, at location: ShadowGraphLocation) async
 	
 	/// A value representing an instance of `Self` in a shadow graph.
