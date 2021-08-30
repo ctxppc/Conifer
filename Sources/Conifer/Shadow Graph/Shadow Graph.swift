@@ -1,5 +1,6 @@
 // Conifer © 2019–2021 Constantino Tsarouhas
 
+import Collections
 import DepthKit
 
 /// A tree data structure of vertices produced by components during rendering.
@@ -13,21 +14,113 @@ import DepthKit
 /// Every vertex in the shadow graph has a unique location, which is a path of identifiers for each ancestor starting from the root vertex. Artefacts can be produced and components can be rendered at any location. The shadow graph graph automatically creates structures for any inexistent ancestor vertices.
 public struct ShadowGraph<Artefact : Conifer.Artefact> : ShadowGraphProtocol {
 	
-	/// The artefacts in the graph, keyed by location.
-	private var artefactsByLocation = [Location : Artefact]()
-	
-	/// The locations of explicitly hidden vertices.
-	///
-	/// The set of effectively hidden vertices is the set of explicitly hidden locations and all locations that are descendents thereof.
-	private var hiddenVertexLocations = Set<Location>()
+	/// The root vertex.
+	private var root: Vertex = .structure()
+	private enum Vertex {
+		
+		/// The vertex is a structure.
+		case structure(childrenByIdentifier: OrderedDictionary<AnyHashable, Vertex> = [:])
+		
+		/// The vertex is an artefact.
+		case artefact(Artefact, childrenByIdentifier: OrderedDictionary<AnyHashable, Vertex> = [:])
+		
+		/// The vertex is hidden.
+		case hidden
+		
+		/// Accesses a vertex at given location.
+		subscript (location: Location) -> Vertex {
+			
+			get {
+				guard let (head, tail) = location.entering() else { return self }
+				return self[head][tail]
+			}
+			
+			set {
+				if let (head, tail) = location.entering() {
+					self[head][tail] = newValue
+				} else {
+					self = newValue
+				}
+			}
+			
+		}
+		
+		/// Accesses a child vertex with given identifier.
+		subscript (identifier: AnyHashable) -> Vertex {
+			
+			get {
+				switch self {
+					case .structure(childrenByIdentifier: let childrenByIdentifier):	return childrenByIdentifier[identifier] ?? .structure()
+					case .artefact(_, childrenByIdentifier: let childrenByIdentifier):	return childrenByIdentifier[identifier] ?? .structure()
+					case .hidden:														return .structure()
+				}
+			}
+			
+			set {
+				switch self {
+						
+					case .structure(childrenByIdentifier: var childrenByIdentifier):
+					childrenByIdentifier[identifier] = newValue
+					self = .structure(childrenByIdentifier: childrenByIdentifier)
+					
+					case .artefact(let artefact, childrenByIdentifier: var childrenByIdentifier):
+					childrenByIdentifier[identifier] = newValue
+					self = .artefact(artefact, childrenByIdentifier: childrenByIdentifier)
+						
+					case .hidden:
+					return	// hidden child can be discarded
+						
+				}
+			}
+			
+		}
+		
+		/// The artefact on `self`.
+		var artefact: Artefact? {
+			switch self {
+				case .artefact(let artefact, childrenByIdentifier: _):	return artefact
+				case .structure, .hidden:								return nil
+			}
+		}
+		
+		/// Produces an artefact on `self`.
+		mutating func produce(_ artefact: Artefact) {
+			switch self {
+				
+				case .structure(childrenByIdentifier: let childrenByIdentifier):
+				self = .artefact(artefact, childrenByIdentifier: childrenByIdentifier)
+				
+				case .artefact(let existing, childrenByIdentifier: _):
+				preconditionFailure("Cannot replace \(existing) with \(artefact). Artefacts cannot be replaced or deleted.")
+				
+				case .hidden:
+				preconditionFailure("Cannot replace hidden vertex with \(artefact). Vertices cannot be replaced or deleted.")
+				
+			}
+		}
+		
+		/// Produces a hidden vertex on `self`.
+		mutating func produceHiddenVertex() {
+			switch self {
+					
+				case .structure(childrenByIdentifier: let childrenByIdentifier):
+				precondition(childrenByIdentifier.isEmpty, "Cannot replace non-empty structure with hidden vertex. Vertices cannot be replaced or deleted.")
+				self = .hidden
+				
+				case .artefact(let existing, childrenByIdentifier: _):
+				preconditionFailure("Cannot replace \(existing) with hidden vertex. Artefacts cannot be replaced or deleted.")
+					
+				case .hidden:
+				return
+					
+			}
+		}
+		
+	}
 	
 	// See protocol.
 	public mutating func produce(_ artefact: Artefact, at location: Location) {
-		let previous = artefactsByLocation.updateValue(artefact, forKey: location)
-		if let previous = previous {
-			preconditionFailure("Cannot replace \(previous) with \(artefact) at \(location). Artefacts can only be added to shadow graphs, not replaced or deleted.")
-		}
-		precondition(!hiddenVertexLocations.contains(location), "Cannot replace hidden vertex with \(artefact) at \(location). Vertices can only be added to shadow graphs, not replaced or deleted.")
+		root[location].produce(artefact)
 	}
 	
 	// See protocol.
@@ -37,10 +130,7 @@ public struct ShadowGraph<Artefact : Conifer.Artefact> : ShadowGraphProtocol {
 	
 	// See protocol.
 	public mutating func produceHiddenVertex(at location: Location) {
-		if let artefact = artefactsByLocation[location] {
-			preconditionFailure("Cannot replace \(artefact) with hidden vertex at \(location). Vertices can only be added to shadow graphs, not replaced or deleted.")
-		}
-		hiddenVertexLocations.insert(location)
+		root[location].produceHiddenVertex()
 	}
 	
 }

@@ -28,6 +28,13 @@ public struct ShadowGraphLocation : Hashable {
 		}
 	}
 	
+	/// Returns the root path component and a location equivalent to `self` relative to the root path component, or `nil` if the location refers to the root vertex.
+	func entering() -> (head: AnyHashable, tail: Self)? {
+		pathComponents.splittingFirst().map { (head, tail) in
+			(head, .init(pathComponents: .init(tail)))
+		}
+	}
+	
 }
 
 extension ShadowGraphProtocol {
