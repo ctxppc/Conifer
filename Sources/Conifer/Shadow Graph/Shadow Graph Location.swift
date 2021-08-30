@@ -3,6 +3,9 @@
 /// A value that refers to a vertex of the shadow graph.
 public struct ShadowGraphLocation : Hashable {
 	
+	/// The location to the root vertex.
+	public static let root = Self(pathComponents: [])
+	
 	/// The path components identifying consecutive vertices starting from the root element.
 	///
 	/// The array is empty iff `self` identifies the root element.
