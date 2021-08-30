@@ -13,7 +13,7 @@ public struct Empty<Artefact : Conifer.Artefact> : Component {
 	}
 	
 	// See protocol.
-	public func render(in graph: inout ShadowGraph<Artefact>, at location: ShadowGraphLocation) async {
+	public func render<G : ShadowGraphProtocol>(in graph: inout G, at location: ShadowGraphLocation) async where Artefact == G.Artefact {
 		// render nothing
 	}
 	

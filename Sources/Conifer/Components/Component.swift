@@ -47,7 +47,7 @@ public protocol Component {
 	///
 	/// - Parameter graph: The shadow graph to render the component's artefacts in.
 	/// - Parameter location: The proposed location for the artefacts to produce.
-	func render(in graph: inout ShadowGraph<Artefact>, at location: ShadowGraphLocation) async
+	func render<G : ShadowGraphProtocol>(in graph: inout G, at location: ShadowGraphLocation) async where G.Artefact == Artefact
 	
 	/// A value representing an instance of `Self` in a shadow graph.
 	associatedtype Artefact : Conifer.Artefact
@@ -55,15 +55,15 @@ public protocol Component {
 }
 
 extension Component {
-	public func render(in graph: inout ShadowGraph<Artefact>, at location: ShadowGraphLocation) async {
-		graph.render(body, at: location)
+	public func render<G : ShadowGraphProtocol>(in graph: inout G, at location: ShadowGraphLocation) async where G.Artefact == Artefact {
+		graph.render(body, at: location, hidden: false)
 	}
 }
 
 extension Component where Body == Never<Artefact> {
 	
 	@available(*, unavailable, message: "render(in:at:) must be implemented in components without body.")
-	public func render(in graph: inout ShadowGraph<Artefact>, at location: ShadowGraphLocation) async {
+	public func render<G : ShadowGraphProtocol>(in graph: inout G, at location: ShadowGraphLocation) async where G.Artefact == Artefact {
 		fatalError("render(in:at:) must be implemented in components without body.")
 	}
 	

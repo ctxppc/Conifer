@@ -1,12 +1,5 @@
 // Conifer © 2019–2021 Constantino Tsarouhas
 
-extension ShadowGraph {
-	
-	/// A value that refers to an element of the shadow graph.
-	public typealias Location = ShadowGraphLocation
-	
-}
-
 /// A value that refers to a vertex of the shadow graph.
 public struct ShadowGraphLocation : Hashable {
 	
@@ -34,5 +27,12 @@ public struct ShadowGraphLocation : Hashable {
 			$0.pathComponents.removeLast()
 		}
 	}
+	
+}
+
+extension ShadowGraphProtocol {
+	
+	/// A value that refers to an element of the shadow graph.
+	public typealias Location = ShadowGraphLocation
 	
 }
