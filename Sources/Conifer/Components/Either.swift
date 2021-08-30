@@ -26,7 +26,21 @@ public enum Either<First : Component, Second : Component> : Component {
 	
 	// See protocol.
 	public func render<G : ShadowGraphProtocol>(in graph: inout G, at location: ShadowGraphLocation) async where First.Artefact == G.Artefact {
-		TODO.unimplemented
+		switch self {
+			
+			case .first(let c):
+			graph.render(c, at: location[ChildIdentifier.first])
+			graph.produceHiddenVertex(at: location[ChildIdentifier.second])
+			
+			case .second(let c):
+			graph.produceHiddenVertex(at: location[ChildIdentifier.first])
+			graph.render(c, at: location[ChildIdentifier.second])
+			
+		}
+	}
+	
+	private enum ChildIdentifier : Hashable {
+		case first, second
 	}
 	
 	// See protocol.

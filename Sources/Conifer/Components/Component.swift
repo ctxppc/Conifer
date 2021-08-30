@@ -56,15 +56,13 @@ public protocol Component {
 
 extension Component {
 	public func render<G : ShadowGraphProtocol>(in graph: inout G, at location: ShadowGraphLocation) async where G.Artefact == Artefact {
-		graph.render(body, at: location, hidden: false)
+		graph.render(body, at: location)
 	}
 }
 
 extension Component where Body == Never<Artefact> {
-	
 	@available(*, unavailable, message: "render(in:at:) must be implemented in components without body.")
 	public func render<G : ShadowGraphProtocol>(in graph: inout G, at location: ShadowGraphLocation) async where G.Artefact == Artefact {
 		fatalError("render(in:at:) must be implemented in components without body.")
 	}
-	
 }

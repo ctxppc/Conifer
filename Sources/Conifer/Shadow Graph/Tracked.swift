@@ -13,14 +13,20 @@ struct Tracked<Graph : ShadowGraphProtocol> : ShadowGraphProtocol {
 	var wrappedValue: Graph
 	
 	// See protocol.
-	mutating func produce(_ artefact: Graph.Artefact, at location: Location, hidden: Bool) {
+	mutating func produce(_ artefact: Graph.Artefact, at location: Location) {
 		createdLocations.insert(location)
-		wrappedValue.produce(artefact, at: location, hidden: hidden)
+		wrappedValue.produce(artefact, at: location)
 	}
 	
 	// See protocol.
-	mutating func render<C : Component>(_ component: C, at location: Location, hidden: Bool) {
-		wrappedValue.render(component, at: location, hidden: hidden)
+	mutating func render<C : Component>(_ component: C, at location: Location) {
+		wrappedValue.render(component, at: location)
+	}
+	
+	// See protocol.
+	mutating func produceHiddenVertex(at location: Location) {
+		createdLocations.insert(location)
+		wrappedValue.produceHiddenVertex(at: location)
 	}
 	
 	/// The graph locations created during rendering.

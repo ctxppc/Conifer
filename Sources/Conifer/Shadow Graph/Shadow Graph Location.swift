@@ -13,7 +13,7 @@ public struct ShadowGraphLocation : Hashable {
 	/// - Parameter identifier: The identifier of the child vertex.
 	///
 	/// - Returns: A location that refers to a vertex identified by `identifier` that is a child of the vertex `self` refers to.
-	public func descending<Identifier : Hashable>(toChildIdentifiedBy identifier: Identifier) -> Self {
+	public subscript <Identifier : Hashable>(identifier: Identifier) -> Self {
 		with(self) {
 			$0.pathComponents.append(.init(identifier))
 		}
