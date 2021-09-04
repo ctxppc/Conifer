@@ -1,5 +1,7 @@
 // Conifer © 2019–2021 Constantino Tsarouhas
 
+import DepthKit
+
 /// A value that refers to a vertex of the shadow graph.
 public struct ShadowGraphLocation : Hashable {
 	

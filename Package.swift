@@ -12,7 +12,7 @@ let package = Package(
 	],
 	dependencies: [
 		.package(url: "https://github.com/apple/swift-collections", from: "0.0.7"),
-		.package(url: "https://github.com/ctxppc/DepthKit.git", .upToNextMinor(from: "0.9.0")),
+		.package(url: "https://github.com/ctxppc/DepthKit.git", .upToNextMinor(from: "0.10.0")),
 	],
 	targets: [
 		.target(name: "Conifer", dependencies: [
