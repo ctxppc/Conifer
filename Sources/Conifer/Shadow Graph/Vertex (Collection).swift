@@ -52,7 +52,9 @@ extension Vertex : RandomAccessCollection, MutableCollection {
 	public struct Index : Comparable, Strideable {
 		
 		/// The invalid index for vertices without children.
-		fileprivate static let invalid = Self(baseIndex: 0)
+		fileprivate static var invalid: Self {
+			.init(baseIndex: 0)
+		}
 		
 		/// The underlying index.
 		fileprivate let baseIndex: BaseIndex

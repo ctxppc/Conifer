@@ -14,7 +14,7 @@ import DepthKit
 public struct ShadowGraph<Artefact : Conifer.Artefact> : ShadowGraphProtocol {
 	
 	/// The root vertex.
-	public private(set) var root: Vertex = .empty
+	public private(set) var root: Vertex<Artefact> = .empty
 	
 	// See protocol.
 	public mutating func produce(_ artefact: Artefact, at location: Location) {

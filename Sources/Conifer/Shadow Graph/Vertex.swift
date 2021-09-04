@@ -3,13 +3,17 @@
 import Collections
 
 /// A vertex in a shadow graph.
-public struct Vertex {
+public struct Vertex<Artefact : Conifer.Artefact> {
 	
 	/// An empty vertex.
-	public static let empty = Self(contents: .structure(childrenByIdentifier: [:]))
+	public static var empty: Self {
+		.init(contents: .structure(childrenByIdentifier: [:]))
+	}
 	
 	/// A hidden vertex.
-	public static let hidden = Self(contents: .hidden)
+	public static var hidden: Self {
+		.init(contents: .hidden)
+	}
 	
 	/// The vertex' contents.
 	var contents: Contents
