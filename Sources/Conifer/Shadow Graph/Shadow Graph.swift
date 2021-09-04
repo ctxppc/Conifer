@@ -1,6 +1,5 @@
 // Conifer © 2019–2021 Constantino Tsarouhas
 
-import Collections
 import DepthKit
 
 /// A tree data structure of vertices produced by components during rendering.
@@ -15,108 +14,7 @@ import DepthKit
 public struct ShadowGraph<Artefact : Conifer.Artefact> : ShadowGraphProtocol {
 	
 	/// The root vertex.
-	private var root: Vertex = .structure()
-	private enum Vertex {
-		
-		/// The vertex is a structure.
-		case structure(childrenByIdentifier: OrderedDictionary<AnyHashable, Vertex> = [:])
-		
-		/// The vertex is an artefact.
-		case artefact(Artefact, childrenByIdentifier: OrderedDictionary<AnyHashable, Vertex> = [:])
-		
-		/// The vertex is hidden.
-		case hidden
-		
-		/// Accesses a vertex at given location.
-		subscript (location: Location) -> Vertex {
-			
-			get {
-				guard let (head, tail) = location.entering() else { return self }
-				return self[head][tail]
-			}
-			
-			set {
-				if let (head, tail) = location.entering() {
-					self[head][tail] = newValue
-				} else {
-					self = newValue
-				}
-			}
-			
-		}
-		
-		/// Accesses a child vertex with given identifier.
-		subscript (identifier: AnyHashable) -> Vertex {
-			
-			get {
-				switch self {
-					case .structure(childrenByIdentifier: let childrenByIdentifier):	return childrenByIdentifier[identifier] ?? .structure()
-					case .artefact(_, childrenByIdentifier: let childrenByIdentifier):	return childrenByIdentifier[identifier] ?? .structure()
-					case .hidden:														return .structure()
-				}
-			}
-			
-			set {
-				switch self {
-						
-					case .structure(childrenByIdentifier: var childrenByIdentifier):
-					childrenByIdentifier[identifier] = newValue
-					self = .structure(childrenByIdentifier: childrenByIdentifier)
-					
-					case .artefact(let artefact, childrenByIdentifier: var childrenByIdentifier):
-					childrenByIdentifier[identifier] = newValue
-					self = .artefact(artefact, childrenByIdentifier: childrenByIdentifier)
-						
-					case .hidden:
-					return	// hidden child can be discarded
-						
-				}
-			}
-			
-		}
-		
-		/// The artefact on `self`.
-		var artefact: Artefact? {
-			switch self {
-				case .artefact(let artefact, childrenByIdentifier: _):	return artefact
-				case .structure, .hidden:								return nil
-			}
-		}
-		
-		/// Produces an artefact on `self`.
-		mutating func produce(_ artefact: Artefact) {
-			switch self {
-				
-				case .structure(childrenByIdentifier: let childrenByIdentifier):
-				self = .artefact(artefact, childrenByIdentifier: childrenByIdentifier)
-				
-				case .artefact(let existing, childrenByIdentifier: _):
-				preconditionFailure("Cannot replace \(existing) with \(artefact). Artefacts cannot be replaced or deleted.")
-				
-				case .hidden:
-				preconditionFailure("Cannot replace hidden vertex with \(artefact). Vertices cannot be replaced or deleted.")
-				
-			}
-		}
-		
-		/// Produces a hidden vertex on `self`.
-		mutating func produceHiddenVertex() {
-			switch self {
-					
-				case .structure(childrenByIdentifier: let childrenByIdentifier):
-				precondition(childrenByIdentifier.isEmpty, "Cannot replace non-empty structure with hidden vertex. Vertices cannot be replaced or deleted.")
-				self = .hidden
-				
-				case .artefact(let existing, childrenByIdentifier: _):
-				preconditionFailure("Cannot replace \(existing) with hidden vertex. Artefacts cannot be replaced or deleted.")
-					
-				case .hidden:
-				return
-					
-			}
-		}
-		
-	}
+	public private(set) var root: Vertex = .empty
 	
 	// See protocol.
 	public mutating func produce(_ artefact: Artefact, at location: Location) {
