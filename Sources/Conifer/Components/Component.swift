@@ -56,7 +56,7 @@ public protocol Component {
 
 extension Component {
 	public func render<G : ShadowGraphProtocol>(in graph: inout G, at location: ShadowGraphLocation) async where G.Artefact == Artefact {
-		graph.render(body, at: location)
+		await graph.render(body, at: location)
 	}
 }
 

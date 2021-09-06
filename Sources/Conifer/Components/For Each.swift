@@ -35,7 +35,7 @@ public struct ForEach<Data : RandomAccessCollection, Identifier : Hashable, Cont
 	// See protocol.
 	public func render<G : ShadowGraphProtocol>(in graph: inout G, at location: ShadowGraphLocation) async where Content.Artefact == G.Artefact {
 		for element in data {
-			graph.render(contentProducer(element), at: location[identifierProvider(element)])
+			await graph.render(contentProducer(element), at: location[identifierProvider(element)])
 		}
 	}
 	

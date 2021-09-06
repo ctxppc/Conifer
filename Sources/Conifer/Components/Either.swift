@@ -11,7 +11,7 @@
 /// The conditional component is not represented in the artefact graph; it renders the wrapped component directly at the graph location proposed to the conditional component.
 ///
 /// The conditional component has a persistent identity for `first` and another for `second`. This means that state of descendant components is dependent on which branch of the conditional component is taken, but state under a branch is persisted through a change of presented branch.
-public enum Either<First : Component, Second : Component> : Component {
+public enum Either<First : Component, Second : Component> : Component where First.Artefact == Second.Artefact {
 	
 	/// The first component is rendered.
 	case first(First)
@@ -29,12 +29,12 @@ public enum Either<First : Component, Second : Component> : Component {
 		switch self {
 			
 			case .first(let c):
-			graph.render(c, at: location[ChildIdentifier.first])
+			await graph.render(c, at: location[ChildIdentifier.first])
 			graph.produceHiddenVertex(at: location[ChildIdentifier.second])
 			
 			case .second(let c):
 			graph.produceHiddenVertex(at: location[ChildIdentifier.first])
-			graph.render(c, at: location[ChildIdentifier.second])
+			await graph.render(c, at: location[ChildIdentifier.second])
 			
 		}
 	}

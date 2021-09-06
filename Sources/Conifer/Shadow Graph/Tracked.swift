@@ -19,8 +19,8 @@ struct Tracked<Graph : ShadowGraphProtocol> : ShadowGraphProtocol {
 	}
 	
 	// See protocol.
-	mutating func render<C : Component>(_ component: C, at location: Location) {
-		wrappedValue.render(component, at: location)
+	mutating func render<C : Component>(_ component: C, at location: Location) async where C.Artefact == Graph.Artefact {
+		await wrappedValue.render(component, at: location)
 	}
 	
 	// See protocol.

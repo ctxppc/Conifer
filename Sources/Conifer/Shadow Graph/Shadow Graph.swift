@@ -22,8 +22,9 @@ public struct ShadowGraph<Artefact : Conifer.Artefact> : ShadowGraphProtocol {
 	}
 	
 	// See protocol.
-	public mutating func render<C : Component>(_ component: C, at location: Location) {
-		TODO.unimplemented
+	public mutating func render<C : Component>(_ component: C, at location: Location) async where C.Artefact == Artefact {
+		// TODO: Cached components & tracked access
+		await component.render(in: &self, at: location)
 	}
 	
 	// See protocol.
@@ -50,7 +51,7 @@ public protocol ShadowGraphProtocol {
 	/// - Parameters:
 	///    - component: The component to render.
 	///    - location: The proposed location of the vertices produced by `component`.
-	mutating func render<C : Component>(_ component: C, at location: Location)
+	mutating func render<C : Component>(_ component: C, at location: Location) async where C.Artefact == Artefact
 	
 	/// Inserts a hidden vertex at given location in `self`.
 	///
