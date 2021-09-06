@@ -3,7 +3,7 @@
 /// The non-existent component.
 ///
 /// This component type can be used as the type of `body` in components which implement rendering in the `render(in:at:)` method.
-public enum Never<Artefact : Conifer.Artefact> : Component {
+public enum Never<Artefact> : Component {
 	
 	// See protocol.
 	public var body: Self {

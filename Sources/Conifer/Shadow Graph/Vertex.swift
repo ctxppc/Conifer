@@ -3,7 +3,7 @@
 import Collections
 
 /// A vertex in a shadow graph.
-public struct Vertex<Artefact : Conifer.Artefact> {
+public struct Vertex<Artefact> {
 	
 	/// An empty vertex.
 	public static var empty: Self {

@@ -5,7 +5,7 @@
 /// ## Shadow Graph Semantics
 ///
 /// The empty component is not represented in the shadow graph: no artefacts are produced during rendering.
-public struct Empty<Artefact : Conifer.Artefact> : Component {
+public struct Empty<Artefact> : Component {
 	
 	// See protocol.
 	public var body: Never<Artefact> {

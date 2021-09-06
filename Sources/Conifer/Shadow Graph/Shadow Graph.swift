@@ -11,7 +11,7 @@ import DepthKit
 /// A shadow graph is constructed in pre-order. The renderer first renders the root component by invoking its `render(in:at:)` method and passing an empty shadow graph and a location to the root vertex. The root component then produces artefacts using the `produce(_:at:)` method and renders components using the `render(_:at:)` method. When the latter method is invoked, the renderer invokes the rendered component's `render(in:at:)` method before returning from the `render(_:at:)` call.
 ///
 /// Every vertex in the shadow graph has a unique location, which is a path of identifiers for each ancestor starting from the root vertex. Artefacts can be produced and components can be rendered at any location. The shadow graph graph automatically creates structures for any inexistent ancestor vertices.
-public struct ShadowGraph<Artefact : Conifer.Artefact> : ShadowGraphProtocol {
+public struct ShadowGraph<Artefact> : ShadowGraphProtocol {
 	
 	/// The root vertex.
 	public private(set) var root: Vertex<Artefact> = .empty
@@ -37,7 +37,7 @@ public struct ShadowGraph<Artefact : Conifer.Artefact> : ShadowGraphProtocol {
 public protocol ShadowGraphProtocol {
 	
 	/// An artefact in shadow graphs of type `Self`.
-	associatedtype Artefact : Conifer.Artefact
+	associatedtype Artefact
 	
 	/// Inserts given artefact at given location in `self`.
 	///

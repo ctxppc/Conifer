@@ -51,7 +51,7 @@ public protocol Component {
 	func render<G : ShadowGraphProtocol>(in graph: inout G, at location: ShadowGraphLocation) async where G.Artefact == Artefact
 	
 	/// A value representing an instance of `Self` in a shadow graph.
-	associatedtype Artefact : Conifer.Artefact
+	associatedtype Artefact
 	
 }
 
