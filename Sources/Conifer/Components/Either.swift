@@ -8,7 +8,7 @@
 ///
 /// ## Shadow Graph Semantics
 ///
-/// The conditional component is not represented in the artefact graph; it renders the wrapped component directly at the graph location proposed to the conditional component.
+/// The conditional component is not represented in the artefact view of the shadow graph; any artefacts produced by the subcomponent are located at the location proposed to the conditional component.
 ///
 /// The conditional component has a persistent identity for `first` and another for `second`. This means that state of descendant components is dependent on which branch of the conditional component is taken, but state under a branch is persisted through a change of presented branch.
 public enum Either<First : Component, Second : Component> : Component where First.Artefact == Second.Artefact {
@@ -21,11 +21,11 @@ public enum Either<First : Component, Second : Component> : Component where Firs
 	
 	// See protocol.
 	public var body: Never<Artefact> {
-		fatalError("\(self) has no body.")
+		Never.hasNoBody(self)
 	}
 	
 	// See protocol.
-	public func render<G : ShadowGraphProtocol>(in graph: inout G, at location: ShadowGraphLocation) async where First.Artefact == G.Artefact {
+	public func render<G : ShadowGraphProtocol>(in graph: inout G, at location: ShadowGraphLocation) async where G.Artefact == Artefact {
 		switch self {
 			
 			case .first(let c):

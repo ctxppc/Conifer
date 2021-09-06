@@ -4,7 +4,7 @@
 ///
 /// # Shadow Graph Semantics
 ///
-/// The mapping component is not represented in the artefact graph; it consecutively renders the generated components at the graph location proposed to the mapping component.
+/// The mapping component is not represented in the artefact view of the shadow graph; it consecutively renders the generated components and any produced artefacts are located at the location proposed to the mapping component.
 ///
 /// The conditional component has an identity for each generated component, directly derived from the corresponding element's identifier. The identity lives as long as the corresponding element. This means that every generated component has its own state, preserved as long as the data element in the underlying collection exists.
 public struct ForEach<Data : RandomAccessCollection, Identifier : Hashable, Content : Component> : Component {
@@ -29,7 +29,7 @@ public struct ForEach<Data : RandomAccessCollection, Identifier : Hashable, Cont
 	
 	// See protocol.
 	public var body: Never<Artefact> {
-		fatalError("\(self) has no body.")
+		Never.hasNoBody(self)
 	}
 	
 	// See protocol.

@@ -22,6 +22,7 @@ public protocol Component {
 	/// - Note: This property shouldn't be accessed directly by components. To render a component as part of a parent component, include it as part of the parent component's `body` or render it in the shadow graph as part of the parent component's `render(in:at:)` implementation.
 	///
 	/// - Warning: Do not access mutable storage or external sources directly from within this property's getter, but instead use appropriate property wrappers which conform to `DynamicProperty` or bindings to such properties. Any accesses to storage or external sources that does not go through such property wrappers or bindings cannot be tracked by the shadow graph and may cause staleness issues.
+	@ComponentBuilder
 	var body: Body { get }
 	
 	/// A component that acts as the body of instances of `Self`.

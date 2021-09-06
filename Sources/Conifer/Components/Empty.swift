@@ -4,12 +4,12 @@
 ///
 /// ## Shadow Graph Semantics
 ///
-/// The empty component is not represented in the artefact graph: no artefacts are produced during rendering.
+/// The empty component is not represented in the shadow graph: no artefacts are produced during rendering.
 public struct Empty<Artefact : Conifer.Artefact> : Component {
 	
 	// See protocol.
 	public var body: Never<Artefact> {
-		fatalError("\(self) has no body.")
+		Never.hasNoBody(self)
 	}
 	
 	// See protocol.
