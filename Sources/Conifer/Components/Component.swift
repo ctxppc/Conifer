@@ -26,7 +26,7 @@ public protocol Component {
 	var body: Body { get }
 	
 	/// A component that acts as the body of instances of `Self`.
-	associatedtype Body : Component where Body.Artefact == Artefact
+	associatedtype Body : Component /* where Body.Artefact == Artefact */		// TODO: Add constraint when Swift supports constrained opaque types.
 	
 	/// Renders the artefacts described by `self` into `graph`.
 	///
@@ -48,22 +48,22 @@ public protocol Component {
 	///
 	/// - Parameter graph: The shadow graph to render the component's artefacts in.
 	/// - Parameter location: The proposed location for the artefacts to produce.
-	func render<G : ShadowGraphProtocol>(in graph: inout G, at location: ShadowGraphLocation) async where G.Artefact == Artefact
+	func render<G : ShadowGraphProtocol>(in graph: inout G, at location: ShadowGraphLocation) async /* where G.Artefact == Artefact */	// TODO: Add constraint when Swift supports constrained opaque types.
 	
 	/// A value representing an instance of `Self` in a shadow graph.
-	associatedtype Artefact
+	/* associatedtype Artefact */	// TODO: Add when Swift supports constrained opaque types.
 	
 }
 
 extension Component {
-	public func render<G : ShadowGraphProtocol>(in graph: inout G, at location: ShadowGraphLocation) async where G.Artefact == Artefact {
+	public func render<G : ShadowGraphProtocol>(in graph: inout G, at location: ShadowGraphLocation) async /* where G.Artefact == Artefact */ {
 		await graph.render(body, at: location)
 	}
 }
 
-extension Component where Body == Never<Artefact> {
+extension Component where Body == Never/*<Artefact>*/ {
 	@available(*, unavailable, message: "render(in:at:) must be implemented in components without body.")
-	public func render<G : ShadowGraphProtocol>(in graph: inout G, at location: ShadowGraphLocation) async where G.Artefact == Artefact {
+	public func render<G : ShadowGraphProtocol>(in graph: inout G, at location: ShadowGraphLocation) async /* where G.Artefact == Artefact */ {
 		fatalError("render(in:at:) must be implemented in components without body.")
 	}
 }

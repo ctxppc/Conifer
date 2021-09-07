@@ -28,19 +28,19 @@ public struct ForEach<Data : RandomAccessCollection, Identifier : Hashable, Cont
 	public typealias ContentProducer = (Data.Element) -> Content
 	
 	// See protocol.
-	public var body: Never<Artefact> {
+	public var body: Never/*<Artefact>*/ {
 		Never.hasNoBody(self)
 	}
 	
 	// See protocol.
-	public func render<G : ShadowGraphProtocol>(in graph: inout G, at location: ShadowGraphLocation) async where Content.Artefact == G.Artefact {
+	public func render<G : ShadowGraphProtocol>(in graph: inout G, at location: ShadowGraphLocation) async /* where Content.Artefact == G.Artefact */ {
 		for element in data {
 			await graph.render(contentProducer(element), at: location[identifierProvider(element)])
 		}
 	}
 	
 	// See protocol.
-	public typealias Artefact = Content.Artefact
+	/* public typealias Artefact = Content.Artefact */
 	
 }
 

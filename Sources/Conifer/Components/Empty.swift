@@ -5,15 +5,15 @@
 /// ## Shadow Graph Semantics
 ///
 /// The empty component is not represented in the shadow graph: no artefacts are produced during rendering.
-public struct Empty<Artefact> : Component {
+public struct Empty/*<Artefact>*/ : Component {
 	
 	// See protocol.
-	public var body: Never<Artefact> {
+	public var body: Never/*<Artefact>*/ {
 		Never.hasNoBody(self)
 	}
 	
 	// See protocol.
-	public func render<G : ShadowGraphProtocol>(in graph: inout G, at location: ShadowGraphLocation) async where Artefact == G.Artefact {
+	public func render<G : ShadowGraphProtocol>(in graph: inout G, at location: ShadowGraphLocation) async /* where Artefact == G.Artefact */ {
 		// render nothing
 	}
 	
