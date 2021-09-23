@@ -13,6 +13,9 @@ import DepthKit
 /// Every vertex in the shadow graph has a unique location, which is a path of identifiers for each ancestor starting from the root vertex. Artefacts can be produced and components can be rendered at any location. The shadow graph graph automatically creates structures for any inexistent ancestor vertices.
 public struct ShadowGraph<Artefact> : ShadowGraphProtocol {
 	
+	/// Creates an empty shadow graph.
+	public init() {}
+	
 	/// The root vertex.
 	public private(set) var root: Vertex<Artefact> = .empty
 	
