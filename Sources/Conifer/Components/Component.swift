@@ -21,10 +21,17 @@ public protocol Component {
 	///
 	/// - Warning: Do not access mutable storage or external sources directly from within this property's getter, but instead use appropriate property wrappers which conform to `DynamicProperty` or bindings to such properties. Any accesses to storage or external sources that does not go through such property wrappers or bindings cannot be tracked by the shadow graph and may cause staleness issues.
 	@ComponentBuilder
-	var body: Body { get }
+	var body: Body { get async throws }
 	
 	/// A component that acts as the body of instances of `Self`.
 	associatedtype Body : Component
+	
+}
+
+protocol FoundationalComponent : Component where Body == Never {
+	
+	/// A list of tuples for each child of `self`, with each tuple consisting of a component and the location of that component relative to `self`.
+	var labelledChildren: [(Location, any Component)] { get async throws }
 	
 }
 

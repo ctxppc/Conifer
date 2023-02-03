@@ -16,7 +16,7 @@ public struct ComponentBuilder {
 		.second(second)
 	}
 	
-	public static func buildBlock/*<A>*/() -> Empty {
+	public static func buildBlock() -> Empty {
 		.init()
 	}
 	

@@ -32,6 +32,14 @@ public struct ForEach<Data : RandomAccessCollection, Identifier : Hashable, Cont
 	
 }
 
+extension ForEach : FoundationalComponent {
+	var labelledChildren: [(Location, any Component)] {
+		data.map { datum in
+			(.child(identifiedBy: identifierProvider(datum)), contentProducer(datum))
+		}
+	}
+}
+
 extension ForEach where Data.Element : Identifiable, Identifier == Data.Element.ID {
 	
 	/// Creates a component that produces components produced by `contentProducer` for each element in `data`, with each component identified by the associated element's identifier.

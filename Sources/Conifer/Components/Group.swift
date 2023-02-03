@@ -7,7 +7,7 @@
 /// # Shadow Graph Semantics
 ///
 /// A container component is replaced by its two constituent components in a shadow. A shadow never contains a `Group` but instead a `First` and a `Second` in its place. Since there is an ordering between `First` and `Second`, the structural identities of the first and second component are unique.
-public struct Group<First : Component, Second : Component> : Component /* where First.Artefact == Second.Artefact */ {
+public struct Group<First : Component, Second : Component> : Component {
 	
 	/// Creates a group with given components.
 	public init(_ first: First, _ second: Second) {
@@ -41,4 +41,10 @@ public struct Group<First : Component, Second : Component> : Component /* where 
 	// See protocol.
 	public var body: Never { hasNoBody }
 	
+}
+
+extension Group : FoundationalComponent {
+	var labelledChildren: [(Location, any Component)] {
+		[(.anchor[.firstOfGroup], first), (.anchor[.secondOfGroup], second)]
+	}
 }

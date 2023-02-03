@@ -22,6 +22,20 @@ public enum Either<First : Component, Second : Component> : Component {
 	
 }
 
+extension Either : FoundationalComponent {
+	var labelledChildren: [(Location, any Component)] {
+		switch self {
+			
+			case .first(let child):
+			return [(.anchor[.firstOfConditional], child)]
+			
+			case .second(let child):
+			return [(.anchor[.secondOfConditional], child)]
+			
+		}
+	}
+}
+
 public func ??<First, Second>(first: First?, second: Second) -> Either<First, Second> {
 	first.map { .first($0) } ?? .second(second)
 }

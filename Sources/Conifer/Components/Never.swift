@@ -10,3 +10,9 @@
 extension Never : Component {
 	public var body: Self { hasNoBody }
 }
+
+extension Never : FoundationalComponent {
+	var labelledChildren: [(Location, any Component)] {
+		switch self {}
+	}
+}

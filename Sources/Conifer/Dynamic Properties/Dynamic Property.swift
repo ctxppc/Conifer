@@ -9,12 +9,7 @@ import Foundation
 /// Dynamic properties can only be declared within components and only be used from within a rendering context such as the `body` property or the `render(in:context:)` method. The system ensures that all declared dynamic properties are properly populated before rendering begins. Additionally, the system records these properties as dependencies of the component; whenever any dynamic property changes, the system re-renders the component.
 public protocol DynamicProperty {
 	
-	/// Prepares the property before its containing component is rendered in `graph`.
-	///
-	/// The provided `graph` contains a single artefact at its current location which can be used as storage.
-	///
-	/// - Throws: `DynamicPropertyError.unsupportedArtefactType` if `Artefact` is not a supported artefact type.
-	func prepare<Artefact>(forRenderingInto graph: ShadowGraph<Artefact>, at graphLocation: ShadowGraphLocation) async throws
+	// TODO
 	
 }
 
