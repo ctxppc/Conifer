@@ -4,7 +4,7 @@
 @resultBuilder
 public struct ComponentBuilder {
 	
-	public static func buildIf<C>(_ component: C?) -> Either<C, Empty/*<C.Artefact>*/> {
+	public static func buildIf<C>(_ component: C?) -> Either<C, Empty> {
 		component.map { .first($0) } ?? .second(.init())
 	}
 	
@@ -16,7 +16,7 @@ public struct ComponentBuilder {
 		.second(second)
 	}
 	
-	public static func buildBlock/*<A>*/() -> Empty/*<A>*/ {
+	public static func buildBlock/*<A>*/() -> Empty {
 		.init()
 	}
 	

@@ -23,8 +23,7 @@ public struct ShadowGraph<Artefact> : ShadowGraphProtocol {
 	
 	// See protocol.
 	public mutating func render<C : Component>(_ component: C, at location: Location) async /* where C.Artefact == Artefact */ {
-		// TODO: Cached components & tracked access
-		await component.render(in: &self, at: location)
+		// TODO
 	}
 	
 	// See protocol.

@@ -2,11 +2,11 @@
 
 /// A mapping component; a component that represents a sequence of components generated from an underlying collection of data.
 ///
-/// # Shadow Graph Semantics
+/// # Shadow Semantics
 ///
-/// The mapping component is not represented in the artefact view of the shadow graph; it consecutively renders the generated components and any produced artefacts are located at the location proposed to the mapping component.
+/// A mapping component is replaced by its generated components in a shadow. A shadow never contains a `ForEach` but instead zero or more `Content`s at the same location.
 ///
-/// The conditional component has an identity for each generated component, directly derived from the corresponding element's identifier. The identity lives as long as the corresponding element. This means that every generated component has its own state, preserved as long as the data element in the underlying collection exists.
+/// The structural identity of each generated component is defined by the `ForEach` component's structural identity and by the identifier provided for that component. This means that the structural identity of a generated component remains the same as long as the `ForEach` component's location within the shadow and the provided identifier don't change.
 public struct ForEach<Data : RandomAccessCollection, Identifier : Hashable, Content : Component> : Component {
 	
 	/// Creates a component that produces components produced by `contentProducer` for each element in `data`, with each component identified by the identifier provided by `identifierProvider`.
@@ -28,19 +28,7 @@ public struct ForEach<Data : RandomAccessCollection, Identifier : Hashable, Cont
 	public typealias ContentProducer = (Data.Element) -> Content
 	
 	// See protocol.
-	public var body: Never/*<Artefact>*/ {
-		Never.hasNoBody(self)
-	}
-	
-	// See protocol.
-	public func render<G : ShadowGraphProtocol>(in graph: inout G, at location: ShadowGraphLocation) async /* where Content.Artefact == G.Artefact */ {
-		for element in data {
-			await graph.render(contentProducer(element), at: location[identifierProvider(element)])
-		}
-	}
-	
-	// See protocol.
-	/* public typealias Artefact = Content.Artefact */
+	public var body: Never { hasNoBody }
 	
 }
 

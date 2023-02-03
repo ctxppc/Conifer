@@ -6,7 +6,7 @@
 ///
 /// # Shadow Graph Semantics
 ///
-/// The group component is not represented in the artefact view of the shadow graph; it consecutively renders the two components and any produced artefacts are located at the location proposed to the group component.
+/// A container component is replaced by its two constituent components in a shadow. A shadow never contains a `Group` but instead a `First` and a `Second` in its place. Since there is an ordering between `First` and `Second`, the structural identities of the first and second component are unique.
 public struct Group<First : Component, Second : Component> : Component /* where First.Artefact == Second.Artefact */ {
 	
 	/// Creates a group with given components.
@@ -39,21 +39,6 @@ public struct Group<First : Component, Second : Component> : Component /* where 
 	}
 	
 	// See protocol.
-	public var body: Never/*<Artefact>*/ {
-		Never.hasNoBody(self)
-	}
-	
-	// See protocol.
-	public func render<G : ShadowGraphProtocol>(in graph: inout G, at location: ShadowGraphLocation) async /* where Artefact == G.Artefact */ {
-		await graph.render(first, at: location[ChildIdentifier.first])
-		await graph.render(second, at: location[ChildIdentifier.second])
-	}
-	
-	private enum ChildIdentifier : Hashable {
-		case first, second
-	}
-	
-	// See protocol.
-	/* public typealias Artefact = First.Artefact */
+	public var body: Never { hasNoBody }
 	
 }
