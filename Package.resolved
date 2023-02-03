@@ -1,25 +1,23 @@
 {
-  "object": {
-    "pins": [
-      {
-        "package": "DepthKit",
-        "repositoryURL": "https://github.com/ctxppc/DepthKit.git",
-        "state": {
-          "branch": null,
-          "revision": "5a05be3926680a9fd99c411d41bfd95f835ec419",
-          "version": "0.10.0"
-        }
-      },
-      {
-        "package": "swift-collections",
-        "repositoryURL": "https://github.com/apple/swift-collections",
-        "state": {
-          "branch": null,
-          "revision": "9d8719c8bebdc79740b6969c912ac706eb721d7a",
-          "version": "0.0.7"
-        }
+  "pins" : [
+    {
+      "identity" : "depthkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/ctxppc/DepthKit.git",
+      "state" : {
+        "revision" : "5a05be3926680a9fd99c411d41bfd95f835ec419",
+        "version" : "0.10.0"
       }
-    ]
-  },
-  "version": 1
+    },
+    {
+      "identity" : "swift-collections",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-collections",
+      "state" : {
+        "revision" : "937e904258d22af6e447a0b72c0bc67583ef64a2",
+        "version" : "1.0.4"
+      }
+    }
+  ],
+  "version" : 2
 }

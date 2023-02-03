@@ -1,4 +1,4 @@
-// Conifer © 2019–2021 Constantino Tsarouhas
+// Conifer © 2019–2023 Constantino Tsarouhas
 
 extension Optional : Component where Wrapped : Component {
 	

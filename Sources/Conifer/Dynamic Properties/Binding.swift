@@ -1,4 +1,4 @@
-// Conifer © 2019–2021 Constantino Tsarouhas
+// Conifer © 2019–2023 Constantino Tsarouhas
 
 /// A value that can read and write a value owned by a source of truth.
 @propertyWrapper

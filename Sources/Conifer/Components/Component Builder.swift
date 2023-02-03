@@ -1,4 +1,4 @@
-// Spin © 2019–2021 Constantino Tsarouhas
+// Spin © 2019–2023 Constantino Tsarouhas
 
 /// A parameter attribute that constructs components from closures.
 @resultBuilder
