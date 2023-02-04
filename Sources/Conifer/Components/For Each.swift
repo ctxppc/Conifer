@@ -34,8 +34,8 @@ public struct ForEach<Data : RandomAccessCollection, Identifier : Hashable, Cont
 
 extension ForEach : FoundationalComponent {
 	var labelledChildren: [(Location, any Component)] {
-		data.map { datum in
-			(.child(identifiedBy: identifierProvider(datum)), contentProducer(datum))
+		data.enumerated().map { position, datum in
+			(.child(identifiedBy: identifierProvider(datum), position: position), contentProducer(datum))
 		}
 	}
 }

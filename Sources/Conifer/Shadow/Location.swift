@@ -9,44 +9,32 @@ public struct Location : Hashable, @unchecked Sendable {	// AnyHashable isn't Se
 	/// A location referring to the body of the (non-foundational) anchor.
 	static let body = Self(directions: [.body])
 	
-	/// A location referring to the first component of the anchor conditional.
-	static let firstOfConditional = Self(directions: [.firstOfConditional])
+	/// A location referring to the first component of the anchor conditional or group.
+	static let first = Self(directions: [.first])
 	
-	/// A location referring to the second component of the anchor conditional.
-	static let secondOfConditional = Self(directions: [.secondOfConditional])
-	
-	/// A location referring to the first component of the anchor group.
-	static let firstOfGroup = Self(directions: [.firstOfGroup])
-	
-	/// A location referring to the second component of the anchor group.
-	static let secondOfGroup = Self(directions: [.secondOfGroup])
+	/// A location referring to the second component of the anchor conditional or group.
+	static let second = Self(directions: [.second])
 	
 	/// A location referring to the anchor's child with given identifier.
-	static func child(identifiedBy id: some Hashable) -> Self {
-		Self(directions: [.identifier(.init(id))])
+	static func child(identifiedBy id: some Hashable, position: Int) -> Self {
+		Self(directions: [.identifier(.init(id), position: position)])
 	}
 	
 	/// The location's directions, starting with the direction from the anchor.
 	private var directions: [Direction]
-	private enum Direction : Hashable, @unchecked Sendable {
+	fileprivate enum Direction : Hashable, @unchecked Sendable {
 		
 		/// The body of the (non-foundational) component.
 		case body
 		
-		/// The first component of the conditional.
-		case firstOfConditional
+		/// The first component of the conditional or group.
+		case first
 		
-		/// The second component of the conditional.
-		case secondOfConditional
-		
-		/// The first component of the group.
-		case firstOfGroup
-		
-		/// The second component of the group.
-		case secondOfGroup
+		/// The second component of the conditional or group.
+		case second
 		
 		/// The component identified by given identifier in the mapping component.
-		case identifier(AnyHashable)
+		case identifier(AnyHashable, position: Int)
 		
 	}
 	
@@ -66,4 +54,33 @@ public struct Location : Hashable, @unchecked Sendable {	// AnyHashable isn't Se
 		return child
 	}
 	
+}
+
+extension Location : Comparable {
+	public static func < (first: Location, other: Location) -> Bool {
+		first.directions.lexicographicallyPrecedes(other.directions)
+	}
+}
+
+extension Location.Direction : Comparable {
+	static func < (first: Location.Direction, other: Location.Direction) -> Bool {
+		switch (first, other) {
+			
+			case (.first, .second):
+			return true
+			
+			case (.second, .first):
+			return false
+			
+			case (.identifier(_, position: let first), .identifier(_, position: let second)):
+			return first < second
+			
+			case (.first, _), (_, .first),
+				(.second, _), (_, .second),
+				(.body, _), (_, .body),
+				(.identifier, _), (_, .identifier):
+			return false	// These combinations do not normally appear as siblings and can be considered unordered if not equal.
+			
+		}
+	}
 }

@@ -45,6 +45,6 @@ public struct Group<First : Component, Second : Component> : Component {
 
 extension Group : FoundationalComponent {
 	var labelledChildren: [(Location, any Component)] {
-		[(.anchor[.firstOfGroup], first), (.anchor[.secondOfGroup], second)]
+		[(.anchor[.first], first), (.anchor[.second], second)]
 	}
 }

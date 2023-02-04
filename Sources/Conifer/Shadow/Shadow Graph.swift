@@ -1,7 +1,7 @@
 // Conifer © 2019–2023 Constantino Tsarouhas
 
 import DepthKit
-import OrderedCollections
+import SortedCollections
 
 /// A tree structure of rendered components.
 ///
@@ -20,7 +20,7 @@ actor ShadowGraph {
 	/// The rendered components, keyed by location relative to the root component.
 	///
 	/// - Invariant: `componentsByLocation[.self]` is not `nil`.
-	var componentsByLocation: OrderedDictionary<Location, any Component>
+	var componentsByLocation: SortedDictionary<Location, any Component>
 	
 	/// Accesses a component in the shadow graph at a given location relative to the root component.
 	///
@@ -47,21 +47,12 @@ actor ShadowGraph {
 	/// - Requires: This method hasn't been invoked with `parentLocation` before. (A future version of this method may do nothing if it is invoked a second time.)
 	private func renderChildren(ofComponentAt parentLocation: Location) async throws {
 		let parent = try await self[parentLocation]
-		let parentIndex = componentsByLocation.index(forKey: parentLocation) !! "No index for already rendered parent"
 		if let parent = parent as? any FoundationalComponent {
 			for (location, child) in try await parent.labelledChildren.reversed() {
-				componentsByLocation.updateValue(
-									child,
-					forKey:			parentLocation[location],
-					insertingAt:	parentIndex + 1
-				)
+				componentsByLocation.updateValue(child, forKey: parentLocation[location])
 			}
 		} else {
-			componentsByLocation.updateValue(
-								try await parent.body,
-				forKey:			parentLocation[.body],
-				insertingAt:	parentIndex + 1
-			)
+			componentsByLocation.updateValue(try await parent.body, forKey: parentLocation[.body])
 		}
 	}
 	

@@ -27,10 +27,10 @@ extension Either : FoundationalComponent {
 		switch self {
 			
 			case .first(let child):
-			return [(.anchor[.firstOfConditional], child)]
+			return [(.anchor[.first], child)]
 			
 			case .second(let child):
-			return [(.anchor[.secondOfConditional], child)]
+			return [(.anchor[.second], child)]
 			
 		}
 	}

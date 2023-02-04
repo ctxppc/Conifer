@@ -11,7 +11,7 @@ let package = Package(
 		.library(name: "Conifer", targets: ["Conifer"]),
 	],
 	dependencies: [
-		.package(url: "https://github.com/apple/swift-collections", from: "1.0.4"),
+		.package(url: "https://github.com/apple/swift-collections", branch: "main"),	// TODO: Switch to release when SortedDictionary is officially released.
 		.package(url: "https://github.com/ctxppc/DepthKit", .upToNextMinor(from: "0.10.0")),
 	],
 	targets: [
