@@ -1,7 +1,7 @@
 // Conifer © 2019–2023 Constantino Tsarouhas
 
 /// A component's location in a shadow relative to an anchor.
-public struct Location : Hashable, @unchecked Sendable {	// AnyHashable isn't Sendable
+struct Location : Hashable, @unchecked Sendable {	// AnyHashable isn't Sendable
 	
 	/// The location referring to the anchor.
 	static let anchor = Self(directions: [])
@@ -57,7 +57,7 @@ public struct Location : Hashable, @unchecked Sendable {	// AnyHashable isn't Se
 }
 
 extension Location : Comparable {
-	public static func < (first: Location, other: Location) -> Bool {
+	static func < (first: Location, other: Location) -> Bool {
 		first.directions.lexicographicallyPrecedes(other.directions)
 	}
 }

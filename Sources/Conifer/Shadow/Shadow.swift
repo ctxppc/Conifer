@@ -4,31 +4,50 @@ import DepthKit
 
 /// A view into a component and its contents.
 @dynamicMemberLookup
-public struct Shadow<Shadowed : Component> : Sendable {
+public struct Shadow<Subject : Component> : Sendable {
+	
+	/// Creates a typed shadow from given untyped shadow.
+	init(_ shadow: UntypedShadow) async throws {
+		
+		self.graph = shadow.graph
+		self.location = shadow.location
+		
+		let component = try await graph[location]
+		self.subject = component as? Subject !! "Expected \(component) to be typed \(Subject.self)"
+		
+	}
 	
 	/// The graph backing the shadow.
 	let graph: ShadowGraph
 	
-	/// The location of the shadowing component relative to the root component in `graph`.
+	/// The location of the subject relative to the root component in `graph`.
 	let location: Location
 	
-	/// The shadowing component.
-	var shadowed: Shadowed {
-		get async throws {
-			let component = try await graph[location]
-			return component as? Shadowed !! "Expected \(component) to be typed \(Shadowed.self)"
-		}
-	}
+	/// The component represented by `self`.
+	let subject: Subject
 	
-	/// Accesses the shadowing component.
-	public subscript <Value>(dynamicMember keyPath: KeyPath<Shadowed, Value>) -> Value {
-		get async throws {
-			try await shadowed[keyPath: keyPath]
-		}
+	/// Accesses the subject.
+	public subscript <Value>(dynamicMember keyPath: KeyPath<Subject, Value>) -> Value {
+		subject[keyPath: keyPath]
 	}
 	
 	/// Accesses a subcomponent.
-	subscript <Child : Component>(childLocation: Location) -> Shadow<Child> {
+	subscript (childLocation: Location) -> UntypedShadow {
+		.init(graph: graph, location: location[childLocation])
+	}
+	
+}
+
+public struct UntypedShadow : Sendable {
+	
+	/// The graph backing the shadow.
+	let graph: ShadowGraph
+	
+	/// The location of the subject relative to the root component in `graph`.
+	let location: Location
+	
+	/// Accesses a subcomponent.
+	subscript (childLocation: Location) -> UntypedShadow {
 		.init(graph: graph, location: location[childLocation])
 	}
 	

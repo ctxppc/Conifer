@@ -65,7 +65,7 @@ In the example below, the web framework defines a different set of component typ
 	}
 	
 	struct ParagraphRewriteRule : RewriteRule {
-		var pattern: some Selector { .typed(Paragraph.self) }
+		var pattern: some Selector { Paragraph.selector }
 		func rewrite(_ paragraph: Shadow<Paragraph<some Component>>) throws async -> some Component {
 			HTMLElement(tagName: "p") {
 				try await ElementRewriteRule().rewrite(paragraph.body)
