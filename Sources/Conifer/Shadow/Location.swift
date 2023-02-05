@@ -40,11 +40,10 @@ struct Location : Hashable, @unchecked Sendable {	// AnyHashable isn't Sendable
 		
 	}
 	
-	/// The location of the component containing the component referred to by `self`.
-	var parent: Self {
+	/// The location of the component containing the component referred to by `self`, or `nil`.
+	var parent: Self? {
 		var parent = self
-		parent.directions.removeLast()
-		return parent
+		return parent.directions.popLast() != nil ? parent : nil
 	}
 	
 	/// The location of the non-foundational component containing the component referred to by `self`.
