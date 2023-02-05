@@ -5,22 +5,26 @@ import SortedCollections
 
 /// A tree structure of rendered components.
 ///
-/// Foundational elements appear in a shadow graph but do not appear in shadows.
+/// Foundational components appear in a shadow graph but do not appear in shadows.
 actor ShadowGraph {
 	
 	/// Creates a shadow graph with given root component.
 	init(root: some Component) {
 		self.root = root
 		self.componentsByLocation = [.anchor: root]
+		self.childLocationsByLocation = [:]
 	}
 	
 	/// The root component.
 	let root: any Component
 	
-	/// The rendered components, keyed by location relative to the root component.
+	/// The rendered components, keyed by location relative to the root component and ordered in pre-order.
 	///
 	/// - Invariant: `componentsByLocation[.self]` is not `nil`.
-	var componentsByLocation: SortedDictionary<Location, any Component>
+	private var componentsByLocation: SortedDictionary<Location, any Component>
+	
+	/// The locations of rendered child components, keyed by location of parent component.
+	private var childLocationsByLocation: [Location : [Location]]
 	
 	/// Accesses a component in the shadow graph at a given location relative to the root component.
 	///
@@ -42,18 +46,45 @@ actor ShadowGraph {
 		}
 	}
 	
-	/// Renders the direct children of the component at `parentLocation`.
+	/// Renders if needed the children of the component at `parentLocation`.
 	///
-	/// - Requires: This method hasn't been invoked with `parentLocation` before. (A future version of this method may do nothing if it is invoked a second time.)
+	/// - Postcondition: `childLocationsByLocation[parentLocation]` is not `nil`.
 	private func renderChildren(ofComponentAt parentLocation: Location) async throws {
-		let parent = try await self[parentLocation]
-		if let parent = parent as? any FoundationalComponent {
-			for (location, child) in try await parent.labelledChildren.reversed() {
-				componentsByLocation.updateValue(child, forKey: parentLocation[location])
-			}
-		} else {
-			componentsByLocation.updateValue(try await parent.body, forKey: parentLocation[.body])
+		_ = try await childLocations(ofComponentAt: parentLocation)
+	}
+	
+	/// Returns the locations of the children of the component at `parentLocation`, rendering them if needed.
+	///
+	/// - Postcondition: `childLocationsByLocation[parentLocation]` is equal to this method's result.
+	func childLocations(ofComponentAt parentLocation: Location) async throws -> [Location] {
+		
+		if let childLocations = childLocationsByLocation[parentLocation] {
+			return childLocations
 		}
+		
+		let parent = try await self[parentLocation]
+		let childLocations: [Location]
+		if let parent = parent as? any FoundationalComponent {
+			
+			let labelledChildren = try await parent.labelledChildren.map { location, child in
+				(parentLocation[location], child)
+			}
+			
+			for (childLocation, child) in labelledChildren {
+				componentsByLocation.updateValue(child, forKey: childLocation)
+			}
+			
+			childLocations = labelledChildren.map { $0.0 }
+			
+		} else {
+			let childLocation = parentLocation[.body]
+			componentsByLocation.updateValue(try await parent.body, forKey: childLocation)
+			childLocations = [childLocation]
+		}
+		
+		childLocationsByLocation[parentLocation] = childLocations
+		return childLocations
+		
 	}
 	
 }

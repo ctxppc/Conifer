@@ -28,6 +28,7 @@ public protocol Component : Sendable {
 	
 }
 
+/// A structural element in a component tree with no semantic meaning.
 protocol FoundationalComponent : Component where Body == Never {
 	
 	/// A list of tuples for each child of `self`, with each tuple consisting of a component and the location of that component relative to `self`.

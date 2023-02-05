@@ -1,6 +1,8 @@
 // Conifer © 2019–2023 Constantino Tsarouhas
 
 /// A component's location in a shadow relative to an anchor.
+///
+/// Locations are ordered in pre-order form: ancestors precede their descendants, siblings are ordered normally, and a component's descendants are ordered before the siblings that follow that component.
 struct Location : Hashable, @unchecked Sendable {	// AnyHashable isn't Sendable
 	
 	/// The location referring to the anchor.
@@ -45,6 +47,11 @@ struct Location : Hashable, @unchecked Sendable {	// AnyHashable isn't Sendable
 		return parent
 	}
 	
+	/// The location of the non-foundational component containing the component referred to by `self`.
+	var observableParent: Self {
+		TODO.unimplemented
+	}
+	
 	/// Returns a location to a child of the component referred by `self`.
 	///
 	/// - Parameter location: The location from the component referred by `self` to the child.
@@ -52,6 +59,15 @@ struct Location : Hashable, @unchecked Sendable {	// AnyHashable isn't Sendable
 		var child = self
 		child.directions.append(contentsOf: location.directions)
 		return child
+	}
+	
+	/// Returns a Boolean value indicating whether the component at `self` is an ancestor of the component at `child`.
+	///
+	/// - Parameter child: A location to the potential descendant.
+	///
+	/// - Returns: `true` if `self` and `child` are equal or if the component at `self` is an ancestor of the component at `child`, and `false` otherwise.
+	func contains(_ child: Self) -> Bool {
+		child.directions.starts(with: self.directions)
 	}
 	
 }

@@ -11,3 +11,9 @@ public struct Empty : Component {
 	public var body: Never { hasNoBody }
 	
 }
+
+extension Empty : FoundationalComponent {
+	var labelledChildren: [(Location, any Component)] {
+		[]
+	}
+}
