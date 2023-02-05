@@ -36,7 +36,7 @@ actor ShadowGraph {
 				return component
 			}
 			
-			try await renderChildren(ofComponentAt: location.parent)
+			try await renderChildren(ofComponentAt: location.parent !! "Expected root component to be already rendered")
 			guard let component = componentsByLocation[location] else {
 				preconditionFailure("\(location) is not a valid location relative to \(root)")
 			}

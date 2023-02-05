@@ -150,7 +150,6 @@ public struct _ShadowBody : AsyncSequence {				// TODO: Make private when AsyncS
 				return try await next()
 				
 				case .shallow(childLocations: var childLocations):
-				var childLocations = childLocations
 				guard let childLocation = childLocations.popFirst() else { return nil }
 				if try await graph[childLocation] is any FoundationalComponent {
 					state = .deep(.init(graph: graph, parentLocation: childLocation), childLocations: childLocations)
