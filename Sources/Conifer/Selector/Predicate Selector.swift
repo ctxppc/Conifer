@@ -14,9 +14,9 @@ public struct PredicateSelector<Candidates : TypedSelector> {
 
 extension PredicateSelector : TypedSelector {
 	public typealias SelectedComponent = Candidates.SelectedComponent
-	public func selection(root: UntypedShadow) -> AsyncFilterSequence<Candidates.TypedSelection> {
+	public func selection(subject: UntypedShadow) -> AsyncFilterSequence<Candidates.TypedSelection> {
 		candidates
-			.selection(root: root)
+			.selection(subject: subject)
 			.filter(predicate)
 	}
 }
@@ -24,7 +24,7 @@ extension PredicateSelector : TypedSelector {
 extension TypedSelector {
 	
 	/// Derives a selector of components for which `predicate` holds.
-	public func `where`(_ predicate: @escaping PredicateSelector<Self>.Predicate) -> PredicateSelector<Self> {
+	public subscript (where predicate: @escaping PredicateSelector<Self>.Predicate) -> PredicateSelector<Self> {
 		.init(candidates: self, predicate: predicate)
 	}
 	

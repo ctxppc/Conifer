@@ -9,9 +9,9 @@ public struct ChildSelector<Parents : Selector> {
 }
 
 extension ChildSelector : Selector {
-	public func selection(root: UntypedShadow) -> AsyncFlatMapSequence<Parents.Selection, _ShadowBody> {
+	public func selection(subject: UntypedShadow) -> AsyncFlatMapSequence<Parents.Selection, _ShadowBody> {
 		parents
-			.selection(root: root)
+			.selection(subject: subject)
 			.flatMap(\.body)
 	}
 }
@@ -21,6 +21,15 @@ extension Selector {
 	/// Creates a selector that selects the children of the components selected by `self`.
 	public var children: ChildSelector<Self> {
 		.init(parents: self)
+	}
+	
+}
+
+extension Selector where Self == ChildSelector<SubjectSelector> {
+	
+	/// Creates a selector that selects the children of the subject.
+	public static var children: ChildSelector<SubjectSelector> {
+		.init(parents: .init())
 	}
 	
 }

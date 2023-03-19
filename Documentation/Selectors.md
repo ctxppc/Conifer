@@ -18,8 +18,7 @@ All selectors conform to the `Selector` protocol and can be applied directly on 
 	}
 	
 	let dept = Shadow(of: Department())
-	let selector = Selector.children.typed(Person.self).where(\.name == "John")
-	let johns = dept[selector]
+	let johns = dept[.root.children[typed: Person.self][where: \.name == "John"]]
 	print(johns[0].age)	// 28
 
 The **subject** of a selector is the component on which the selector is applied. The subject in the example above is `dept`. A **result** of a selector is a component produced by the selector, such as `johns[0]` above.
@@ -28,12 +27,12 @@ The **subject** of a selector is the component on which the selector is applied.
 The **child selector** `selector.children` selects all direct children of all components selected by `selector`.
 
 ## Type selector
-The **type selector** `selector.typed(type)` selects the components selected by `selector` that are of type `type`.
+The **type selector** `selector[typed: type]` selects the components selected by `selector` that are of type `type`.
 
 A type selector produces a typed selector, i.e., a selector whose components have a static type. Some kinds of selectors (like predicate selectors) are only valid on typed selectors.
 
 ## Predicate selector
-The **predicate selector** `selector.where(predicate)` on a typed selector `selector` selects the components selected by `selector` where `predicate` holds.
+The **predicate selector** `selector[where: predicate]` on a typed selector `selector` selects the components selected by `selector` where `predicate` holds.
 
 ## Index selector
 The **index selector** `selector[index]` selects the `index`th component in the list of components selected by `selector`, where `index` of the first component is 0.

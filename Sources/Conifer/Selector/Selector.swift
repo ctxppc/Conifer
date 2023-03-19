@@ -4,7 +4,7 @@
 public protocol Selector {
 	
 	/// Returns selected components for `root`.
-	func selection(root: UntypedShadow) -> Selection
+	func selection(subject: UntypedShadow) -> Selection
 	associatedtype Selection : AsyncSequence where Selection.Element == UntypedShadow
 	
 }

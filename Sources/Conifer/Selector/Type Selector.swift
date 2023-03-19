@@ -9,9 +9,9 @@ public struct TypeSelector<Candidates : Selector, SelectedComponent : Component>
 }
 
 extension TypeSelector : TypedSelector {
-	public func selection(root: UntypedShadow) -> AsyncThrowingCompactMapSequence<Candidates.Selection, Shadow<SelectedComponent>> {
+	public func selection(subject: UntypedShadow) -> AsyncThrowingCompactMapSequence<Candidates.Selection, Shadow<SelectedComponent>> {
 		candidates
-			.selection(root: root)
+			.selection(subject: subject)
 			.compactMap { try await Shadow<SelectedComponent>($0) }
 	}
 }
@@ -19,7 +19,7 @@ extension TypeSelector : TypedSelector {
 extension Selector {
 	
 	/// Derives a selector that selects all components typed `C` out of the components selected by `self`.
-	public func typed<C>(_ type: C.Type) -> TypeSelector<Self, C> {
+	public subscript <C>(typed type: C.Type) -> TypeSelector<Self, C> {
 		.init(candidates: self)
 	}
 	

@@ -12,9 +12,9 @@ public struct IndexSelector<Candidates : Selector> {
 }
 
 extension IndexSelector : Selector {
-	public func selection(root: UntypedShadow) -> AsyncPrefixSequence<AsyncDropFirstSequence<Candidates.Selection>> {
+	public func selection(subject: UntypedShadow) -> AsyncPrefixSequence<AsyncDropFirstSequence<Candidates.Selection>> {
 		candidates
-			.selection(root: root)
+			.selection(subject: subject)
 			.dropFirst(indices.startIndex)
 			.prefix(indices.count)
 	}
@@ -22,9 +22,9 @@ extension IndexSelector : Selector {
 
 extension IndexSelector : TypedSelector where Candidates : TypedSelector {
 	public typealias SelectedComponent = Candidates.SelectedComponent
-	public func selection(root: UntypedShadow) -> AsyncPrefixSequence<AsyncDropFirstSequence<Candidates.TypedSelection>> {
+	public func selection(subject: UntypedShadow) -> AsyncPrefixSequence<AsyncDropFirstSequence<Candidates.TypedSelection>> {
 		candidates
-			.selection(root: root)
+			.selection(subject: subject)
 			.dropFirst(indices.startIndex)
 			.prefix(indices.count)
 	}

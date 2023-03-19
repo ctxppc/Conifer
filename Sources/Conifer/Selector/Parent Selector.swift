@@ -9,9 +9,9 @@ public struct ParentSelector<Children : Selector> {
 }
 
 extension ParentSelector : Selector {
-	public func selection(root: UntypedShadow) -> AsyncThrowingCompactMapSequence<Children.Selection, UntypedShadow> {
+	public func selection(subject: UntypedShadow) -> AsyncThrowingCompactMapSequence<Children.Selection, UntypedShadow> {
 		children
-			.selection(root: root)
+			.selection(subject: subject)
 			.compactMap { try await $0.parent }
 	}
 }
