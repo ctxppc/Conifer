@@ -1,13 +1,26 @@
 // Conifer © 2019–2023 Constantino Tsarouhas
 
-public struct ChildSelector<Parent : Selector> : Selector {
+/// A selector of children of given parents.
+public struct ChildSelector<Parents : Selector> {
 	
-	/// The selector for the parents.
-	let parent: Parent
+	/// A selector selecting parents.
+	let parents: Parents
 	
-	// See protocol.
-	public func results<SubjectComponent>(on subject: Shadow<SubjectComponent>) async throws -> AsyncStream<UntypedShadow> {
-		TODO.unimplemented
+}
+
+extension ChildSelector : Selector {
+	public func selection(root: UntypedShadow) -> AsyncFlatMapSequence<Parents.Selection, _ShadowBody> {
+		parents
+			.selection(root: root)
+			.flatMap(\.body)
+	}
+}
+
+extension Selector {
+	
+	/// Creates a selector that selects the children of the components selected by `self`.
+	public var children: ChildSelector<Self> {
+		.init(parents: self)
 	}
 	
 }
