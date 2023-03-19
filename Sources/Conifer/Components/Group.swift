@@ -44,7 +44,7 @@ public struct Group<First : Component, Second : Component> : Component {
 }
 
 extension Group : FoundationalComponent {
-	var labelledChildren: [(Location, any Component)] {
+	func labelledChildren(for graph: ShadowGraph) async throws -> [(Location, any Component)] {
 		[(.anchor[.first], first), (.anchor[.second], second)]
 	}
 }

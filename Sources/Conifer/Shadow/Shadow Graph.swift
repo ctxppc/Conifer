@@ -66,7 +66,7 @@ actor ShadowGraph {
 		let childLocations: [Location]
 		if let parent = parent as? any FoundationalComponent {
 			
-			let labelledChildren = try await parent.labelledChildren.map { location, child in
+			let labelledChildren = try await parent.labelledChildren(for: self).map { location, child in
 				(parentLocation[location], child)
 			}
 			

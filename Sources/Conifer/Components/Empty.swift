@@ -13,7 +13,7 @@ public struct Empty : Component {
 }
 
 extension Empty : FoundationalComponent {
-	var labelledChildren: [(Location, any Component)] {
+	func labelledChildren(for graph: ShadowGraph) async throws -> [(Location, any Component)] {
 		[]
 	}
 }

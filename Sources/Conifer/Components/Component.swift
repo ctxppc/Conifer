@@ -27,20 +27,3 @@ public protocol Component : Sendable {
 	associatedtype Body : Component
 	
 }
-
-/// A structural element in a component tree with no semantic meaning.
-protocol FoundationalComponent : Component where Body == Never {
-	
-	/// A list of tuples for each child of `self`, with each tuple consisting of a component and the location of that component relative to `self`.
-	var labelledChildren: [(Location, any Component)] { get async throws }
-	
-}
-
-extension Component {
-	
-	/// Termines the program with an error message stating that `self` has no body.
-	var hasNoBody: Never {
-		fatalError("\(self) has no body")
-	}
-	
-}

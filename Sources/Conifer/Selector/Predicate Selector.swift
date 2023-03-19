@@ -8,7 +8,7 @@ public struct PredicateSelector<Candidates : TypedSelector> {
 	
 	/// The indices of the selected components.
 	public let predicate: Predicate
-	public typealias Predicate = (Shadow<SelectedComponent>) -> Bool
+	public typealias Predicate = @Sendable (Shadow<SelectedComponent>) -> Bool
 	
 }
 

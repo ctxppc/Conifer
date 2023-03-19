@@ -23,7 +23,7 @@ public enum Either<First : Component, Second : Component> : Component {
 }
 
 extension Either : FoundationalComponent {
-	var labelledChildren: [(Location, any Component)] {
+	func labelledChildren(for graph: ShadowGraph) async throws -> [(Location, any Component)] {
 		switch self {
 			
 			case .first(let child):

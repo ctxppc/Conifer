@@ -12,7 +12,7 @@ extension SubjectSelector : Selector {
 extension Selector where Self == SubjectSelector {
 	
 	/// Returns a selector that selects the subject.
-	static var `self`: Self {
+	public static var `self`: Self {
 		.init()
 	}
 	

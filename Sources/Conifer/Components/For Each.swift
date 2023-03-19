@@ -33,7 +33,7 @@ public struct ForEach<Data : RandomAccessCollection & Sendable, Identifier : Has
 }
 
 extension ForEach : FoundationalComponent {
-	var labelledChildren: [(Location, any Component)] {
+	func labelledChildren(for graph: ShadowGraph) async throws -> [(Location, any Component)] {
 		data.enumerated().map { position, datum in
 			(.child(identifiedBy: identifierProvider(datum), position: position), contentProducer(datum))
 		}

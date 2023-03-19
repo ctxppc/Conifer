@@ -12,7 +12,7 @@ extension Never : Component {
 }
 
 extension Never : FoundationalComponent {
-	var labelledChildren: [(Location, any Component)] {
+	func labelledChildren(for graph: ShadowGraph) async throws -> [(Location, any Component)] {
 		switch self {}
 	}
 }
