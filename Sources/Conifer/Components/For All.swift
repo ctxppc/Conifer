@@ -8,7 +8,7 @@ import DepthKit
 ///
 /// A transformer is replaced by its result in a shadow. A shadow never contains a `ForAll` but instead zero or more `Content`s (or their shadow equivalents) at the same location.
 ///
-/// A component containing a transformer such as `ForAll` can only be instantiated using `Shadow(of:transformingFrom:)` with a non-`nil` transformation source. `Shadow(of:)` throws an error when it is used to instantiate a (component containing a) transformer.
+/// A component containing a transformer such as `ForAll` can only be instantiated using `Shadow(of:transformingFrom:)` with a non-`nil` transformation source.
 public struct ForAll<Selector : TypedSelector, Identifier : Hashable & Sendable, Content : Component> : Component {
 	
 	/// Creates a transformer that selects components using `selector` on the transformation source and replaces them by the components returned by `content`.
