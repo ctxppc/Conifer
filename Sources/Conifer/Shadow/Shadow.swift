@@ -8,6 +8,13 @@ import DepthKit
 @dynamicMemberLookup
 public struct Shadow<Subject : Component> : ShadowProtocol {
 	
+	/// Creates a shadow of `subject`.
+	public init(of subject: Subject, transformingFrom transformationSource: UntypedShadow? = nil) {
+		self.graph = .init(root: subject, transformationSource: transformationSource)
+		self.location = .anchor
+		self.subject = subject
+	}
+	
 	/// Creates a typed shadow from given untyped shadow.
 	init?(_ shadow: UntypedShadow) async throws {
 		

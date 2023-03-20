@@ -46,11 +46,6 @@ struct Location : Hashable, @unchecked Sendable {	// AnyHashable isn't Sendable
 		return parent.directions.popLast() != nil ? parent : nil
 	}
 	
-	/// The location of the non-foundational component containing the component referred to by `self`.
-	var observableParent: Self {
-		TODO.unimplemented
-	}
-	
 	/// Returns a location to a child of the component referred by `self`.
 	///
 	/// - Parameter location: The location from the component referred by `self` to the child.

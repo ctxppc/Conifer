@@ -10,7 +10,11 @@
 public struct ForEach<Data : RandomAccessCollection & Sendable, Identifier : Hashable & Sendable, Content : Component> : Component {
 	
 	/// Creates a component that produces components produced by `contentProducer` for each element in `data`, with each component identified by the identifier provided by `identifierProvider`.
-	public init(_ data: Data, identifierProvider: @escaping IdentifierProducer, contentProducer: @escaping ContentProducer) {	// TODO: Add component builder annotation
+	public init(
+		_ data:								Data,
+		identifierProvider:					@escaping IdentifierProducer,
+		@ComponentBuilder contentProducer:	@escaping ContentProducer
+	) {
 		self.data = data
 		self.identifierProvider = identifierProvider
 		self.contentProducer = contentProducer
@@ -43,7 +47,7 @@ extension ForEach : FoundationalComponent {
 extension ForEach where Data.Element : Identifiable, Identifier == Data.Element.ID {
 	
 	/// Creates a component that produces components produced by `contentProducer` for each element in `data`, with each component identified by the associated element's identifier.
-	public init(_ data: Data, contentProducer: @escaping ContentProducer) {	// TODO: Add component builder annotation
+	public init(_ data: Data, @ComponentBuilder contentProducer: @escaping ContentProducer) {
 		self.init(data, identifierProvider: \.id, contentProducer: contentProducer)
 	}
 	
