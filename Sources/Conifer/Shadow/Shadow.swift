@@ -11,11 +11,8 @@ public struct Shadow<Subject : Component> : ShadowProtocol {
 	/// Creates a shadow of `subject`.
 	///
 	/// - Parameter subject: The component.
-	/// - Parameter transformationSource: A shadow into the component acting as the source for transformers in `subject`, or `nil` if `subject` isn't or doesn't contain transformers.
-	///
-	/// - Precondition: `transformationSource` is not `nil` if `subject` is or contains a transformer.
-	public init(of subject: Subject, transformingFrom transformationSource: UntypedShadow? = nil) {
-		self.graph = .init(root: subject, transformationSource: transformationSource)
+	public init(of subject: Subject) {
+		self.graph = .init(root: subject)
 		self.location = .anchor
 		self.subject = subject
 	}

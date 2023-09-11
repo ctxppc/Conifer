@@ -1,5 +1,5 @@
 # Shadows
-Conifer lazily computes and caches components in a tree, and lazily recomputes them in response to external changes. This allows developers to easely write lazy algorithms on very large (possibly infinite) trees.
+Conifer lazily computes and caches components in a tree. This allows developers to easely write lazy algorithms on very large (possibly infinite) trees.
 
 Since Conifer is responsible for managing the computation of components, accesses to subcomponents are regulated through **shadows**, which represents an instantiated component in a component tree. A shadow allows for full traversal, including to the parent of the shadowing component.
 
@@ -25,7 +25,7 @@ Thanks to `Shadow`'s `subscript(dynamicMember:)`, the shadowing component's prop
 	let buttonShadow: Shadow<Button> = …
 	let title = buttonShadow.title
 
-Every shadow is part of a shadow tree. A shadow retrieved via the `parent`, `children`, or `body` properties of a shadow are part of the same shadow tree as the latter shadow.
+Every shadow is part of a shadow tree. A shadow retrieved via the `parent`, `children`, or `body` properties of a shadow are part of the same shadow tree as the latter shadow. Shadow trees are actors: all accesses are serialised through them.
 
 You can create a new (independently computed and cached) shadow tree for a given root component using the `Shadow(of:)` initialiser.
 

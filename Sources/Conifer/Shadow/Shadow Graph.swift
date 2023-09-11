@@ -8,19 +8,15 @@ import SortedCollections
 /// Foundational components appear in a shadow graph but do not appear in shadows.
 actor ShadowGraph {
 	
-	/// Creates a shadow graph with given root component and transformation source.
-	init(root: some Component, transformationSource: UntypedShadow?) {
+	/// Creates a shadow graph with given root component.
+	init(root: some Component) {
 		self.root = root
-		self.transformationSource = transformationSource
 		self.componentsByLocation = [.anchor: root]
 		self.childLocationsByLocation = [:]
 	}
 	
 	/// The root component.
 	let root: any Component
-	
-	/// The component over which transformers in `root` are defined, or `nil` if transformations are undefined.
-	let transformationSource: UntypedShadow?
 	
 	/// The rendered components, keyed by location relative to the root component and ordered in pre-order.
 	///

@@ -2,7 +2,7 @@
 Conifer is a tree building & manipulation framework. It provides a DSL, i.e., a domain-specific language, for expressing hierarchical data (e.g., user interface elements) as well as tools to conveniently transform this data (e.g., to HTML elements). Conifer operates on units called **components** which are similar to vertices in a tree. A component can contain zero or more subcomponents.
 
 ## Defining a data model
-Conifer is a generic framework that can contain operate on all kinds of hierarchical data models. The first step to using Conifer is defining such a model. For example, a data model for web pages consists of HTML nodes containing HTML nodes. This can be expressed in Swift using something as simple as a single `enum` type. The type may define methods that compute a derived value or a different representation, such as a `serialised()` that returns the HTML representation of the node.
+Conifer is a generic framework that operates on hierarchical data models. The first step is defining such a model. For example, a data model for web pages consists of HTML nodes containing HTML nodes. This can be expressed in Swift using something as simple as a single `enum` type. The type may define methods that compute a derived value or a different representation, such as a `serialised()` that returns the HTML representation of the node.
 
 	enum HTMLNode {
 		
@@ -25,7 +25,7 @@ An example web page expressed using this type could look like this:
 		]),
 	])
 
-This approach works well for small types but becomes cumbersome if the type grows with more properties and cases. `enum`s are only advised when the domain of a type is expected to be closed (like `Bool` and `Optional`). A better approach for open-domain types is to define a protocol and `struct` types that conform to it.
+This approach works well for small types but becomes cumbersome if the type grows with more properties and cases. The use of `enum` is only advised when the domain of a type is expected to be closed, like `Bool` and `Optional`. A better approach for open-domain types is to define a protocol and `struct` types that conform to it.
 
 	protocol HTMLNode {
 		func serialised() -> String
@@ -84,7 +84,7 @@ Conifer lazily computes the `body` property (and thus the component tree) and ca
 	}
 	
 	struct CommentNode : HTMLNode {
-		var text: String
+		let text: String
 		var body: some HTMLNode { /* empty */ }
 		static func serialised(_ comment: Shadow<Self>) -> String {
 			"<!--\(comment.text.htmlSanitised)-->"
@@ -92,7 +92,7 @@ Conifer lazily computes the `body` property (and thus the component tree) and ca
 	}
 	
 	struct TextNode : HTMLNode {
-		var text: String
+		let text: String
 		var body: some HTMLNode { /* empty */ }
 		static func serialised(_ textNode: Shadow<Self>) -> String {
 			textNode.text.htmlSanitised
@@ -100,9 +100,21 @@ Conifer lazily computes the `body` property (and thus the component tree) and ca
 	}
 	
 	struct ElementNode<Body : HTMLNode> : HTMLNode {
-		var tag: String
-		var attributes: [String : String] = [:]
-		var body: Body
+		
+		init(tag: String, attributes: [String : String] = [:], @ComponentBuilder bodyProvider: () -> Body) {
+			self.tag = tag
+			self.attributes = attributes
+			self.bodyProvider = bodyProvider
+		}
+		
+		let tag: String
+		let attributes: [String : String]
+		let bodyProvider: () -> Body
+		
+		var body: some HTMLNode {
+			bodyProvider()
+		}
+		
 		static func serialised(_ element: Shadow<Self>) -> String {
 			let atts = element
 				.attributes
@@ -114,13 +126,14 @@ Conifer lazily computes the `body` property (and thus the component tree) and ca
 				.joined()
 			return "<\(element.tag) \(atts)>\(body)</\(tag)>"
 		}
+		
 	}
 	
-	let page = ElementNode(tag: "html", body: [
-		ElementNode(tag: "head", body: [
-			ElementNode(tag: "title", body: [TextNode("Hello, World!")]),
-		]),
-		ElementNode(tag: "body", body: [
-			ElementNode(tag: "h1", body: [TextNode("Welcome to my web page!")]),
-		]),
-	])
+	let page = ElementNode(tag: "html") {
+		ElementNode(tag: "head") {
+			ElementNode(tag: "title") { TextNode("Hello, World!") }
+		}
+		ElementNode(tag: "body") {
+			ElementNode(tag: "h1") { TextNode("Welcome to my web page!") }
+		}
+	}

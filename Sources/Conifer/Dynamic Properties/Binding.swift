@@ -17,8 +17,8 @@ public struct Binding<Value> {
 	
 	/// The value owned by the source of truth.
 	public var wrappedValue: Value {
-		get { self.get() }
-		set { self.set(newValue) }
+		get { get() }
+		set { set(newValue) }
 	}
 	
 	/// A function that retrieves a value.

@@ -1,7 +1,7 @@
 # Dependencies
-Conifer caches shadows and recomputes them in response to external changes. Conifer detects changes by tracking dependencies which components declare through **dependent properties**. Conifer provides several built-in dependent property types but libraries such as database and network frameworks can define their own for use in components.
+Conifer caches shadows and recomputes them in response to external changes. Conifer detects changes by tracking dependencies which components declare through **dynamic properties**. Conifer provides several built-in dynamic property types but libraries such as database and network frameworks can define their own for use in components.
 
-An `@Observed` property is a dependent property over an observable object, i.e., an object that conforms to Combine's `ObservableObject` protocol. The body is recomputed whenever the observed object changes.
+An `@Observed` property observes changes in an observable object, i.e., an object that conforms to Combine's `ObservableObject` protocol.
 
 	struct WelcomeBanner : UIElement {
 		
@@ -37,11 +37,11 @@ A `@Contextual` property evaluates to a contextual value set on the shadow's clo
 			Form {
 				AlertBanner()
 				Button("Delete Account")
-			}.contextual(\.colourScheme, .dark)
+			}.context(\.colourScheme, .dark)
 		}
 	}
 
-A `@Source` property is a dependent property over a shadow. `@Source` properties are used for deriving new representations of component trees, such as a HTML element tree from a UI element tree. The body is recomputed whenever the source shadow changes.
+A `@Source` property observes changes in a shadow. `@Source` properties are used for deriving new representations of component trees, such as a HTML element tree from a UI element tree.
 
 	struct AlertBannerElement : HTMLElement {
 		

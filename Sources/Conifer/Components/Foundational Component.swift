@@ -14,7 +14,7 @@ protocol FoundationalComponent : Component where Body == Never {
 
 extension FoundationalComponent {
 	
-	/// Termines the program with an error message stating that `self` has no body.
+	/// Terminates the program with an error message stating that `self` has no body.
 	var hasNoBody: Never {
 		fatalError("\(self) has no body")
 	}
