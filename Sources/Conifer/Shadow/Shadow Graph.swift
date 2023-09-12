@@ -28,7 +28,7 @@ actor ShadowGraph {
 	
 	/// Accesses a component in the shadow graph at a given location relative to the root component.
 	///
-	/// - Requires: `location` is a valid location.
+	/// - Requires: `location` refers to a (possibly not-yet-rendered) component whose parent is already rendered.
 	subscript (location: Location) -> any Component {
 		get async throws {
 			
@@ -36,19 +36,23 @@ actor ShadowGraph {
 				return component
 			}
 			
-			try await renderChildren(ofComponentAt: location.parent !! "Expected root component to be already rendered")
-			guard let component = componentsByLocation[location] else {
-				preconditionFailure("\(location) is not a valid location relative to \(root)")
-			}
-			
-			return component
+			try await renderChildren(ofComponentAt: location.parent !! "Expected parent of component at \(location) to be already rendered")
+			return self[prerendered: location]
 			
 		}
+	}
+	
+	/// Accesses an already rendered component in the shadow graph at a given location relative to the root component.
+	///
+	/// - Requires: `location` refers to an already rendered component.
+	subscript (prerendered location: Location) -> any Component {
+		componentsByLocation[location] !! "Expected component at \(location) to be already rendered"
 	}
 	
 	/// Renders if needed the children of the component at `parentLocation`.
 	///
 	/// - Postcondition: `childLocationsByLocation[parentLocation]` is not `nil`.
+	/// - Postcondition: For each `location` in `childLocationsByLocation[parentLocation]`, `componentsByLocation[location]` is not `nil`.
 	private func renderChildren(ofComponentAt parentLocation: Location) async throws {
 		_ = try await childLocations(ofComponentAt: parentLocation)
 	}
@@ -56,6 +60,7 @@ actor ShadowGraph {
 	/// Returns the locations of the children of the component at `parentLocation`, rendering them if needed.
 	///
 	/// - Postcondition: `childLocationsByLocation[parentLocation]` is equal to this method's result.
+	/// - Postcondition: For each `location` in the returned array, `componentsByLocation[location]` is not `nil`.
 	func childLocations(ofComponentAt parentLocation: Location) async throws -> [Location] {
 		
 		if let childLocations = childLocationsByLocation[parentLocation] {

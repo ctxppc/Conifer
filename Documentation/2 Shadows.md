@@ -7,6 +7,8 @@ Shadows are values of Conifer's `Shadow` type, which looks like this:
 
 	struct Shadow<Subject : Component> {
 		
+		init(of subject: Subject)
+		
 		var parent: Shadow<any Component>
 		var children: some AsyncCollection<Shadow<any Component>>
 		

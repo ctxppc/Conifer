@@ -40,15 +40,21 @@ struct Location : Hashable, @unchecked Sendable {	// AnyHashable isn't Sendable
 		
 	}
 	
-	/// The location of the component containing the component referred to by `self`, or `nil`.
+	/// The location of the component containing the component referred to by `self`, or `nil` if `self` refers to an anchor component.
 	var parent: Self? {
 		var parent = self
 		return parent.directions.popLast() != nil ? parent : nil
 	}
 	
+	/// The locations of the ancestors of the component referred to by `self`, or an empty sequence if `self` refers to an anchor component.
+	var ancestors: some Sequence<Self> {
+		sequence(first: self, next: \.parent)
+			.dropFirst()
+	}
+	
 	/// Returns a location to a child of the component referred by `self`.
 	///
-	/// - Parameter location: The location from the component referred by `self` to the child.
+	/// - Parameter location: The location from the component referred by `self` to the child. `location`'s anchor is the component referred to by `self`.
 	subscript (location: Location) -> Self {
 		var child = self
 		child.directions.append(contentsOf: location.directions)
@@ -56,6 +62,8 @@ struct Location : Hashable, @unchecked Sendable {	// AnyHashable isn't Sendable
 	}
 	
 	/// Returns a Boolean value indicating whether the component at `self` is an ancestor of the component at `child`.
+	///
+	/// - Requires: `self` and `child` have the same anchor.
 	///
 	/// - Parameter child: A location to the potential descendant.
 	///

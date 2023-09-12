@@ -1,9 +1,10 @@
 // Conifer © 2019–2023 Constantino Tsarouhas
 
 /// An sequence of shadows of non-foundational child components.
-public struct _ShadowBody : AsyncSequence {				// TODO: Make private when AsyncSequence gets a primary associated type.
+public struct ShadowChildren : AsyncSequence {	// TODO: Make private when AsyncSequence gets a primary associated type.
 	
-	let parentShadow: any ShadowProtocol	// TODO: Replace with generic parameter when AsyncSequence gets a primary associated type.
+	let parentShadow: any ShadowProtocol	// Existential to avoid having to expose ShaodwProtocol and thus ShadowGraph
+	// TODO: Replace with Shadow<C> with generic Component parameter C when ShadowProtocol is deleted.
 	
 	public func makeAsyncIterator() -> AsyncIterator {
 		.init(for: parentShadow)
@@ -45,7 +46,7 @@ public struct _ShadowBody : AsyncSequence {				// TODO: Make private when AsyncS
 			/// The iterator provides nested children provided by a subiterator before resuming iteration through the parent component's children.
 			///
 			/// - Parameter 1: An iterator providing nested children.
-			/// - Parameter childLocations: A list of locations of children of the parent component that are to be returned or traversed.
+			/// - Parameter childLocations: A list of locations of children of the parent component that are to be returned or traversed after processing the nested iterator.
 			indirect case deep(AsyncIterator, childLocations: ArraySlice<Location>)
 			
 		}
@@ -60,12 +61,13 @@ public struct _ShadowBody : AsyncSequence {				// TODO: Make private when AsyncS
 				
 				case .shallow(childLocations: var childLocations):
 				guard let childLocation = childLocations.popFirst() else { return nil }
-				if try await graph[childLocation] is any FoundationalComponent {
+				let child = await graph[prerendered: childLocation]
+				if child is any FoundationalComponent {
 					state = .deep(.init(graph: graph, parentLocation: childLocation), childLocations: childLocations)
 					return try await next()
 				} else {
 					state = .shallow(childLocations: childLocations)
-					return .init(graph: graph, location: childLocation)
+					return .init(graph: graph, location: childLocation, subject: child)
 				}
 				
 				case .deep(var nestedChildren, childLocations: let childLocations):

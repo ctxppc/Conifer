@@ -2,10 +2,14 @@
 
 protocol ShadowProtocol : Sendable {
 	
+	// TODO: Delete protocol when UntypedShadow can be expressed as Shadow<any Component>.
+	
 	/// The graph backing `self`.
 	var graph: ShadowGraph { get }
 	
 	/// The location of the subject relative to the root component in `graph`.
+	///
+	/// - Invariant: `location` refers to an already rendered component in `graph`.
 	var location: Location { get }
 	
 }
@@ -14,19 +18,23 @@ extension ShadowProtocol {
 	
 	/// Accesses a subcomponent.
 	///
-	/// - Invariant: `childLocation` is a valid location.
+	/// - Invariant: `childLocation` refers to a (possibly not yet rendered) component relative to `self`'s subject.
 	subscript (childLocation: Location) -> UntypedShadow {
-		.init(graph: graph, location: location[childLocation])
+		get async throws {
+			let graphLocation = location[childLocation]
+			return .init(graph: graph, location: graphLocation, subject: try await graph[graphLocation])
+		}
 	}
 	
-	/// The parent component, or `nil` if `self` is a root component.
+	/// The shadow of the nearest non-foundational ancestor component, or `nil` if `self` is a root component.
 	///
 	/// - Invariant: `parent` is not a foundational component.
 	public var parent: UntypedShadow? {
 		get async throws {
 			for location in sequence(first: location, next: \.parent) {
-				if !(try await graph[location] is any FoundationalComponent) {
-					return .init(graph: graph, location: location)
+				let subject = await graph[prerendered: location]	// map doesn't support await (yet)
+				if !(subject is any FoundationalComponent) {
+					return .init(graph: graph, location: location, subject: subject)
 				}
 			}
 			return nil
@@ -35,8 +43,8 @@ extension ShadowProtocol {
 	
 	/// The subject's children.
 	///
-	/// - Invariant: No component in `body` is a foundational component.
-	public var body: _ShadowBody {	// TODO: Replace by `some AsyncSequence<UntypedShadow>` when AsyncSequence gets a primary associated type.
+	/// - Invariant: No component in `children` is a foundational component.
+	public var children: ShadowChildren {	// TODO: Replace by `some AsyncSequence<UntypedShadow>` when AsyncSequence gets a primary associated type.
 		.init(parentShadow: self)
 	}
 	

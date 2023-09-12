@@ -10,8 +10,13 @@ public struct Shadow<Subject : Component> : ShadowProtocol {
 	
 	/// Creates a shadow of `subject`.
 	///
+	/// This initialiser creates a new shadow tree with `subject` as the root.
+	///
+	/// - Requires: `subject` is not a foundational component.
+	///
 	/// - Parameter subject: The component.
 	public init(of subject: Subject) {
+		precondition(!(subject is any FoundationalComponent), "\(subject) is a foundational component")
 		self.graph = .init(root: subject)
 		self.location = .anchor
 		self.subject = subject
