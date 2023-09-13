@@ -3,7 +3,7 @@
 /// A component's location in a shadow relative to an anchor.
 ///
 /// Locations are ordered in pre-order form: ancestors precede their descendants, siblings are ordered normally, and a component's descendants are ordered before the siblings that follow that component.
-struct Location : Hashable, @unchecked Sendable {	// AnyHashable isn't Sendable
+public struct Location : Hashable, @unchecked Sendable {	// AnyHashable isn't Sendable
 	
 	/// The location referring to the anchor.
 	static let anchor = Self(directions: [])
@@ -68,14 +68,14 @@ struct Location : Hashable, @unchecked Sendable {	// AnyHashable isn't Sendable
 	/// - Parameter child: A location to the potential descendant.
 	///
 	/// - Returns: `true` if `self` and `child` are equal or if the component at `self` is an ancestor of the component at `child`, and `false` otherwise.
-	func contains(_ child: Self) -> Bool {
+	public func contains(_ child: Self) -> Bool {
 		child.directions.starts(with: self.directions)
 	}
 	
 }
 
 extension Location : Comparable {
-	static func < (first: Location, other: Location) -> Bool {
+	public static func < (first: Location, other: Location) -> Bool {
 		first.directions.lexicographicallyPrecedes(other.directions)
 	}
 }

@@ -6,7 +6,7 @@ import DepthKit
 ///
 /// Accessing a contextual value that is not specified by an ancestor is not permitted.
 @propertyWrapper
-public struct Contextual<Value> {
+public struct Contextual<Value> : DynamicProperty {
 	
 	/// Creates a contextual property.
 	///
@@ -18,14 +18,32 @@ public struct Contextual<Value> {
 	/// The keypath from a context to the contextual value.
 	let keyPath: KeyPath<Context, Value>
 	
-	/// The contextual value.
-	///
-	/// This property may not be accessed.
-	public var wrappedValue: Value {
-		storedValue !! "\(keyPath) is not available outside a component"
+	// See protocol.
+	public func makeDependency<C : Component>(
+		forComponentAt location:	Location,
+		propertyAt propertyKeyPath:	KeyPath<C, Self>
+	) -> Dependency {
+		TODO.unimplemented
 	}
 	
-	/// The stored contextual value.
-	fileprivate var storedValue: Value?
+	@available(*, unavailable, message: "Dynamic properties are only available in components")
+	public var wrappedValue: Value {
+		preconditionFailure("@\(Self.self) is only available in components")
+	}
+	
+	// See protocol.
+	public func value(dependency: Dependency, change: Dependency.Change?) async throws -> Value {
+		TODO.unimplemented
+	}
+	
+	public actor Dependency : Conifer.Dependency {
+		
+		public nonisolated var changes: some AsyncSequence {
+			AsyncStream<()> { c in
+				TODO.unimplemented
+			}
+		}
+		
+	}
 	
 }

@@ -8,6 +8,24 @@ import DepthKit
 @dynamicMemberLookup
 public struct Shadow<Subject : Component> : ShadowProtocol {
 	
+	// See protocol.
+	let graph: ShadowGraph
+	
+	// See protocol.
+	let location: Location
+	
+	/// The component represented by `self`.
+	let subject: Subject
+	
+	/// Accesses the subject.
+	public subscript <Value>(dynamicMember keyPath: KeyPath<Subject, Value>) -> Value {
+		subject[keyPath: keyPath]
+	}
+	
+}
+
+extension Shadow {
+	
 	/// Creates a shadow of `subject`.
 	///
 	/// This initialiser creates a new shadow tree with `subject` as the root.
@@ -27,7 +45,7 @@ public struct Shadow<Subject : Component> : ShadowProtocol {
 	/// - Parameter shadow: The untyped shadow.
 	///
 	/// - Returns: `nil` if the component represented by `shadow` isn't of type `Subject`.
-	init?(_ shadow: UntypedShadow) async throws {
+	public init?(_ shadow: UntypedShadow) async throws {
 		
 		self.graph = shadow.graph
 		self.location = shadow.location
@@ -37,18 +55,15 @@ public struct Shadow<Subject : Component> : ShadowProtocol {
 		
 	}
 	
-	// See protocol.
-	let graph: ShadowGraph
+}
+
+extension Shadow where Subject.Body == Never {
 	
-	// See protocol.
-	let location: Location
-	
-	/// The component represented by `self`.
-	let subject: Subject
-	
-	/// Accesses the subject.
-	public subscript <Value>(dynamicMember keyPath: KeyPath<Subject, Value>) -> Value {
-		subject[keyPath: keyPath]
+	/// Terminates the program.
+	public var body: Shadow<Subject.Body> {
+		get async throws {
+			try await subject.body
+		}
 	}
 	
 }

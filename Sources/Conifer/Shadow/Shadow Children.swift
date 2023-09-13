@@ -4,7 +4,7 @@
 public struct ShadowChildren : AsyncSequence {	// TODO: Make private when AsyncSequence gets a primary associated type.
 	
 	let parentShadow: any ShadowProtocol	// Existential to avoid having to expose ShaodwProtocol and thus ShadowGraph
-	// TODO: Replace with Shadow<C> with generic Component parameter C when ShadowProtocol is deleted.
+	// TODO: Replace with Shadow<C> where C is a generic Component parameter, when ShadowProtocol is deleted.
 	
 	public func makeAsyncIterator() -> AsyncIterator {
 		.init(for: parentShadow)
