@@ -13,11 +13,13 @@ let package = Package(
 	dependencies: [
 		.package(url: "https://github.com/apple/swift-collections", branch: "main"),	// TODO: Switch to release when SortedDictionary is officially released.
 		.package(url: "https://github.com/ctxppc/DepthKit", .upToNextMinor(from: "0.10.0")),
+		.package(url: "https://github.com/philipturner/swift-reflection-mirror", branch: "main"),
 	],
 	targets: [
 		.target(name: "Conifer", dependencies: [
 			"DepthKit",
 			.product(name: "Collections", package: "swift-collections"),
+			.product(name: "ReflectionMirror", package: "swift-reflection-mirror"),
 		]),
 		.testTarget(name: "ConiferTests", dependencies: ["Conifer"]),
 	]

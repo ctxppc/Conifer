@@ -19,22 +19,23 @@ public struct Contextual<Value> : DynamicProperty {
 	let keyPath: KeyPath<Context, Value>
 	
 	// See protocol.
-	public func makeDependency<C : Component>(
-		forComponentAt location:	Location,
-		propertyAt propertyKeyPath:	KeyPath<C, Self>
-	) -> Dependency {
+	public func makeDependency(forComponentAt location: Location, propertyIdentifier: some Hashable) -> Dependency {
 		TODO.unimplemented
-	}
-	
-	@available(*, unavailable, message: "Dynamic properties are only available in components")
-	public var wrappedValue: Value {
-		preconditionFailure("@\(Self.self) is only available in components")
 	}
 	
 	// See protocol.
-	public func value(dependency: Dependency, change: Dependency.Change?) async throws -> Value {
+	public func update(dependency: Dependency, change: Dependency.Change?) async throws {
 		TODO.unimplemented
 	}
+	
+	// See protocol.
+	public var wrappedValue: Value {
+		storedValue !! "Accessing \(keyPath) outside rendering context"
+	}
+	
+	/// The contextual value, or `nil` if the dependent component isn't being rendered yet.
+	@State
+	private var storedValue: Value?
 	
 	public actor Dependency : Conifer.Dependency {
 		

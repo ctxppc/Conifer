@@ -17,6 +17,15 @@
         "branch" : "main",
         "revision" : "53a8adc54374f620002a3b6401d39e0feb3c57ae"
       }
+    },
+    {
+      "identity" : "swift-reflection-mirror",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/philipturner/swift-reflection-mirror",
+      "state" : {
+        "branch" : "main",
+        "revision" : "a8f66fda2e8713955323483365fe711a56b91974"
+      }
     }
   ],
   "version" : 2
