@@ -8,7 +8,7 @@
 ///
 /// Components are assembled using other components, by implementing the `body` property and returning the component's content. Conifer provides several foundational component types that are produced in component builders.
 ///
-/// Do not access the `body` property directly. Traverve a component using its shadow, e.g., `Shadow(of: component).myProperty` instead of `component.property`. Conifer ensures that external dependencies are resolved and lazily renders parts of the traversed component.
+/// Do not access the `body` property directly. Access and traverve a component using its shadow, e.g., `Shadow(of: component).myProperty` instead of `component.property`. Conifer ensures that external dependencies are resolved and lazily renders parts of the traversed component.
 ///
 /// Component values can be configured but are stateless by themselves. State should be stored externally (like an object graph) and accessed via property wrappers conforming to `DynamicProperty`.
 public protocol Component : Sendable {

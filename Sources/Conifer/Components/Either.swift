@@ -25,13 +25,8 @@ public enum Either<First : Component, Second : Component> : Component {
 extension Either : FoundationalComponent {
 	func labelledChildren(for graph: ShadowGraph) async throws -> [(Location, any Component)] {
 		switch self {
-			
-			case .first(let child):
-			return [(.anchor[.first], child)]
-			
-			case .second(let child):
-			return [(.anchor[.second], child)]
-			
+			case .first(let child):		return [(.anchor[.child(at: 0)], child)]
+			case .second(let child):	return [(.anchor[.child(at: 1)], child)]
 		}
 	}
 }

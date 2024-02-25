@@ -77,7 +77,7 @@ The `body` property evaluates to zero or more subcomponents of the component. Co
 
 Conifer lazily computes the `body` property (and thus the component tree) and caches the result. Accesses to subcomponents (and the larger tree more generally) are regulated through [shadows](2 Shadows.md); you never evaluate the `body` property directly.
 
-`Component` is usually specialised to a domain-specific component protocol which domain-specific component types conform to.
+`Component` is usually specialised to a domain-specific component protocol which domain-specific component types conform to. Requirements that operate on shadows are conventially expressed as `static func` requirements on the specialised component protocol, with these methods having (at least) a `Shadow<Self>` parameter.
 
 	protocol HTMLNode : Component where Body : HTMLNode {
 		static func serialised(_ node: Shadow<Self>) -> String
