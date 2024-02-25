@@ -3,7 +3,7 @@
 @_spi(Reflection) import ReflectionMirror
 
 /// A definition of a property on a component or dynamic property type.
-enum PropertyDefinition : Hashable {
+enum PropertyDefinition : Hashable, @unchecked Sendable {	// KeyPath, an immutable class, is not declared Sendable
 	
 	/// A property on a component.
 	case componentProperty(AnyKeyPath)

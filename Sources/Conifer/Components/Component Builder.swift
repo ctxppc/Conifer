@@ -2,7 +2,7 @@
 
 /// A parameter attribute that constructs components from closures.
 @resultBuilder
-public struct ComponentBuilder {
+public enum ComponentBuilder {
 	
 	public static func buildIf<C>(_ component: C?) -> Either<C, Empty> {
 		component.map { .first($0) } ?? .second(.init())

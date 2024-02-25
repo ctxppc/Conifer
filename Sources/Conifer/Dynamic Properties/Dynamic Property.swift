@@ -7,7 +7,7 @@
 /// A dynamic property can only be declared within a component (the *dependent component*) and only be used from within a rendering context such as the `body` property. The system ensures that all declared dynamic properties are properly populated before rendering begins. Additionally, the system records these properties as dependencies of the component; whenever any dynamic property changes, the system re-renders the component.
 ///
 /// Just like a component, a dynamic property can also declare dynamic properties itself. These nested properties automatically become dependencies of the containing property's dependent component. `wrappedValue` is often defined as a `@State` property.
-public protocol DynamicProperty {
+public protocol DynamicProperty : Sendable {
 	
 	/// Creates a dependency for the component at `location`.
 	///
