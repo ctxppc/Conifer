@@ -1,4 +1,4 @@
-// Conifer © 2019–2023 Constantino Tsarouhas
+// Conifer © 2019–2024 Constantino Tsarouhas
 
 /// A conditional component; a component that renders one of two components.
 ///

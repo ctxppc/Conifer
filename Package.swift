@@ -1,12 +1,12 @@
-// swift-tools-version:5.7
+// swift-tools-version:5.9
 
-// Conifer © 2019–2023 Constantino Tsarouhas
+// Conifer © 2019–2024 Constantino Tsarouhas
 
 import PackageDescription
 
 let package = Package(
 	name: "Conifer",
-	platforms: [.macOS(.v12), .iOS(.v15), .tvOS(.v15), .watchOS(.v8)],
+	platforms: [.macOS(.v14), .iOS(.v17), .tvOS(.v17), .watchOS(.v9), .visionOS(.v1)],
 	products: [
 		.library(name: "Conifer", targets: ["Conifer"]),
 	],

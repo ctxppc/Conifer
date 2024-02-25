@@ -1,4 +1,4 @@
-// Conifer © 2019–2023 Constantino Tsarouhas
+// Conifer © 2019–2024 Constantino Tsarouhas
 
 /// A property whose lifetime is shared with the component's shadow.
 ///

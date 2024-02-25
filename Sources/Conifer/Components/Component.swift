@@ -1,4 +1,4 @@
-// Conifer © 2019–2023 Constantino Tsarouhas
+// Conifer © 2019–2024 Constantino Tsarouhas
 
 /// A node in a domain-specific tree, managed and tracked by Conifer.
 ///

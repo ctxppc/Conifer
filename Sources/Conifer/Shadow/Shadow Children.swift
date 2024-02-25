@@ -1,4 +1,4 @@
-// Conifer © 2019–2023 Constantino Tsarouhas
+// Conifer © 2019–2024 Constantino Tsarouhas
 
 /// An sequence of shadows of non-foundational child components.
 public struct ShadowChildren : AsyncSequence {	// TODO: Make private when AsyncSequence gets a primary associated type.
