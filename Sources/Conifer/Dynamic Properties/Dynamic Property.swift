@@ -4,39 +4,24 @@
 ///
 /// Dynamic properties are a mechanism wherein components can retrieve information that hasn't been passed down through traditional means like during initialisation. These values might be provided by ancestor components (cf. `Contextual`) or from an external source such as a database.
 ///
-/// A dynamic property can only be declared within a component (the *dependent component*) or within another dynamic property, and can only be used from within a rendering context such as the `body` property. The system ensures that all declared dynamic properties are properly populated before rendering begins. Additionally, the system records these properties as dependencies of the component; whenever any dynamic property changes, the system re-renders the component.
+/// A dynamic property can only be declared within a component (the *dependent component*) or within another dynamic property. The system ensures that all declared dynamic properties are properly populated before rendering begins. Additionally, the system records these properties as dependencies of the component; whenever any dynamic property changes, the system rerenders the component.
 ///
-/// Just like a component, a dynamic property can also declare dynamic properties itself. These nested properties automatically become dependencies of the containing property's dependent component. `wrappedValue` is often defined as a `@State` property.
+/// Just like a component, a dynamic property can also declare dynamic properties itself. These nested properties automatically become dependencies of the containing property's dependent component.
 public protocol DynamicProperty : Sendable {
 	
-	/// Creates a dependency for the component at `location`.
+	/// Prepares `self` for rendering a dependent component.
 	///
-	/// - Parameters:
-	///   - location: The (absolute) location of the dependent component.
-	///   - propertyIdentifier: A value that persistently identifies the property among other properties on the (same) dependent component.
+	/// The system invokes this method just before (re)rendering `shadow` and after (re)rendering the ancestors of `shadow`.
 	///
-	/// - Returns: An actor that tracks changes to `self`'s value.
-	func makeDependency(forComponentAt location: Location, propertyIdentifier: some Hashable) -> Dependency
-	associatedtype Dependency : Conifer.Dependency
-	
-	/// Updates the value of `self`.
+	/// - Warning: When this method is invoked, the children of `shadow` are either not rendered yet or have invalidated shadows.
 	///
-	/// The system invokes this method before the first rendering of the dependent component and after it observes one or more changes to the dependency returned by `makeDependency(forComponentAt:propertyIdentifier:)`. If `self` has any dynamic properties, they are populated or updated before this method is invoked. The system invalidates the dependent component's body whenever any dynamic property's value changes.
-	///
-	/// Any state on `self` must be tracked using dynamic properties such as `@State` properties. This method is therefore nonmutating.
-	///
-	/// - Parameters:
-	///   - dependency: An actor that tracks changes to `self`'s value.
-	///   - change: The last change to the dependency, or `nil` if the value is being populated for the first time.
-	func update(dependency: Dependency, change: Dependency.Change?) async throws
+	/// - Parameter propertyIdentifier: An identifier for `self` among other properties on the dependent component.
+	/// - Parameter shadow: The shadow of the component being rendered.
+	mutating func prepare(_ propertyIdentifier: some Hashable & Sendable, forRendering shadow: UntypedShadow) async throws
 	
 	/// The property's value.
 	///
-	/// This property is usually implemented as a computed property deriving its value from one or more `@State` properties.
-	///
-	/// - Warning: `wrappedValue` is unspecified before the first invocation of `update(dependency:change:)`.
-	///
-	/// - Warning: This property must be accessed from within a rendering context, e.g., in a component's `body` getter or a dynamic property's `update(dependency:change:)` method, or within an update context (see `Shadow.update(_:)`).
+	/// - Warning: `wrappedValue` is unspecified before the first invocation of `prepare(_:forRendering:)`.
 	var wrappedValue: Value { get }
 	associatedtype Value
 	

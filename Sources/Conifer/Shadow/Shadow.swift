@@ -28,7 +28,7 @@ extension Shadow {
 	
 	/// Creates a shadow of `subject`.
 	///
-	/// This initialiser creates a new shadow tree with `subject` as the root.
+	/// This initialiser creates a new shadow graph with `subject` as the root.
 	///
 	/// - Requires: `subject` is not a foundational component.
 	///

@@ -10,41 +10,25 @@ public struct Contextual<Value> : DynamicProperty, @unchecked Sendable {	// KeyP
 	
 	/// Creates a contextual property.
 	///
-	/// - Parameter keyPath: The keypath from a context to the contextual value.
-	public init(_ keyPath: KeyPath<Context, Value>) {
-		self.keyPath = keyPath
+	/// - Parameter key: The contextual key.
+	public init(_ key: Context.Key<Value>) {
+		self.key = key
 	}
 	
-	/// The keypath from a context to the contextual value.
-	let keyPath: KeyPath<Context, Value>
+	/// The contextual key.
+	let key: Context.Key<Value>
 	
 	// See protocol.
-	public func makeDependency(forComponentAt location: Location, propertyIdentifier: some Hashable) -> Dependency {
-		TODO.unimplemented
-	}
-	
-	// See protocol.
-	public func update(dependency: Dependency, change: Dependency.Change?) async throws {
-		TODO.unimplemented
+	public mutating func prepare(_ propertyIdentifier: some Hashable & Sendable, forRendering shadow: UntypedShadow) async throws {
+		storedValue = try await shadow.context[keyPath: key]
 	}
 	
 	// See protocol.
 	public var wrappedValue: Value {
-		storedValue !! "Accessing \(keyPath) outside rendering context"
+		storedValue !! "Accessing \(key) outside rendering context"
 	}
 	
 	/// The contextual value, or `nil` if the dependent component isn't being rendered yet.
-	@State
 	private var storedValue: Value?
-	
-	public actor Dependency : Conifer.Dependency {
-		
-		public nonisolated var changes: some AsyncSequence {
-			AsyncStream<()> { c in
-				TODO.unimplemented
-			}
-		}
-		
-	}
 	
 }
