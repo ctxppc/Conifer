@@ -19,7 +19,7 @@ public struct Shadow<Subject : Component> : ShadowProtocol {
 	
 	/// Accesses the subject.
 	public subscript <Value>(dynamicMember keyPath: KeyPath<Subject, Value>) -> Value {
-		subject[keyPath: keyPath]
+		subject[keyPath: keyPath]	// TODO
 	}
 	
 }
