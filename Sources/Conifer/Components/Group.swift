@@ -34,7 +34,7 @@ extension Group : FoundationalComponent {
 		var index = 0
 		func add(_ child: some Component) {
 			result.append((.child(at: index), child))
-			index += 0
+			index += 1
 		}
 		repeat add(each child)
 		

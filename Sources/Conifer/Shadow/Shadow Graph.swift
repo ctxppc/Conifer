@@ -92,4 +92,48 @@ actor ShadowGraph {
 		
 	}
 	
+	/// Accesses the element of type `Element` associated with the component at given location.
+	subscript <Element : Sendable>(location: Location) -> Element? {
+		get {
+			if let element = elements[.init(location: location, type: Element.self)] {
+				return (element as! Element)
+			} else {
+				return nil
+			}
+		}
+		set { elements[.init(location: location, type: Element.self)] = newValue }
+	}
+	
+	/// Accesses the element of type `Element` associated with the component at given location.
+	subscript <Element : Sendable>(location: Location, default d: @autoclosure () -> Element) -> Element {
+		get { self[location] ?? d() }
+		set { self[location] = newValue }
+	}
+	
+	/// Updates the element of type `Element` associated with the component at given location.
+	func updateElement<Element : Sendable>(_ element: Element, at location: Location) {
+		self[location] = element
+	}
+	
+	/// The shadow elements.
+	private var elements = [ShadowElementKey : Any]()
+	private struct ShadowElementKey : Hashable {
+		
+		init(location: Location, type: any Sendable.Type) {
+			self.location = location
+			self.type = .init(type)
+		}
+		
+		let location: Location
+		let type: ObjectIdentifier
+		
+	}
+	
+	/// Updates dynamic properties of components in `self` using a given function.
+	///
+	/// - Parameter update: A function that updates dynamic properties.
+	func performUpdates(_ update: () -> ()) {
+		update()
+	}
+	
 }

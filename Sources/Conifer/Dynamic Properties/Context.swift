@@ -39,13 +39,15 @@ import DepthKit
 /// Prefer contextual properties above ordinary properties when propagation makes sense, like a database connection or a font size.
 public struct Context : @unchecked Sendable {	// KeyPath, an immutable class, is not declared Sendable
 	
-	/// The contextual values, keyed by key path.
-	private var valuesByKeyPath: [PartialKeyPath<Self> : any Sendable]
+	/// The contextual values.
+	private var values: [AnyKey : any Sendable]
+	public typealias AnyKey = PartialKeyPath<Self>
+	public typealias Key<Value> = KeyPath<Self, Value>
 	
 	/// Accesses the contextual value at a given key path.
-	public internal(set) subscript <Value>(keyPath: KeyPath<Context, Value>) -> Value {
-		get { (valuesByKeyPath[keyPath as PartialKeyPath] !! "Contextual value not available") as! Value }
-		set { valuesByKeyPath[keyPath as PartialKeyPath] = newValue }
+	public internal(set) subscript <Value>(keyPath: Key<Value>) -> Value {
+		get { (values[keyPath as AnyKey] !! "Contextual value not available") as! Value }
+		set { values[keyPath as AnyKey] = newValue }
 	}
 	
 }
