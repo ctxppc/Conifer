@@ -45,12 +45,12 @@ public struct Context : @unchecked Sendable {	// KeyPath, an immutable class, is
 	/// The contextual values.
 	private var values = [AnyKey : any Sendable]()
 	public typealias AnyKey = PartialKeyPath<Self>
-	public typealias Key<Value> = KeyPath<Self, Value>
+	public typealias Key<Value> = WritableKeyPath<Self, Value>
 	
-	/// Accesses the contextual value at a given key path.
-	public internal(set) subscript <Value>(keyPath: Key<Value>) -> Value {
-		get { (values[keyPath as AnyKey] !! "\(keyPath) not available in context (\(self))") as! Value }
-		set { values[keyPath as AnyKey] = newValue }
+	/// Accesses the contextual value at a given key.
+	public internal(set) subscript <Value>(key: Key<Value>) -> Value {
+		get { (values[key as AnyKey] !! "\(key) not available in context (\(self))") as! Value }
+		set { values[key as AnyKey] = newValue }
 	}
 	
 }
@@ -63,7 +63,8 @@ extension UntypedShadow {
 			if let context = await element(ofType: Context.self) {
 				return context
 			} else {
-				let context = try await parent?.context ?? Context()
+				var context = try await parent?.context ?? Context()
+				(subject as? ContextualisedProtocol)?.update(&context)
 				await updateElement(context)
 				return context
 			}
