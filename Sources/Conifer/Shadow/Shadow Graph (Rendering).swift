@@ -40,7 +40,9 @@ extension ShadowGraph {
 			
 		} else {
 			let childLocation = parentLocation[.body]
-			componentsByLocation.updateValue(try await parent.body, forKey: childLocation)
+			var component = try await parent.body
+			try await component.prepareForRendering(shadow: .init(graph: self, location: childLocation))
+			componentsByLocation.updateValue(component, forKey: childLocation)
 			childLocations = .init([childLocation])
 		}
 		
