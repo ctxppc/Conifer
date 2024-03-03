@@ -67,6 +67,7 @@ actor ShadowGraph {
 			return childLocations
 		}
 		
+		// TODO: Prepare dynamic properties.
 		let parent = try await self[parentLocation]
 		let childLocations: [Location]
 		if let parent = parent as? any FoundationalComponent {

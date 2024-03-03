@@ -3,7 +3,7 @@
 /// An actor that tracks a dependency of a component.
 ///
 /// The system creates a dependency for each dynamic property when the dependent component is first rendered as part of a shadow graph. The system then tracks the dependency to determine when to rerender the component.
-public protocol Dependency : AnyActor {
+public protocol Dependency : AnyActor {	// TODO: Remove?
 	
 	/// A sequence of changes to the tracked value.
 	///
