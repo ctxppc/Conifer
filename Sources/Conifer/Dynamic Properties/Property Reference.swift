@@ -3,6 +3,7 @@
 @_spi(Reflection) import ReflectionMirror
 
 /// A reference to a property on a component type or dynamic property type.
+@available(*, deprecated)
 enum PropertyReference : Hashable, @unchecked Sendable {	// KeyPath, an immutable class, is not declared Sendable
 	
 	/// A property on a component.
@@ -25,6 +26,7 @@ enum PropertyReference : Hashable, @unchecked Sendable {	// KeyPath, an immutabl
 extension Component {
 	
 	/// Returns a list of references for each property on `Self`.
+	@available(*, deprecated)
 	static func propertyReferences() -> [PropertyReference] {
 		PartialKeyPath<Self>
 			.allKeyPaths()
@@ -36,6 +38,7 @@ extension Component {
 extension DynamicProperty {
 	
 	/// Returns a list of references for each property on `Self`.
+	@available(*, deprecated)
 	static func propertyReferences(parentReference: PropertyReference) -> [PropertyReference] {
 		PartialKeyPath<Self>
 			.allKeyPaths()
@@ -44,7 +47,7 @@ extension DynamicProperty {
 	
 }
 
-fileprivate extension PartialKeyPath {
+extension PartialKeyPath {
 	
 	/// Returns all key paths from `Root` to properties on `Root`.
 	static func allKeyPaths() -> [PartialKeyPath] {

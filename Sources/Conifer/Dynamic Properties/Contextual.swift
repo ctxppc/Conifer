@@ -19,8 +19,8 @@ public struct Contextual<Value> : DynamicProperty, @unchecked Sendable {	// KeyP
 	let key: Context.Key<Value>
 	
 	// See protocol.
-	public mutating func prepare(_ propertyIdentifier: some Hashable & Sendable, forRendering shadow: UntypedShadow) async {
-		storedValue = await shadow.context[keyPath: key]
+	public mutating func prepare(_ propertyIdentifier: some Hashable & Sendable, forRendering shadow: UntypedShadow) async throws {
+		storedValue = try await shadow.context[keyPath: key]
 	}
 	
 	// See protocol.

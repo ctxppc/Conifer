@@ -11,7 +11,11 @@ public struct UntypedShadow : ShadowProtocol {
 	let location: Location
 	
 	/// The component represented by `self`.
-	let subject: any Component
+	var subject: any Component {
+		get async throws {
+			try await graph[location]
+		}
+	}
 	
 }
 
@@ -21,7 +25,6 @@ extension UntypedShadow {
 	public init<C>(_ shadow: Shadow<C>) {
 		self.graph = shadow.graph
 		self.location = shadow.location
-		self.subject = shadow.subject
 	}
 	
 }

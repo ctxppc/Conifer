@@ -71,7 +71,7 @@ public struct ShadowChildren : AsyncSequence {	// TODO: Make private when AsyncS
 					return try await next()
 				} else {
 					state = .shallow(childLocations: childLocations)
-					return .init(graph: graph, location: childLocation, subject: child)
+					return .init(graph: graph, location: childLocation)
 				}
 				
 				case .deep(var nestedChildren, childLocations: let childLocations):

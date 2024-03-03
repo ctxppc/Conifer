@@ -28,7 +28,7 @@ extension ShadowProtocol {
 			for location in sequence(first: location, next: \.parent) {
 				let subject = await graph[prerendered: location]
 				if !(subject is any FoundationalComponent) {
-					return .init(graph: graph, location: location, subject: subject)
+					return .init(graph: graph, location: location)
 				}
 			}
 			return nil
@@ -46,10 +46,8 @@ extension ShadowProtocol {
 	///
 	/// - Invariant: `childLocation` refers to a (possibly not yet rendered) component relative to `self`'s subject.
 	subscript (childLocation: Location) -> UntypedShadow {
-		get async throws {
-			let graphLocation = location[childLocation]
-			return .init(graph: graph, location: graphLocation, subject: try await graph[graphLocation])
-		}
+		let graphLocation = location[childLocation]
+		return .init(graph: graph, location: graphLocation)
 	}
 	
 	/// Returns the associated element of a given type.

@@ -15,11 +15,17 @@ public struct Shadow<Subject : Component> : ShadowProtocol {
 	let location: Location
 	
 	/// The component represented by `self`.
-	let subject: Subject
+	var subject: Subject {
+		get async throws {
+			try await graph[location] as! Subject
+		}
+	}
 	
 	/// Accesses the subject.
 	public subscript <Value>(dynamicMember keyPath: KeyPath<Subject, Value>) -> Value {
-		subject[keyPath: keyPath]	// TODO: What about dynamic properties?
+		get async throws {
+			try await subject[keyPath: keyPath]	// TODO: What about dynamic properties?
+		}
 	}
 	
 }
@@ -37,7 +43,6 @@ extension Shadow {
 		precondition(!(subject is any FoundationalComponent), "\(subject) is a foundational component")
 		self.graph = .init(root: subject)
 		self.location = .anchor
-		self.subject = subject
 	}
 	
 	/// Creates a typed shadow from given untyped shadow.
@@ -46,13 +51,9 @@ extension Shadow {
 	///
 	/// - Returns: `nil` if the component represented by `shadow` isn't of type `Subject`.
 	public init?(_ shadow: UntypedShadow) async throws {
-		
 		self.graph = shadow.graph
 		self.location = shadow.location
-		
-		guard let subject = try await graph[location] as? Subject else { return nil }
-		self.subject = subject
-		
+		guard try await graph[location] is Subject else { return nil }
 	}
 	
 }

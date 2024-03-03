@@ -43,54 +43,7 @@ actor ShadowGraph {
 	/// The rendered components, keyed by location relative to the root component and ordered in pre-order.
 	///
 	/// - Invariant: `componentsByLocation[.self]` is not `nil`.
-	private var componentsByLocation: SortedDictionary<Location, any Component>
-	
-	/// Renders if needed the children of the component at `parentLocation`.
-	///
-	/// - Requires: `parentLocation` refers to an already rendered component in `self`.
-	/// - Postcondition: `childLocationsByLocation[parentLocation]` is not `nil`.
-	/// - Postcondition: For each `location` in `childLocationsByLocation[parentLocation]`, `componentsByLocation[location]` is not `nil`.
-	private func renderChildren(ofComponentAt parentLocation: Location) async throws {
-		_ = try await childLocations(ofComponentAt: parentLocation)
-	}
-	
-	/// Returns the locations of the children of the component at `parentLocation`, rendering them if needed.
-	///
-	/// - Requires: `parentLocation` refers to an already rendered component in `self`.
-	/// - Postcondition: `childLocationsByLocation[parentLocation]` is equal to this method's result.
-	/// - Postcondition: For each `location` in the returned array, `componentsByLocation[location]` is not `nil`.
-	func childLocations(ofComponentAt parentLocation: Location) async throws -> ShadowChildLocations {
-		
-		if let childLocations: ShadowChildLocations = self[parentLocation] {
-			return childLocations
-		}
-		
-		// TODO: Prepare dynamic properties.
-		
-		let parent = self[prerendered: parentLocation]
-		let childLocations: ShadowChildLocations
-		if let parent = parent as? any FoundationalComponent {
-			
-			let labelledChildren = try await parent.labelledChildren(for: self).map { location, child in
-				(parentLocation[location], child)
-			}
-			
-			for (childLocation, child) in labelledChildren {
-				componentsByLocation.updateValue(child, forKey: childLocation)
-			}
-			
-			childLocations = .init(labelledChildren.map { $0.0 })
-			
-		} else {
-			let childLocation = parentLocation[.body]
-			componentsByLocation.updateValue(try await parent.body, forKey: childLocation)
-			childLocations = .init([childLocation])
-		}
-		
-		self[parentLocation] = childLocations
-		return childLocations
-		
-	}
+	var componentsByLocation: SortedDictionary<Location, any Component>
 	
 	/// Accesses the element of a given type associated with the component at a given location.
 	///

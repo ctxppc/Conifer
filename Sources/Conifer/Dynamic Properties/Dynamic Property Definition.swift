@@ -1,6 +1,7 @@
 // Conifer © 2019–2024 Constantino Tsarouhas
 
 /// A definition of a dynamic property on a component or dynamic property.
+@available(*, deprecated)
 struct DynamicPropertyDefinition : Sendable {
 	
 	/// The property reference.
@@ -14,6 +15,7 @@ struct DynamicPropertyDefinition : Sendable {
 extension Component {
 	
 	/// Returns a list of dynamic property definitions on `self`.
+	@available(*, deprecated)
 	func dynamicPropertyDefinitions() -> [DynamicPropertyDefinition] {
 		Self.propertyReferences()
 			.compactMap { definition in
@@ -27,6 +29,7 @@ extension Component {
 extension DynamicProperty {
 	
 	/// Returns a list of dynamic property definitions on `self`.
+	@available(*, deprecated)
 	func dynamicPropertyDefinitions(parentReference: PropertyReference) -> [DynamicPropertyDefinition] {
 		Self.propertyReferences(parentReference: parentReference)
 			.compactMap { definition in
