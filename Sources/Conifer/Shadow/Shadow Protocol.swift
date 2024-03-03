@@ -23,7 +23,7 @@ extension ShadowProtocol {
 	///
 	/// - Invariant: `parent` is not a foundational component.
 	public var parent: UntypedShadow? {
-		get async throws {
+		get async {
 			// Sequence.map and .compactMap do not support await (yet) so we use a conventional loop.
 			for location in sequence(first: location, next: \.parent) {
 				let subject = await graph[prerendered: location]
@@ -52,21 +52,22 @@ extension ShadowProtocol {
 		}
 	}
 	
-	/// Returns the associated element of given type.
+	/// Returns the associated element of a given type.
 	public func element<Element : Sendable>(ofType _: Element.Type) async -> Element? {
 		await graph[location]
 	}
 	
-	/// Updates the associated element of given type.
-	public func updateElement<Element : Sendable>(_ element: Element) async {
-		await graph.updateElement(element, at: location)
-	}
-	
-	/// Updates dynamic properties of the shadowed component, its descendants, or its ancestors using a given function.
+	/// Updates the associated element of type `Element` using a given function.
 	///
-	/// - Parameter updates: A function that updates dynamic properties.
-	public func performUpdates(_ updates: () -> ()) async {	// TODO: Is this a good API?
-		await graph.performUpdates(updates)
+	/// - Parameter d: The default value if the shadow doesn't have an associated element of type `Element`.
+	/// - Parameter update: A function that updates a given element.
+	///
+	/// - Returns: The value returned by `update`.
+	public func update<Element : Sendable, Result>(
+		default d:	@autoclosure () async throws -> Element,
+		_ update:	(inout Element) async throws -> Result
+	) async rethrows -> Result {
+		try await graph.update(at: location, default: try await d(), update)
 	}
 	
 }

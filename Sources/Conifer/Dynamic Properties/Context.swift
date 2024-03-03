@@ -59,16 +59,16 @@ extension UntypedShadow {
 	
 	/// The context of `self`.
 	var context: Context {
-		get async throws {
-			if let context = await element(ofType: Context.self) {
-				return context
-			} else {
-				var context = try await parent?.context ?? Context()
-				(subject as? ContextualisedProtocol)?.update(&context)
-				await updateElement(context)
-				return context
-			}
+		get async {
+			return await update(default: await makeContext()) { $0 }
 		}
+	}
+	
+	/// Determines the context of `self`.
+	private func makeContext() async -> Context {
+		var context = await parent?.context ?? .init()
+		(subject as? ContextualisedProtocol)?.update(&context)
+		return context
 	}
 	
 }

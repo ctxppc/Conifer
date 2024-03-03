@@ -5,7 +5,7 @@ import SortedCollections
 
 /// A tree structure of rendered components.
 ///
-/// Foundational components appear in a shadow graph but do not appear in shadows.
+/// Foundational components appear in a shadow graph but do not appear in shadows (instances of `Shadow` and `UntypedShadow`).
 actor ShadowGraph {
 	
 	/// Creates a shadow graph with given root component.
@@ -27,7 +27,7 @@ actor ShadowGraph {
 				return component
 			}
 			
-			try await renderChildren(ofComponentAt: location.parent !! "Expected parent of component at \(location) to be already rendered")
+			try await renderChildren(ofComponentAt: location.parent !! "Expected root component to be already rendered")
 			return self[prerendered: location]
 			
 		}
@@ -35,7 +35,7 @@ actor ShadowGraph {
 	
 	/// Accesses an already rendered component in the shadow graph at a given location relative to the root component.
 	///
-	/// - Requires: `location` refers to an already rendered component.
+	/// - Requires: `location` refers to an already rendered component in `self`.
 	subscript (prerendered location: Location) -> any Component {
 		componentsByLocation[location] !! "Expected component at \(location) to be already rendered"
 	}
@@ -47,6 +47,7 @@ actor ShadowGraph {
 	
 	/// Renders if needed the children of the component at `parentLocation`.
 	///
+	/// - Requires: `parentLocation` refers to an already rendered component in `self`.
 	/// - Postcondition: `childLocationsByLocation[parentLocation]` is not `nil`.
 	/// - Postcondition: For each `location` in `childLocationsByLocation[parentLocation]`, `componentsByLocation[location]` is not `nil`.
 	private func renderChildren(ofComponentAt parentLocation: Location) async throws {
@@ -55,7 +56,7 @@ actor ShadowGraph {
 	
 	/// Returns the locations of the children of the component at `parentLocation`, rendering them if needed.
 	///
-	/// - Requires: `parentLocation` is a location to a valid (possibly not-yet-rendered) component in `self`.
+	/// - Requires: `parentLocation` refers to an already rendered component in `self`.
 	/// - Postcondition: `childLocationsByLocation[parentLocation]` is equal to this method's result.
 	/// - Postcondition: For each `location` in the returned array, `componentsByLocation[location]` is not `nil`.
 	func childLocations(ofComponentAt parentLocation: Location) async throws -> ShadowChildLocations {
@@ -66,7 +67,7 @@ actor ShadowGraph {
 		
 		// TODO: Prepare dynamic properties.
 		
-		let parent = try await self[parentLocation]
+		let parent = self[prerendered: parentLocation]
 		let childLocations: ShadowChildLocations
 		if let parent = parent as? any FoundationalComponent {
 			
@@ -91,8 +92,10 @@ actor ShadowGraph {
 		
 	}
 	
-	/// Accesses the element of type `Element` associated with the component at given location.
-	subscript <Element : Sendable>(location: Location) -> Element? {
+	/// Accesses the element of a given type associated with the component at a given location.
+	///
+	/// - Requires: `location` refers to an already rendered component in `self`.
+	subscript <Element : Sendable>(ofType type: Element.Type = Element.self, location: Location) -> Element? {
 		get {
 			if let element = elements[.init(location: location, type: Element.self)] {
 				return (element as! Element)
@@ -103,15 +106,28 @@ actor ShadowGraph {
 		set { elements[.init(location: location, type: Element.self)] = newValue }
 	}
 	
-	/// Accesses the element of type `Element` associated with the component at given location.
-	subscript <Element : Sendable>(location: Location, default d: @autoclosure () -> Element) -> Element {
-		get { self[location] ?? d() }
-		set { self[location] = newValue }
-	}
-	
-	/// Updates the element of type `Element` associated with the component at given location.
-	func updateElement<Element : Sendable>(_ element: Element, at location: Location) {
+	/// Updates the element of type `Element` associated with the component at a given location using a given function.
+	///
+	/// - Parameter location: The location of the component in `self`.
+	/// - Parameter d: The default value if the shadow doesn't have an associated element of type `Element`.
+	/// - Parameter update: A function that updates a given element.
+	///
+	/// - Returns: The value returned by `update`.
+	///
+	/// - Requires: `location` refers to an already rendered component in `self`.
+	func update<Element : Sendable, Result>(
+		at location:	Location,
+		default d:		@autoclosure () async throws -> Element,
+		_ update:		(inout Element) async throws -> Result
+	) async rethrows -> Result {
+		var element = if let e = self[ofType: Element.self, location] {
+			e
+		} else {
+			try await d()
+		}	// Nil-coalescing doesn't work when default argument has effects
+		let result = try await update(&element)
 		self[location] = element
+		return result
 	}
 	
 	/// The shadow elements.
@@ -126,13 +142,6 @@ actor ShadowGraph {
 		let location: Location
 		let type: ObjectIdentifier
 		
-	}
-	
-	/// Updates dynamic properties of components in `self` using a given function.
-	///
-	/// - Parameter update: A function that updates dynamic properties.
-	func performUpdates(_ update: () -> ()) {
-		update()
 	}
 	
 }

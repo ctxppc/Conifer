@@ -26,9 +26,9 @@ public struct State<Value : Sendable> : DynamicProperty {
 			storedValue = newValue
 			if let backReference {
 				Task {
-					var container = await backReference.shadow.element(ofType: StateContainer.self) ?? .init()
-					container[backReference.propertyIdentifier] = newValue
-					await backReference.shadow.updateElement(container)
+					await backReference.shadow.update(default: StateContainer()) { container in
+						container[backReference.propertyIdentifier] = newValue
+					}
 				}
 			}
 		}
