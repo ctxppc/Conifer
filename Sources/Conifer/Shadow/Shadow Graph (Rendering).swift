@@ -18,11 +18,9 @@ extension ShadowGraph {
 	/// - Postcondition: For each `location` in the returned array, `componentsByLocation[location]` is not `nil`.
 	func childLocations(ofComponentAt parentLocation: Location) async throws -> ShadowChildLocations {
 		
-		if let childLocations: ShadowChildLocations = self[parentLocation] {
+		if let childLocations = self[ofType: ShadowChildLocations.self, parentLocation] {
 			return childLocations
 		}
-		
-		// TODO: Prepare dynamic properties.
 		
 		let parent = self[prerendered: parentLocation]
 		let childLocations: ShadowChildLocations
@@ -33,22 +31,27 @@ extension ShadowGraph {
 			}
 			
 			for (childLocation, child) in labelledChildren {
-				componentsByLocation.updateValue(child, forKey: childLocation)
+				try await render(child: child, at: childLocation)
 			}
 			
 			childLocations = .init(labelledChildren.map { $0.0 })
 			
 		} else {
 			let childLocation = parentLocation[.body]
-			var component = try await parent.body
-			try await component.prepareForRendering(shadow: .init(graph: self, location: childLocation))
-			componentsByLocation.updateValue(component, forKey: childLocation)
+			try await render(child: parent.body, at: childLocation)
 			childLocations = .init([childLocation])
 		}
 		
 		self[parentLocation] = childLocations
 		return childLocations
 		
+	}
+	
+	/// Prepares a given child's dynamic properties and adds it at a given location to the shadow graph.
+	func render(child: some Component, at location: Location) async throws {
+		var child = child
+		try await child.prepareForRendering(shadow: .init(graph: self, location: location))
+		componentsByLocation.updateValue(child, forKey: location)
 	}
 	
 }
@@ -95,6 +98,6 @@ private protocol DynamicPropertyKeyPath<Root> {
 
 extension WritableKeyPath : DynamicPropertyKeyPath where Root : Component, Value : DynamicProperty {
 	func prepareDynamicProperty(on component: inout Root, forRendering shadow: UntypedShadow) async throws {
-		try await component[keyPath: self].prepare("", forRendering: shadow)
+		try await component[keyPath: self].prepare("\(self)", forRendering: shadow)
 	}
 }

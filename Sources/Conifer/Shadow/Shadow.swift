@@ -24,7 +24,7 @@ public struct Shadow<Subject : Component> : ShadowProtocol {
 	/// Accesses the subject.
 	public subscript <Value>(dynamicMember keyPath: KeyPath<Subject, Value>) -> Value {
 		get async throws {
-			try await subject[keyPath: keyPath]	// TODO: What about dynamic properties?
+			try await subject[keyPath: keyPath]
 		}
 	}
 	
@@ -39,9 +39,9 @@ extension Shadow {
 	/// - Requires: `subject` is not a foundational component.
 	///
 	/// - Parameter subject: The component.
-	public init(of subject: Subject) {
+	public init(of subject: Subject) async throws {
 		precondition(!(subject is any FoundationalComponent), "\(subject) is a foundational component")
-		self.graph = .init(root: subject)
+		self.graph = try await .init(root: subject)
 		self.location = .anchor
 	}
 	

@@ -1,6 +1,8 @@
 // Conifer © 2019–2024 Constantino Tsarouhas
 
 /// An ordered collection of locations of direct children of an associated component in the shadow graph.
+///
+/// Only components whose children have been rendered have an associated `ShadowChildLocations` collection.
 struct ShadowChildLocations : Sendable {
 	
 	/// Creates an ordered collection of locations of a component's direct children.

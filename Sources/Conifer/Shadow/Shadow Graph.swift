@@ -6,16 +6,15 @@ import SortedCollections
 /// A tree structure of rendered components.
 ///
 /// Foundational components appear in a shadow graph but do not appear in shadows (instances of `Shadow` and `UntypedShadow`).
+///
+/// The shadow graph lazily renders components as they are requested. When a component is first rendered, it is instantiated, its dynamic properties are prepared, and it is added to the graph. A rendered component's children may not be rendered but the shadow graph can readily do so since the parent's dynamic properties are ready for use.
 actor ShadowGraph {
 	
 	/// Creates a shadow graph with given root component.
-	init(root: some Component) {
-		self.root = root
-		self.componentsByLocation = [.anchor: root]
+	init(root: some Component) async throws {
+		self.componentsByLocation = [:]
+		try await render(child: root, at: .anchor)
 	}
-	
-	/// The root component.
-	let root: any Component
 	
 	/// Accesses a component in the shadow graph at a given location relative to the root component.
 	///
@@ -42,7 +41,8 @@ actor ShadowGraph {
 	
 	/// The rendered components, keyed by location relative to the root component and ordered in pre-order.
 	///
-	/// - Invariant: `componentsByLocation[.self]` is not `nil`.
+	/// - Invariant: `componentsByLocation[.anchor]` is not `nil`.
+	/// - Invariant: Each dynamic property in each component in `componentsByLocation` is prepared.
 	var componentsByLocation: SortedDictionary<Location, any Component>
 	
 	/// Accesses the element of a given type associated with the component at a given location.
