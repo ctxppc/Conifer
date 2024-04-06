@@ -27,4 +27,11 @@ extension UntypedShadow {
 		self.location = shadow.location
 	}
 	
+	/// The type of the component represented by `self`.
+	public var subjectType: any Component.Type {
+		get async throws {
+			type(of: try await subject)
+		}
+	}
+	
 }
