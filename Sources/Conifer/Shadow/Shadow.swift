@@ -5,7 +5,6 @@ import DepthKit
 /// A view into a component and its contents.
 ///
 /// Unlike shadow graphs, foundational components do not appear in shadows, i.e., `Subject` does not conform to `FoundationalComponent`.
-@dynamicMemberLookup
 public struct Shadow<Subject : Component> : ShadowProtocol {
 	
 	// See protocol.
@@ -15,16 +14,9 @@ public struct Shadow<Subject : Component> : ShadowProtocol {
 	let location: Location
 	
 	/// The component represented by `self`.
-	var subject: Subject {
+	public var subject: Subject {
 		get async throws {
 			try await graph[location] as! Subject
-		}
-	}
-	
-	/// Accesses the subject.
-	public subscript <Value>(dynamicMember keyPath: KeyPath<Subject, Value>) -> Value {
-		get async throws {
-			try await subject[keyPath: keyPath]
 		}
 	}
 	
@@ -54,17 +46,6 @@ extension Shadow {
 		self.graph = shadow.graph
 		self.location = shadow.location
 		guard try await graph[location] is Subject else { return nil }
-	}
-	
-}
-
-extension Shadow where Subject.Body == Never {
-	
-	/// Terminates the program.
-	public var body: Shadow<Subject.Body> {
-		get async throws {
-			try await subject.body
-		}
 	}
 	
 }
