@@ -11,7 +11,7 @@ public struct UntypedShadow : ShadowProtocol {
 	let location: Location
 	
 	/// The component represented by `self`.
-	public var subject: any Component {
+	var subject: any Component {
 		get async throws {
 			try await graph[location]
 		}
