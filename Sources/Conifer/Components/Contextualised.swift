@@ -21,7 +21,7 @@ public struct Contextualised<Content : Component, Value> : @unchecked Sendable, 
 	public typealias ContentProvider = @Sendable () -> Content
 	
 	// See protocol.
-	public var body: some Component {
+	public var body: Content {
 		content()
 	}
 	
