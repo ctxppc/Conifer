@@ -7,11 +7,12 @@
 /// # Shadow Graph Semantics
 ///
 /// A container component is replaced by its two constituent components in a shadow. A shadow never contains a `Group` but instead a `First` and a `Second` in its place. Since there is an ordering between `First` and `Second`, the structural identities of the first and second component are unique.
-public struct Group<each Child : Component> : Component {
+public struct Group<First : Component, Second : Component> : Component {	// TODO: Replace with type parameter pack when compiler issues are sorted out.
 	
 	/// Creates a group with given children.
-	public init(_ child: repeat each Child) {
-		self.child = (repeat each child)
+	public init(_ first: First, _ second: Second) {
+		self.first = first
+		self.second = second
 	}
 	
 	/// Creates a group using given closure.
@@ -19,8 +20,23 @@ public struct Group<each Child : Component> : Component {
 		self = contents()
 	}
 	
-	/// The group's children.
-	public let child: (repeat each Child)
+	/// The first component.
+	public let first: First
+	
+	/// The second component.
+	public let second: Second
+	
+	/// A type that allows concatenating a third component to groups of this type.
+	///
+	/// This convenience syntax allows writing `Group<A, B>.Con<C>` instead of `Group<Group<A, B>, C>`.
+	public typealias Con<Third : Component> = Group<Self, Third> /* where Third.Artefact == Artefact */
+	
+	/// Concatenates a third component to this group.
+	///
+	/// This convenience syntax allows writing `Group(a, b).con(c)` instead of `Group(Group(a, b), c)`.
+	public func con<Third : Component>(_ third: Third) -> Self.Con<Third> {
+		.init(self, third)
+	}
 	
 	// See protocol.
 	public var body: Never { hasNoBody }
@@ -29,16 +45,6 @@ public struct Group<each Child : Component> : Component {
 
 extension Group : FoundationalComponent {
 	func labelledChildren(for graph: ShadowGraph) async throws -> [(Location, any Component)] {
-		
-		var result = [(Location, any Component)]()
-		var index = 0
-		func add(_ child: some Component) {
-			result.append((.child(at: index), child))
-			index += 1
-		}
-		repeat add(each child)
-		
-		return result	// TODO: Replace by `[repeat each child].enumerated().map { … }` when apple/swift#67192 is resolved.
-		
+		[(.anchor[.child(at: 0)], first), (.anchor[.child(at: 1)], second)]
 	}
 }
