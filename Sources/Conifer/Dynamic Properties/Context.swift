@@ -48,7 +48,7 @@ public struct Context : @unchecked Sendable {	// KeyPath, an immutable class, is
 	public typealias Key<Value> = WritableKeyPath<Self, Value>
 	
 	/// Accesses the contextual value at a given key.
-	public internal(set) subscript <Value>(key: Key<Value>) -> Value {
+	public subscript <Value>(key: Key<Value>) -> Value {
 		get { (values[key as AnyKey] !! "\(key) not available in context (\(self))") as! Value }
 		set { values[key as AnyKey] = newValue }
 	}
