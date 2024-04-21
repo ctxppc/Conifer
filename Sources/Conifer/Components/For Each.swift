@@ -2,7 +2,7 @@
 
 /// A mapping component; a component that represents a sequence of components generated from an underlying collection of data.
 ///
-/// # Shadow Semantics
+/// ## Shadow Semantics
 ///
 /// A mapping component is replaced by its generated components in a shadow. A shadow never contains a `ForEach` but instead zero or more `Content`s (or their shadow equivalents) at the same location.
 ///

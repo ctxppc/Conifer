@@ -4,7 +4,7 @@
 ///
 /// Groups can be nested to create groups of arbitrary size, e.g., a `Group<Group<A, B>, C>` containing three components `A`, `B`, and `C` in succession.
 ///
-/// # Shadow Graph Semantics
+/// ## Shadow Semantics
 ///
 /// A container component is replaced by its two constituent components in a shadow. A shadow never contains a `Group` but instead a `First` and a `Second` in its place. Since there is an ordering between `First` and `Second`, the structural identities of the first and second component are unique.
 public struct Group<First : Component, Second : Component> : Component {	// TODO: Replace with type parameter pack when compiler issues are sorted out.

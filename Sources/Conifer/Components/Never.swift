@@ -4,7 +4,7 @@
 ///
 /// This component type is used as the type of `body` in foundational components.
 ///
-/// # Shadow Graph Semantics
+/// ## Shadow Semantics
 ///
 /// No instance of `Never` exists. It can therefore never exist in a shadow.
 extension Never : Component {
