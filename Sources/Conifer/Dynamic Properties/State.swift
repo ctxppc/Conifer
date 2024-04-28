@@ -38,7 +38,7 @@ public struct State<Value : Sendable> : DynamicProperty {
 	private var storedValue: Value
 	
 	/// A reference to the shadow graph.
-	private var backReference: BackReference?
+	private var backReference: BackReference?	// FIXME: Property is never set!
 	private struct BackReference : Sendable {
 		let shadow: UntypedShadow
 		let propertyIdentifier: any Hashable & Sendable

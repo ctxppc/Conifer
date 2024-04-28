@@ -55,12 +55,24 @@ extension ShadowProtocol {
 		await graph.element(ofType: type, at: location)
 	}
 	
+	/// Assigns or replaces the associated element of its type.
+	///
+	/// `type` can be either a concrete or existential type. Concrete and existential types are never equal; the same type must be provided to `element(ofType:)` to retrieve the same element. It's for example possible to simultaneously assign a `String` element using the `Any` type and another using the `String` type at the same location.
+	///
+	/// - Parameters:
+	///   - element: The new element.
+	///   - type: The element's type. The default value is the element's concrete type, which is sufficient unless an existential type is desired.
+	func update<Element : Sendable>(_ element: Element, ofType type: Element.Type = Element.self) async {
+		await graph.update(element, ofType: type, at: location)
+	}
+	
 	/// Updates the associated element of type `Element` using a given function.
 	///
 	/// - Parameter d: The default value if the shadow doesn't have an associated element of type `Element`.
 	/// - Parameter update: A function that updates a given element.
 	///
 	/// - Returns: The value returned by `update`.
+	@available(*, deprecated)
 	public func update<Element : Sendable, Result>(
 		default d:	@autoclosure () async throws -> Element,
 		_ update:	(inout Element) async throws -> Result
