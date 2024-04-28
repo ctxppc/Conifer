@@ -8,8 +8,8 @@ public struct Location : Hashable, @unchecked Sendable {	// AnyHashable isn't Se
 	/// The location referring to the anchor.
 	static let anchor = Self(directions: [])
 	
-	/// A location referring to the body of the (non-foundational) anchor.
-	static let body = Self(directions: [.body])
+	/// A location referring to the singular child.
+	static let body = Self.child(at: 0)
 	
 	/// A location referring to the anchor's child with given index.
 	static func child(at index: Int) -> Self {
@@ -25,10 +25,7 @@ public struct Location : Hashable, @unchecked Sendable {	// AnyHashable isn't Se
 	private var directions: [Direction]
 	fileprivate enum Direction : Hashable, @unchecked Sendable {
 		
-		/// The body of the (non-foundational) component.
-		case body
-		
-		/// The component at given index in the conditional or group.
+		/// The component identified by given position.
 		case position(Int)
 		
 		/// The component identified by given identifier in the mapping component.
@@ -85,7 +82,6 @@ extension Location.Direction : Comparable {
 			return first < second
 			
 			case (.position, _), (_, .position),
-				(.body, _), (_, .body),
 				(.identifier, _), (_, .identifier):
 			return false	// These combinations do not normally appear as siblings and can be considered unordered if not equal.
 			

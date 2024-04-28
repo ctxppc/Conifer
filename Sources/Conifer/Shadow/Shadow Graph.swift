@@ -3,60 +3,70 @@
 import DepthKit
 import SortedCollections
 
-/// A tree structure of rendered components.
+/// A tree structure of rendered components and other types of elements.
 ///
-/// Foundational components appear in a shadow graph but do not appear in shadows (instances of `Shadow` and `UntypedShadow`).
+/// Each node in a shadow graph can contain any number of elements but at most one per type. Rendered components are elements of type `any Component`. The existential type ensures that no two components can occupy the same node. Although nothing prevents one from assigning a component of concrete type (e.g., `Either<…, …>`), `ShadowChildren` does not traverse or return those types of components.
+///
+/// Foundational components (such as `Either`) appear as elements of a shadow graph but do not appear in shadows (instances of `Shadow` and `UntypedShadow`).
 ///
 /// The shadow graph lazily renders components as they are requested. When a component is first rendered, it is instantiated, its dynamic properties are prepared, and it is added to the graph. A rendered component's children may not be rendered but the shadow graph can readily do so since the parent's dynamic properties are ready for use.
 actor ShadowGraph {
 	
 	/// Creates a shadow graph with given root component.
 	init(root: some Component) async throws {
-		self.componentsByLocation = [:]
 		try await render(child: root, at: .anchor)
 	}
 	
-	/// Accesses a component in the shadow graph at a given location relative to the root component.
+	/// The shadow elements, keyed by location relative to the root component.
 	///
-	/// - Requires: `location` refers to a (possibly not-yet-rendered) component whose parent is already rendered.
-	subscript (location: Location) -> any Component {
-		get async throws {
-			
-			if let component = componentsByLocation[location] {
-				return component
-			}
-			
-			try await renderChildren(ofComponentAt: location.parent !! "Expected root component to be already rendered")
-			return self[prerendered: location]
-			
+	/// - Invariant: `elements[.init(location: .anchor, type: (any Component).self)]` is not `nil`.
+	/// - Invariant: Each dynamic property in each rendered component in the graph, i.e., each element of type `any Component` in `elements`, is prepared.
+	private var elements = [ElementKey : Any]()
+	private struct ElementKey : Hashable {
+		
+		/// Creates a key for an element of a given type (concrete or existential) at a given location in a graph.
+		init<T>(location: Location, type: T.Type) {
+			self.location = location
+			self.type = .init(type)
+		}
+		
+		/// The location of the element in the graph.
+		let location: Location
+		
+		/// The identifier of the type of the element.
+		///
+		/// The type is usually a concrete type but can also be an existential type.
+		let type: ObjectIdentifier
+		
+	}
+	
+	/// Returns the element of a given type at a given location in the graph, or `nil` if no such element exists.
+	///
+	/// `type` can be either a concrete or existential type. Concrete and existential types are never equal; the type of the desired element must match the type provided to `update(_:ofType:at:)` when the element was assigned.
+	///
+	/// - Parameters:
+	///   - type: The element's concrete or existential type.
+	///   - location: The location of the element in `self`.
+	///
+	/// - Returns: The element of type `type` at `location` in `self`.
+	func element<Element : Sendable>(ofType type: Element.Type = Element.self, at location: Location) -> Element? {
+		if let element = elements[.init(location: location, type: type)] {
+			return (element as! Element)
+		} else {
+			return nil
 		}
 	}
 	
-	/// Accesses an already rendered component in the shadow graph at a given location relative to the root component.
+	/// Assigns or replaces the element of its type at a given location in the graph.
 	///
-	/// - Requires: `location` refers to an already rendered component in `self`.
-	subscript (prerendered location: Location) -> any Component {
-		componentsByLocation[location] !! "Expected component at \(location) to be already rendered"
-	}
-	
-	/// The rendered components, keyed by location relative to the root component and ordered in pre-order.
+	/// `type` can be either a concrete or existential type. Concrete and existential types are never equal; the same type must be provided to `element(ofType:at:)` to retrieve the same element. It's for example possible to simultaneously assign a `String` element using the `Any` type and another using the `String` type at the same location.
 	///
-	/// - Invariant: `componentsByLocation[.anchor]` is not `nil`.
-	/// - Invariant: Each dynamic property in each component in `componentsByLocation` is prepared.
-	var componentsByLocation: SortedDictionary<Location, any Component>
-	
-	/// Accesses the element of a given type associated with the component at a given location.
-	///
-	/// - Requires: `location` refers to an already rendered component in `self`.
-	subscript <Element : Sendable>(ofType type: Element.Type = Element.self, location: Location) -> Element? {
-		get {
-			if let element = elements[.init(location: location, type: Element.self)] {
-				return (element as! Element)
-			} else {
-				return nil
-			}
-		}
-		set { elements[.init(location: location, type: Element.self)] = newValue }
+	/// - Parameters:
+	///   - element: The new element.
+	///   - type: The element's type. The default value is the element's concrete type, which is sufficient unless an existential type is desired.
+	///   - location: The location of the element in `self`.
+	func update<Element : Sendable>(_ element: Element, ofType type: Element.Type = Element.self, at location: Location) {
+		elements[.init(location: location, type: type)] = element
 	}
 	
 	/// Updates the element of type `Element` associated with the component at a given location using a given function.
@@ -73,28 +83,14 @@ actor ShadowGraph {
 		default d:		@autoclosure () async throws -> Element,
 		_ update:		(inout Element) async throws -> Result
 	) async rethrows -> Result {
-		var element = if let e = self[ofType: Element.self, location] {
+		var element = if let e = element(ofType: Element.self, at: location) {
 			e
 		} else {
 			try await d()
 		}	// Nil-coalescing doesn't work when default argument has effects
 		let result = try await update(&element)
-		self[location] = element
+		self.update(element, at: location)
 		return result
-	}
-	
-	/// The shadow elements.
-	private var elements = [ShadowElementKey : Any]()
-	private struct ShadowElementKey : Hashable {
-		
-		init(location: Location, type: any Sendable.Type) {
-			self.location = location
-			self.type = .init(type)
-		}
-		
-		let location: Location
-		let type: ObjectIdentifier
-		
 	}
 	
 }

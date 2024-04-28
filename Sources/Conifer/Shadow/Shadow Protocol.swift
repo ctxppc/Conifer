@@ -51,8 +51,8 @@ extension ShadowProtocol {
 	}
 	
 	/// Returns the associated element of a given type.
-	public func element<Element : Sendable>(ofType _: Element.Type) async -> Element? {
-		await graph[location]
+	public func element<Element : Sendable>(ofType type: Element.Type) async -> Element? {
+		await graph.element(ofType: type, at: location)
 	}
 	
 	/// Updates the associated element of type `Element` using a given function.

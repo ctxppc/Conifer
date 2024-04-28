@@ -1,6 +1,41 @@
 // Conifer © 2019–2024 Constantino Tsarouhas
 
+import DepthKit
+
 extension ShadowGraph {
+	
+	/// Accesses a component in the shadow graph at a given location relative to the root component, rendering it if needed.
+	///
+	/// - Requires: `location` refers to a (possibly not-yet-rendered) component whose parent is already rendered.
+	subscript (location: Location) -> any Component {
+		get async throws {
+			
+			if let component = componentIfRendered(at: location) {
+				return component
+			}
+			
+			try await renderChildren(ofComponentAt: location.parent !! "Expected root component to be already rendered")
+			return self[prerendered: location]
+			
+		}
+	}
+	
+	/// Accesses an already rendered component in the shadow graph at a given location relative to the root component.
+	///
+	/// - Requires: `location` refers to an already rendered component in `self`.
+	subscript (prerendered location: Location) -> any Component {
+		componentIfRendered(at: location) !! "Expected component at \(location) to be already rendered"
+	}
+	
+	/// Returns the component at a given location, or `nil` if it has not been rendered yet.
+	func componentIfRendered(at location: Location) -> (any Component)? {
+		element(ofType: (any Component).self, at: location)
+	}
+	
+	/// Assigns or replaces the component at a given location in the graph.
+	func update(component: any Component, at location: Location) {
+		update(component, ofType: (any Component).self, at: location)
+	}
 	
 	/// Renders if needed the children of the component at `parentLocation`.
 	///
@@ -18,7 +53,7 @@ extension ShadowGraph {
 	/// - Postcondition: For each `location` in the returned array, `componentsByLocation[location]` is not `nil`.
 	func childLocations(ofComponentAt parentLocation: Location) async throws -> ShadowChildLocations {
 		
-		if let childLocations = self[ofType: ShadowChildLocations.self, parentLocation] {
+		if let childLocations = element(ofType: ShadowChildLocations.self, at: parentLocation) {
 			return childLocations
 		}
 		
@@ -26,23 +61,28 @@ extension ShadowGraph {
 		let childLocations: ShadowChildLocations
 		if let parent = parent as? any FoundationalComponent {
 			
+			// Create child components & rebase locations.
 			let labelledChildren = try await parent.labelledChildren(for: self).map { location, child in
 				(parentLocation[location], child)
 			}
 			
+			// Render children.
 			for (childLocation, child) in labelledChildren {
 				try await render(child: child, at: childLocation)
 			}
 			
+			// Create child locations element.
 			childLocations = .init(labelledChildren.map { $0.0 })
 			
 		} else {
+			// Render non-foundational component.
 			let childLocation = parentLocation[.body]
 			try await render(child: parent.body, at: childLocation)
 			childLocations = .init([childLocation])
 		}
 		
-		self[parentLocation] = childLocations
+		update(childLocations, at: parentLocation)
+		
 		return childLocations
 		
 	}
@@ -51,7 +91,7 @@ extension ShadowGraph {
 	func render(child: some Component, at location: Location) async throws {
 		var child = child
 		try await child.prepareForRendering(shadow: .init(graph: self, location: location))
-		componentsByLocation.updateValue(child, forKey: location)
+		update(component: child, at: location)
 	}
 	
 }

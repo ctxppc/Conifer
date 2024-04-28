@@ -71,8 +71,8 @@ extension Shadow {
 	}
 	
 	/// Returns the associated element of a given type.
-	public func element<Element : Sendable>(ofType _: Element.Type) async -> Element? {
-		await (self as ShadowProtocol).element(ofType: Element.self)
+	public func element<Element : Sendable>(ofType type: Element.Type) async -> Element? {
+		await (self as ShadowProtocol).element(ofType: type)
 	}
 	
 	/// Updates the associated element of type `Element` using a given function.
