@@ -4,7 +4,7 @@ import DepthKit
 
 /// A view into a component and its contents.
 ///
-/// Unlike shadow graphs, foundational components do not appear in shadows, i.e., `Subject` does not conform to `FoundationalComponent`.
+/// Except during some internal Conifer processes, foundational components do not appear in shadows, i.e., `Subject` does not conform to `FoundationalComponent`.
 @dynamicMemberLookup
 public struct Shadow<Subject : Component> : ShadowProtocol {
 	

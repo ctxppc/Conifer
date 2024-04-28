@@ -71,17 +71,24 @@ extension ShadowGraph {
 				try await render(child: child, at: childLocation)
 			}
 			
-			// Create child locations element.
+			// Update child locations.
 			childLocations = .init(labelledChildren.map { $0.0 })
+			update(childLocations, at: parentLocation)
+			
+			// Finalise.
+			try await parent.finalise(in: self, at: parentLocation)	// may trigger additional renderings
 			
 		} else {
+			
 			// Render non-foundational component.
 			let childLocation = parentLocation[.body]
 			try await render(child: parent.body, at: childLocation)
+			
+			// Update child locations.
 			childLocations = .init([childLocation])
+			update(childLocations, at: parentLocation)
+			
 		}
-		
-		update(childLocations, at: parentLocation)
 		
 		return childLocations
 		
@@ -96,7 +103,7 @@ extension ShadowGraph {
 	
 }
 
-extension Component {
+private extension Component {
 	
 	/// Prepares `self` for rendering.
 	///
@@ -115,7 +122,7 @@ extension Component {
 	///
 	/// - Parameter keyPath: The key path from `self` to the property to prepare.
 	/// - Parameter shadow: A shadow of `self`.
-	private mutating func prepareProperty(at keyPath: PartialKeyPath<Self>, forRendering shadow: UntypedShadow) async throws {
+	mutating func prepareProperty(at keyPath: PartialKeyPath<Self>, forRendering shadow: UntypedShadow) async throws {
 		guard let keyPath = keyPath as? any DynamicPropertyKeyPath<Self> else { return }
 		try await keyPath.prepareDynamicProperty(on: &self, forRendering: shadow)
 	}
@@ -139,5 +146,11 @@ private protocol DynamicPropertyKeyPath<Root> {
 extension WritableKeyPath : DynamicPropertyKeyPath where Root : Component, Value : DynamicProperty {
 	func prepareDynamicProperty(on component: inout Root, forRendering shadow: UntypedShadow) async throws {
 		try await component[keyPath: self].update(for: shadow, propertyIdentifier: "\(self)")
+	}
+}
+
+private extension FoundationalComponent {
+	func finalise(in graph: ShadowGraph, at location: Location) async throws {
+		try await finalise(Shadow<Self>(graph: graph, location: location))
 	}
 }
