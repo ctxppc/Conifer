@@ -15,8 +15,14 @@ public struct State<Value : Sendable> : DynamicProperty {
 	
 	// See protocol.
 	public mutating func update(for shadow: UntypedShadow, propertyIdentifier: some Hashable & Sendable) async {
-		guard let value: Value = await shadow.element(ofType: StateContainer.self)?[propertyIdentifier] else { return }
-		storedValue = value
+		
+		// If state container already has a value, replace the initial value.
+		if let value: Value = await shadow.element(ofType: StateContainer.self)?[propertyIdentifier] {
+			storedValue = value
+		}
+		
+		backReference = .init(shadow: shadow, propertyIdentifier: propertyIdentifier)
+		
 	}
 	
 	// See protocol.
@@ -26,9 +32,10 @@ public struct State<Value : Sendable> : DynamicProperty {
 			storedValue = newValue
 			if let backReference {
 				Task {
-					await backReference.shadow.update(default: StateContainer()) { container in
-						container[backReference.propertyIdentifier] = newValue
-					}
+					var container = await backReference.shadow.element(ofType: StateContainer.self) ?? .init()
+					container[backReference.propertyIdentifier] = newValue
+					// FIXME: Other updates to the container between the suspention points are lost.
+					await backReference.shadow.update(container)
 				}
 			}
 		}
@@ -38,7 +45,7 @@ public struct State<Value : Sendable> : DynamicProperty {
 	private var storedValue: Value
 	
 	/// A reference to the shadow graph.
-	private var backReference: BackReference?	// FIXME: Property is never set!
+	private var backReference: BackReference?
 	private struct BackReference : Sendable {
 		let shadow: UntypedShadow
 		let propertyIdentifier: any Hashable & Sendable

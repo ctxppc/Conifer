@@ -69,28 +69,4 @@ actor ShadowGraph {
 		elements[.init(location: location, type: type)] = element
 	}
 	
-	/// Updates the element of type `Element` associated with the component at a given location using a given function.
-	///
-	/// - Parameter location: The location of the component in `self`.
-	/// - Parameter d: The default value if the shadow doesn't have an associated element of type `Element`.
-	/// - Parameter update: A function that updates a given element.
-	///
-	/// - Returns: The value returned by `update`.
-	///
-	/// - Requires: `location` refers to an already rendered component in `self`.
-	func update<Element : Sendable, Result>(
-		at location:	Location,
-		default d:		@autoclosure () async throws -> Element,
-		_ update:		(inout Element) async throws -> Result
-	) async rethrows -> Result {
-		var element = if let e = element(ofType: Element.self, at: location) {
-			e
-		} else {
-			try await d()
-		}	// Nil-coalescing doesn't work when default argument has effects
-		let result = try await update(&element)
-		self.update(element, at: location)
-		return result
-	}
-	
 }

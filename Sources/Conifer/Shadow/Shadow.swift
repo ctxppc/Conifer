@@ -92,18 +92,4 @@ extension Shadow {
 		await (self as ShadowProtocol).update(element, ofType: type)
 	}
 	
-	/// Updates the associated element of type `Element` using a given function.
-	///
-	/// - Parameter d: The default value if the shadow doesn't have an associated element of type `Element`.
-	/// - Parameter update: A function that updates a given element.
-	///
-	/// - Returns: The value returned by `update`.
-	@available(*, deprecated)
-	public func update<Element : Sendable, Result>(
-		default d:	@autoclosure () async throws -> Element,
-		_ update:	(inout Element) async throws -> Result
-	) async rethrows -> Result {
-		try await graph.update(at: location, default: try await d(), update)
-	}
-	
 }
