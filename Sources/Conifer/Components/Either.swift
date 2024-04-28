@@ -23,12 +23,29 @@ public enum Either<First : Component, Second : Component> : Component {
 }
 
 extension Either : FoundationalComponent {
-	func labelledChildren(for graph: ShadowGraph) async throws -> [(Location, any Component)] {
+	
+	func childLocations(for shadow: Shadow<Self>) async throws -> [Location] {
 		switch self {
-			case .first(let child):		return [(.anchor[.child(at: 0)], child)]
-			case .second(let child):	return [(.anchor[.child(at: 1)], child)]
+			case .first:	return [.child(at: 0)]
+			case .second:	return [.child(at: 1)]
 		}
 	}
+	
+	func child(at location: Location, for shadow: Shadow<Self>) async throws -> any Component {
+		switch (self, location) {
+			
+			case (.first(let child), .child(at: 0)):	
+			return child
+			
+			case (.second(let child), .child(at: 1)):
+			return child
+			
+			case (.first, _), (.second, _):
+			preconditionFailure("\(location) does not exist on \(shadow)")
+			
+		}
+	}
+	
 }
 
 public func ??<First, Second>(first: First?, second: Second) -> Either<First, Second> {

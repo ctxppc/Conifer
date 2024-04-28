@@ -58,39 +58,11 @@ extension ShadowGraph {
 		}
 		
 		let parent = self[prerendered: parentLocation]
-		let childLocations: ShadowChildLocations
 		if let parent = parent as? any FoundationalComponent {
-			
-			// Create child components & rebase locations.
-			let labelledChildren = try await parent.labelledChildren(for: self).map { location, child in
-				(parentLocation[location], child)
-			}
-			
-			// Render children.
-			for (childLocation, child) in labelledChildren {
-				try await render(child: child, at: childLocation)
-			}
-			
-			// Update child locations.
-			childLocations = .init(labelledChildren.map { $0.0 })
-			update(childLocations, at: parentLocation)
-			
-			// Finalise.
-			try await parent.finalise(in: self, at: parentLocation)	// may trigger additional renderings
-			
+			return try await parent.render(in: self, at: parentLocation)
 		} else {
-			
-			// Render non-foundational component.
-			let childLocation = parentLocation[.body]
-			try await render(child: parent.body, at: childLocation)
-			
-			// Update child locations.
-			childLocations = .init([childLocation])
-			update(childLocations, at: parentLocation)
-			
+			return try await parent.render(in: self, at: parentLocation)
 		}
-		
-		return childLocations
 		
 	}
 	
@@ -149,8 +121,49 @@ extension WritableKeyPath : DynamicPropertyKeyPath where Root : Component, Value
 	}
 }
 
-private extension FoundationalComponent {
-	func finalise(in graph: ShadowGraph, at location: Location) async throws {
-		try await finalise(Shadow<Self>(graph: graph, location: location))
+private extension Component {
+	
+	/// Renders `self` in a given graph at given location and returns the locations of the children of `self`.
+	func render(in graph: isolated ShadowGraph, at location: Location) async throws -> ShadowChildLocations {
+		
+		// Render body.
+		let childLocation = location[.body]
+		try await graph.render(child: body, at: childLocation)
+		
+		// Update child locations on graph.
+		let childLocations = ShadowChildLocations([childLocation])
+		graph.update(childLocations, at: location)
+		
+		return childLocations
+		
 	}
+	
+}
+
+private extension FoundationalComponent {
+	
+	/// Renders `self` in a given graph at given location and returns the locations of the children of `self`.
+	func render(in graph: isolated ShadowGraph, at location: Location) async throws -> ShadowChildLocations {
+		
+		// Determine child locations.
+		let relativeChildLocations = try await childLocations(for: .init(graph: graph, location: location))
+		let absoluteChildLocations = relativeChildLocations.map { location[$0] }
+		
+		// Render children.
+		for (relativeChildLocation, absoluteChildLocation) in zip(relativeChildLocations, absoluteChildLocations) {
+			let child = try await child(at: relativeChildLocation, for: .init(graph: graph, location: location))
+			try await graph.render(child: child, at: absoluteChildLocation)
+		}
+		
+		// Update child locations on graph.
+		let childLocations = ShadowChildLocations(absoluteChildLocations)
+		graph.update(childLocations, at: location)
+		
+		// Finalise.
+		try await finalise(.init(graph: graph, location: location))	// may trigger additional renderings
+		
+		return childLocations
+		
+	}
+	
 }

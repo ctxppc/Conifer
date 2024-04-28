@@ -16,7 +16,13 @@ public struct Empty : Component {	// TODO: Delete when Group<> doesn't cause a c
 }
 
 extension Empty : FoundationalComponent {
-	func labelledChildren(for graph: ShadowGraph) async throws -> [(Location, any Component)] {
+	
+	func childLocations(for shadow: Shadow<Self>) async throws -> [Location] {
 		[]
 	}
+	
+	func child(at location: Location, for shadow: Shadow<Self>) async throws -> any Component {
+		preconditionFailure("\(shadow) does not contain children")
+	}
+	
 }

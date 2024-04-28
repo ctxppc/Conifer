@@ -44,7 +44,17 @@ public struct Group<First : Component, Second : Component> : Component {	// TODO
 }
 
 extension Group : FoundationalComponent {
-	func labelledChildren(for graph: ShadowGraph) async throws -> [(Location, any Component)] {
-		[(.anchor[.child(at: 0)], first), (.anchor[.child(at: 1)], second)]
+	
+	func childLocations(for shadow: Shadow<Self>) async throws -> [Location] {
+		[.child(at: 0), .child(at: 1)]
 	}
+	
+	func child(at location: Location, for shadow: Shadow<Self>) async throws -> any Component {
+		switch location {
+			case .child(at: 0):	return first
+			case .child(at: 1):	return second
+			default:			preconditionFailure("\(location) does not exist on \(shadow)")
+		}
+	}
+	
 }

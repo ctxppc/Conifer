@@ -26,8 +26,14 @@ public struct Modified<Content : Component, ModifierType : Modifier> : Foundatio
 	public var body: Never { hasNoBody }
 	
 	// See protocol.
-	func labelledChildren(for graph: ShadowGraph) async throws -> [(Location, any Component)] {
-		[(.body, content)]
+	func childLocations(for shadow: Shadow<Self>) async throws -> [Location] {
+		[.body]
+	}
+	
+	// See protocol.
+	func child(at location: Location, for shadow: Shadow<Self>) async throws -> any Component {
+		precondition(location == .body, "Expected body direction")
+		return content
 	}
 	
 	// See protocol.

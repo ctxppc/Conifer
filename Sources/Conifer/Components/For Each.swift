@@ -37,11 +37,19 @@ public struct ForEach<Data : RandomAccessCollection & Sendable, Identifier : Has
 }
 
 extension ForEach : FoundationalComponent {
-	func labelledChildren(for graph: ShadowGraph) async throws -> [(Location, any Component)] {
+	
+	func childLocations(for shadow: Shadow<Self>) -> [Location] {
 		data.enumerated().map { position, datum in
-			(.child(identifiedBy: identifierProvider(datum), position: position), contentProducer(datum))
+			.child(identifiedBy: identifierProvider(datum), position: position)
 		}
 	}
+	
+	func child(at location: Location, for shadow: Shadow<Self>) -> any Component {
+		precondition(location.directions.count == 1, "Expected one direction")
+		guard case .identifier(_, position: let offset) = location.directions.first else { preconditionFailure("Expected identifier direction") }
+		return contentProducer(data[data.index(data.startIndex, offsetBy: offset)])
+	}
+	
 }
 
 extension ForEach where Data.Element : Identifiable, Identifier == Data.Element.ID {

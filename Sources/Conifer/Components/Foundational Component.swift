@@ -5,12 +5,25 @@
 /// This protocol enables Conifer to treat its structural component types specially. This power is not afforded to Conifer clients which get a simplified API instead.
 protocol FoundationalComponent : Component where Body == Never {
 	
-	/// Returns a tuple for each child of `self`, with each tuple consisting of a component and the location of that component relative to `self`.
+	/// Returns the locations relative to `self` for each child of `self`.
 	///
-	/// The component must not query itself or any of its descendants on the shadow graph.
+	/// - Warning: Accessing `shadow`'s descendants may cause an infinite loop.
 	///
-	/// - Parameter graph: The shadow graph performing the request.
-	func labelledChildren(for graph: ShadowGraph) async throws -> [(Location, any Component)]
+	/// - Parameter shadow: The shadow over `self`.
+	///
+	/// - Returns: The locations relative to `self` for each child of `self`.
+	func childLocations(for shadow: Shadow<Self>) async throws -> [Location]
+	
+	/// Returns the child of `self` at a given location relative to `self`.
+	///
+	/// - Warning: Accessing `shadow`'s descendants may cause an infinite loop.
+	///
+	/// - Parameters:
+	///    - location: The location relative to `self` of the requested child.
+	///    - shadow: The shadow over `self`.
+	///
+	/// - Returns: The child at `shadow.location[location]` in `shadow.graph`.
+	func child(at location: Location, for shadow: Shadow<Self>) async throws -> any Component
 	
 	/// Performs additional post-rendering actions on the shadow of `self`.
 	///

@@ -22,8 +22,8 @@ public struct Location : Hashable, @unchecked Sendable {	// AnyHashable isn't Se
 	}
 	
 	/// The location's directions, starting with the direction from the anchor.
-	private var directions: [Direction]
-	fileprivate enum Direction : Hashable, @unchecked Sendable {
+	private(set) var directions: [Direction]
+	enum Direction : Hashable, @unchecked Sendable {
 		
 		/// The component identified by given position.
 		case position(Int)
