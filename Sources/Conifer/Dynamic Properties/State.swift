@@ -14,7 +14,7 @@ public struct State<Value : Sendable> : DynamicProperty {
 	}
 	
 	// See protocol.
-	public mutating func prepare(_ propertyIdentifier: some Hashable & Sendable, forRendering shadow: UntypedShadow) async {
+	public mutating func update(for shadow: UntypedShadow, propertyIdentifier: some Hashable & Sendable) async {
 		guard let value: Value = await shadow.element(ofType: StateContainer.self)?[propertyIdentifier] else { return }
 		storedValue = value
 	}

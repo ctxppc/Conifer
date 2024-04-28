@@ -29,7 +29,7 @@ public struct Group<First : Component, Second : Component> : Component {	// TODO
 	/// A type that allows concatenating a third component to groups of this type.
 	///
 	/// This convenience syntax allows writing `Group<A, B>.Con<C>` instead of `Group<Group<A, B>, C>`.
-	public typealias Con<Third : Component> = Group<Self, Third> /* where Third.Artefact == Artefact */
+	public typealias Con<Third : Component> = Group<Self, Third>
 	
 	/// Concatenates a third component to this group.
 	///

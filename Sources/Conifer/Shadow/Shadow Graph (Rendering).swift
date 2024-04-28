@@ -98,6 +98,6 @@ private protocol DynamicPropertyKeyPath<Root> {
 
 extension WritableKeyPath : DynamicPropertyKeyPath where Root : Component, Value : DynamicProperty {
 	func prepareDynamicProperty(on component: inout Root, forRendering shadow: UntypedShadow) async throws {
-		try await component[keyPath: self].prepare("\(self)", forRendering: shadow)
+		try await component[keyPath: self].update(for: shadow, propertyIdentifier: "\(self)")
 	}
 }
