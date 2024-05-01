@@ -1,7 +1,6 @@
 // Conifer © 2019–2024 Constantino Tsarouhas
 
 import DepthKit
-import SortedCollections
 
 /// A tree structure of rendered components and other types of elements.
 ///
