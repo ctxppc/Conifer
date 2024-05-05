@@ -34,9 +34,9 @@ extension UntypedShadow {
 	
 	/// Applies a given functor on the shadow.
 	///
-	/// - Returns: The result of `visitor` applied on `self`, or `nil` if `visitor` does not have a function for the underlying component type.
-	public func apply<Result>(_ visitor: some GenericShadowFunctor<Result>) async throws -> Result {
-		try await visitor.apply(on: self)
+	/// - Returns: The result of `functor` applied on `self`.
+	public func apply<Result>(_ functor: some GenericShadowFunctor<Result>) async throws -> Result {
+		try await functor.apply(on: self)
 	}
 	
 }

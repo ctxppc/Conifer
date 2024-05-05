@@ -7,7 +7,7 @@ import DepthKit
 /// The appropriate typed shadow functor is selected based on the component type.
 public struct PolymorphicShadowFunctor<Result> {
 	
-	/// Creates an unconfigured visitor.
+	/// Creates a functor that always produces `nil`.
 	fileprivate init() {}
 	
 	/// The visitors keyed by component type.
@@ -30,7 +30,7 @@ public struct PolymorphicShadowFunctor<Result> {
 	
 }
 
-/// Returns a visitor that applies a given function to shadows of a given component type.
+/// Returns a functor that applies a given function to shadows of a given component type.
 public func match<C, Result>(_ type: C.Type, do function: @escaping (Shadow<C>) -> Result) -> PolymorphicShadowFunctor<Result> {
 	PolymorphicShadowFunctor().match(type, do: function)
 }
@@ -68,9 +68,9 @@ extension UntypedShadow {
 	
 	/// Applies a given functor on the shadow.
 	///
-	/// - Returns: The result of `visitor` applied on `self`, or `nil` if `visitor` does not have a function for the underlying component type.
-	public func apply<Result>(_ visitor: PolymorphicShadowFunctor<Result>) async throws -> Result? {
-		try await visitor.apply(on: self)
+	/// - Returns: The result of `functor` applied on `self`, or `nil` if `functor` does not have a function for the underlying component type.
+	public func apply<Result>(_ functor: PolymorphicShadowFunctor<Result>) async throws -> Result? {
+		try await functor.apply(on: self)
 	}
 	
 }

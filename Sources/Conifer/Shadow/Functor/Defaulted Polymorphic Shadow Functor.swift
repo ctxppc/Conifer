@@ -9,7 +9,7 @@ public struct DefaultedPolymorphicShadowFunctor<FallbackFunctor : GenericShadowF
 	
 	public typealias Result = FallbackFunctor.Result
 	
-	/// Creates a visitor.
+	/// Creates a functor.
 	fileprivate init(polymorphicShadowFunctor: PolymorphicShadowFunctor<Result>, fallbackFunctor: FallbackFunctor) {
 		self.polymorphicShadowFunctor = polymorphicShadowFunctor
 		self.fallbackFunctor = fallbackFunctor
@@ -47,9 +47,9 @@ extension UntypedShadow {
 	
 	/// Applies a given functor on the shadow.
 	///
-	/// - Returns: The result of `visitor` applied on `self`, or `nil` if `visitor` does not have a function for the underlying component type.
-	public func apply<F>(_ visitor: DefaultedPolymorphicShadowFunctor<F>) async throws -> DefaultedPolymorphicShadowFunctor<F>.Result {
-		try await visitor.apply(on: self)
+	/// - Returns: The result of `functor` applied on `self`.
+	public func apply<F>(_ functor: DefaultedPolymorphicShadowFunctor<F>) async throws -> DefaultedPolymorphicShadowFunctor<F>.Result {
+		try await functor.apply(on: self)
 	}
 	
 }
