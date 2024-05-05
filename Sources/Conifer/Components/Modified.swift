@@ -38,17 +38,17 @@ public struct Modified<Content : Component, ModifierType : Modifier> : Foundatio
 	
 	// See protocol.
 	func finalise(_ shadow: Shadow<Self>) async throws {
-		let modifierApplication = ModifierApplication(modifier: modifier)
+		let modifierFunctor = ModifierFunctor(modifier: modifier)
 		for try await child in shadow.children {	// only non-foundational children
-			try await child.perform(modifierApplication)
+			try await child.apply(modifierFunctor)
 		}
 	}
 	
 }
 
-private struct ModifierApplication<ModifierType : Modifier> : UntypedShadow.Action {
+private struct ModifierFunctor<ModifierType : Modifier> : GenericShadowFunctor {
 	let modifier: ModifierType
-	func perform<Subject>(on shadow: Shadow<Subject>) async throws {
+	func apply(on shadow: Shadow<some Component>) async throws {
 		try await modifier.update(shadow)
 	}
 }
