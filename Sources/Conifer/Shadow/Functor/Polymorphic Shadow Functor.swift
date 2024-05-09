@@ -10,13 +10,13 @@ public struct PolymorphicShadowFunctor<Result> {
 	/// Creates a functor that always produces `nil`.
 	fileprivate init() {}
 	
-	/// The visitors keyed by component type.
-	private var visitorsByComponentType = [ObjectIdentifier : any TypedShadowFunctorProtocol<Result>]()
+	/// The functors keyed by component type.
+	private var functorsByComponentType = [ObjectIdentifier : any TypedShadowFunctorProtocol<Result>]()
 	
 	/// Returns a copy of `self` that applies a given function to shadows of a given component type.
 	public func match<C>(_ type: C.Type, do function: @escaping (Shadow<C>) -> Result) -> Self {
 		with(self) {
-			$0.visitorsByComponentType[.init(type)] = TypedShadowFunctor(function: function)
+			$0.functorsByComponentType[.init(type)] = TypedShadowFunctor(function: function)
 		}
 	}
 	
@@ -24,8 +24,8 @@ public struct PolymorphicShadowFunctor<Result> {
 	///
 	/// - Returns: The result of the function applied on `shadow`, or `nil` if `self` does not have a function for the underlying component type.
 	fileprivate func apply(on shadow: UntypedShadow) async throws -> Result? {
-		guard let visitor = visitorsByComponentType[.init(type(of: try await shadow.subject))] else { return nil }
-		return try await visitor.apply(on: shadow)
+		guard let functor = functorsByComponentType[.init(type(of: try await shadow.subject))] else { return nil }
+		return try await functor.apply(on: shadow)
 	}
 	
 }

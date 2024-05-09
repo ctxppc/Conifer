@@ -21,6 +21,9 @@ public struct Shadow<Subject : Component> : ShadowProtocol {
 		}
 	}
 	
+	/// The subject type.
+	typealias SubjectType = Subject
+	
 	/// Accesses the subject.
 	public subscript <Value>(dynamicMember keyPath: KeyPath<Subject, Value>) -> Value {
 		get async throws {
