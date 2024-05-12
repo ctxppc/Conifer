@@ -39,20 +39,11 @@ extension Modified : FoundationalComponent {
 	}
 	
 	func finalise(_ shadow: some Shadow<Self>) async throws {
-		let modifierFunctor = ModifierFunctor(modifier: modifier)
 		for try await child in shadow.children(ofType: Shadow.self) {	// only non-foundational children
-			try await child.apply(modifierFunctor)
-			TODO.unimplemented
+			await child.update(shadow)
 		}
 	}
 	
-}
-
-private struct ModifierFunctor<ModifierType : Modifier> : GenericShadowFunctor {
-	let modifier: ModifierType
-	func apply(on shadow: some Shadow) async throws {
-		try await modifier.update(shadow)
-	}
 }
 
 extension Component {
