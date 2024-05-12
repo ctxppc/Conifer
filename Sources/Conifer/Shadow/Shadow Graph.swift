@@ -6,14 +6,14 @@ import DepthKit
 ///
 /// Each node in a shadow graph can contain any number of elements but at most one per type. Rendered components are elements of type `any Component`. The existential type ensures that no two components can occupy the same node. Although nothing prevents one from assigning a component of concrete type (e.g., `Either<…, …>`), `ShadowChildren` does not traverse or return those types of components.
 ///
-/// Foundational components (such as `Either`) appear as elements of a shadow graph but do not appear in shadows (instances of `Shadow` and `UntypedShadow`).
+/// Foundational components (such as `Either`) appear as elements of a shadow graph but do not appear in shadows (`Shadow` values).
 ///
-/// The shadow graph lazily renders components as they are requested. When a component is first rendered, it is instantiated, its dynamic properties are prepared, and it is added to the graph. A rendered component's children may not be rendered but the shadow graph can readily do so since the parent's dynamic properties are ready for use.
-actor ShadowGraph {
+/// The shadow graph lazily renders components as they are requested. When a component is first rendered, it is instantiated, its dynamic properties are prepared, and it is added to the graph, simultaneously with the locations of its children. A rendered component's children may not be rendered but the shadow graph can readily do so since the parent's dynamic properties are ready for use.
+public actor ShadowGraph {
 	
 	/// Creates a shadow graph with given root component.
 	init(root: some Component) async throws {
-		try await render(child: root, at: .anchor)
+		try await render(component: root, at: .anchor)
 	}
 	
 	/// The shadow elements, keyed by location relative to the root component.

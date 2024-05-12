@@ -45,11 +45,11 @@ public struct Group<First : Component, Second : Component> : Component {	// TODO
 
 extension Group : FoundationalComponent {
 	
-	func childLocations(for shadow: Shadow<Self>) async throws -> [Location] {
+	func childLocations(for shadow: some Shadow<Self>) async throws -> [Location] {
 		[.child(at: 0), .child(at: 1)]
 	}
 	
-	func child(at location: Location, for shadow: Shadow<Self>) async throws -> any Component {
+	func child(at location: Location, for shadow: some Shadow<Self>) async throws -> any Component {
 		switch location {
 			case .child(at: 0):	return first
 			case .child(at: 1):	return second

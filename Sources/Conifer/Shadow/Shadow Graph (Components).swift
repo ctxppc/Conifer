@@ -66,11 +66,11 @@ extension ShadowGraph {
 		
 	}
 	
-	/// Prepares a given child's dynamic properties and adds it at a given location to the shadow graph.
-	func render(child: some Component, at location: Location) async throws {
-		var child = child
-		try await child.prepareForRendering(shadow: .init(graph: self, location: location))
-		update(component: child, at: location)
+	/// Prepares a given component's dynamic properties and adds it at a given location to the shadow graph.
+	func render(component: some Component, at location: Location) async throws {
+		var component = component
+		try await component.prepareForRendering(shadow: component.makeShadow(graph: self, location: location))
+		update(component: component, at: location)
 	}
 	
 }
@@ -82,7 +82,7 @@ private extension Component {
 	/// This method prepares the dynamic properties declared on `self`.
 	///
 	/// - Parameter shadow: The shadow of `self`.
-	mutating func prepareForRendering(shadow: UntypedShadow) async throws {
+	mutating func prepareForRendering(shadow: some Shadow<Self>) async throws {
 		for keyPath in PartialKeyPath<Self>.allKeyPaths() {
 			try await prepareProperty(at: keyPath, forRendering: shadow)
 		}
@@ -94,7 +94,7 @@ private extension Component {
 	///
 	/// - Parameter keyPath: The key path from `self` to the property to prepare.
 	/// - Parameter shadow: A shadow of `self`.
-	mutating func prepareProperty(at keyPath: PartialKeyPath<Self>, forRendering shadow: UntypedShadow) async throws {
+	mutating func prepareProperty(at keyPath: PartialKeyPath<Self>, forRendering shadow: some Shadow<Self>) async throws {
 		guard let keyPath = keyPath as? any DynamicPropertyKeyPath<Self> else { return }
 		try await keyPath.prepareDynamicProperty(on: &self, forRendering: shadow)
 	}
@@ -111,12 +111,12 @@ private protocol DynamicPropertyKeyPath<Root> {
 	associatedtype Value : DynamicProperty
 	
 	/// Prepares the dynamic property `component[keyPath: self]` for rendering `shadow`.
-	func prepareDynamicProperty(on component: inout Root, forRendering shadow: UntypedShadow) async throws
+	func prepareDynamicProperty(on component: inout Root, forRendering shadow: some Shadow<Root>) async throws
 	
 }
 
 extension WritableKeyPath : DynamicPropertyKeyPath where Root : Component, Value : DynamicProperty {
-	func prepareDynamicProperty(on component: inout Root, forRendering shadow: UntypedShadow) async throws {
+	func prepareDynamicProperty(on component: inout Root, forRendering shadow: some Shadow<Root>) async throws {
 		try await component[keyPath: self].update(for: shadow, propertyIdentifier: "\(self)")
 	}
 }
@@ -124,11 +124,13 @@ extension WritableKeyPath : DynamicPropertyKeyPath where Root : Component, Value
 private extension Component {
 	
 	/// Renders `self` in a given graph at given location and returns the locations of the children of `self`.
+	///
+	/// - Requires: The properties on `self` are prepared.
 	func render(in graph: isolated ShadowGraph, at location: Location) async throws -> ShadowChildLocations {
 		
 		// Render body.
 		let childLocation = location[.body]
-		try await graph.render(child: body, at: childLocation)
+		try await graph.render(component: body, at: childLocation)
 		
 		// Update child locations on graph.
 		let childLocations = ShadowChildLocations([childLocation])
@@ -143,16 +145,19 @@ private extension Component {
 private extension FoundationalComponent {
 	
 	/// Renders `self` in a given graph at given location and returns the locations of the children of `self`.
+	///
+	/// - Requires: The properties on `self` are prepared.
 	func render(in graph: isolated ShadowGraph, at location: Location) async throws -> ShadowChildLocations {
 		
 		// Determine child locations.
-		let relativeChildLocations = try await childLocations(for: .init(graph: graph, location: location))
+		let shadow = makeShadow(graph: graph, location: location)
+		let relativeChildLocations = try await childLocations(for: shadow)
 		let absoluteChildLocations = relativeChildLocations.map { location[$0] }
 		
 		// Render children.
 		for (relativeChildLocation, absoluteChildLocation) in zip(relativeChildLocations, absoluteChildLocations) {
-			let child = try await child(at: relativeChildLocation, for: .init(graph: graph, location: location))
-			try await graph.render(child: child, at: absoluteChildLocation)
+			let child = try await child(at: relativeChildLocation, for: shadow)
+			try await graph.render(component: child, at: absoluteChildLocation)
 		}
 		
 		// Update child locations on graph.
@@ -160,7 +165,7 @@ private extension FoundationalComponent {
 		graph.update(childLocations, at: location)
 		
 		// Finalise.
-		try await finalise(.init(graph: graph, location: location))	// may trigger additional renderings
+		try await finalise(shadow)	// may trigger additional renderings
 		
 		return childLocations
 		

@@ -18,7 +18,7 @@ private struct ContextModifier<Value : Sendable> : Modifier, @unchecked Sendable
 	let value: Value
 	
 	// See protocol.
-	func update(_ shadow: Shadow<some Component>) async throws {
+	func update(_ shadow: some Shadow) async throws {
 		var context = try await shadow.parent?.context ?? .init()
 		context[keyPath: key] = value
 		await shadow.update(context)

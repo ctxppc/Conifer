@@ -12,7 +12,7 @@ protocol FoundationalComponent : Component where Body == Never {
 	/// - Parameter shadow: The shadow over `self`.
 	///
 	/// - Returns: The locations relative to `self` for each child of `self`.
-	func childLocations(for shadow: Shadow<Self>) async throws -> [Location]
+	func childLocations(for shadow: some Shadow<Self>) async throws -> [Location]
 	
 	/// Returns the child of `self` at a given location relative to `self`.
 	///
@@ -23,7 +23,7 @@ protocol FoundationalComponent : Component where Body == Never {
 	///    - shadow: The shadow over `self`.
 	///
 	/// - Returns: The child at `shadow.location[location]` in `shadow.graph`.
-	func child(at location: Location, for shadow: Shadow<Self>) async throws -> any Component
+	func child(at location: Location, for shadow: some Shadow<Self>) async throws -> any Component
 	
 	/// Performs additional post-rendering actions on the shadow of `self`.
 	///
@@ -32,14 +32,14 @@ protocol FoundationalComponent : Component where Body == Never {
 	/// This method may trigger additional renderings during its execution if `shadow`'s descendants are accessed.
 	///
 	/// The default implementation does nothing.
-	func finalise(_ shadow: Shadow<Self>) async throws
+	func finalise(_ shadow: some Shadow<Self>) async throws
 	
 }
 
 extension FoundationalComponent {
 	
 	// See protocol.
-	func finalise(_ shadow: Shadow<Self>) async throws {}
+	func finalise(_ shadow: some Shadow<Self>) async throws {}
 	
 	/// Terminates the program with an error message stating that `self` has no body.
 	var hasNoBody: Never {

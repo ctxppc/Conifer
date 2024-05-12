@@ -24,7 +24,7 @@ public struct DefaultedPolymorphicShadowFunctor<FallbackFunctor : GenericShadowF
 	/// Applies `self` on a given untyped shadow.
 	///
 	/// - Returns: The result of the function applied on `shadow`, or `nil` if `self` does not have a function for the underlying component type.
-	fileprivate func apply(on shadow: UntypedShadow) async throws -> Result {
+	fileprivate func apply(on shadow: some Shadow) async throws -> Result {
 		if let result = try await shadow.apply(polymorphicShadowFunctor) {
 			return result
 		} else {
@@ -43,7 +43,7 @@ extension PolymorphicShadowFunctor {
 	
 }
 
-extension UntypedShadow {
+extension Shadow {
 	
 	/// Applies a given functor on the shadow.
 	///

@@ -38,13 +38,13 @@ public struct ForEach<Data : RandomAccessCollection & Sendable, Identifier : Has
 
 extension ForEach : FoundationalComponent {
 	
-	func childLocations(for shadow: Shadow<Self>) -> [Location] {
+	func childLocations(for shadow: some Shadow<Self>) -> [Location] {
 		data.enumerated().map { position, datum in
 			.child(identifiedBy: identifierProvider(datum), position: position)
 		}
 	}
 	
-	func child(at location: Location, for shadow: Shadow<Self>) -> any Component {
+	func child(at location: Location, for shadow: some Shadow<Self>) -> any Component {
 		precondition(location.directions.count == 1, "Expected one direction")
 		guard case .identifier(_, position: let offset) = location.directions.first else { preconditionFailure("Expected identifier direction") }
 		return contentProducer(data[data.index(data.startIndex, offsetBy: offset)])

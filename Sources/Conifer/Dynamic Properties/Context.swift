@@ -55,7 +55,7 @@ public struct Context : @unchecked Sendable {	// KeyPath, an immutable class, is
 	
 }
 
-extension UntypedShadow {
+extension Shadow {
 	
 	/// The context of `self`.
 	var context: Context {

@@ -8,7 +8,7 @@
 ///       Title("Hello, World!")
 ///       Paragraph("Thank you for reading this sentence.")
 ///     }.modifier(.bold)
-public struct Modified<Content : Component, ModifierType : Modifier> : FoundationalComponent {
+public struct Modified<Content : Component, ModifierType : Modifier> : Component {
 	
 	/// Applies a given modifier on a given component.
 	fileprivate init(content: Content, modifier: ModifierType) {
@@ -25,22 +25,24 @@ public struct Modified<Content : Component, ModifierType : Modifier> : Foundatio
 	// See protocol.
 	public var body: Never { hasNoBody }
 	
-	// See protocol.
-	func childLocations(for shadow: Shadow<Self>) async throws -> [Location] {
+}
+
+extension Modified : FoundationalComponent {
+	
+	func childLocations(for shadow: some Shadow<Self>) async throws -> [Location] {
 		[.body]
 	}
 	
-	// See protocol.
-	func child(at location: Location, for shadow: Shadow<Self>) async throws -> any Component {
+	func child(at location: Location, for shadow: some Shadow<Self>) async throws -> any Component {
 		precondition(location == .body, "Expected body direction")
 		return content
 	}
 	
-	// See protocol.
-	func finalise(_ shadow: Shadow<Self>) async throws {
+	func finalise(_ shadow: some Shadow<Self>) async throws {
 		let modifierFunctor = ModifierFunctor(modifier: modifier)
-		for try await child in shadow.children {	// only non-foundational children
+		for try await child in shadow.children(ofType: Shadow.self) {	// only non-foundational children
 			try await child.apply(modifierFunctor)
+			TODO.unimplemented
 		}
 	}
 	
@@ -48,7 +50,7 @@ public struct Modified<Content : Component, ModifierType : Modifier> : Foundatio
 
 private struct ModifierFunctor<ModifierType : Modifier> : GenericShadowFunctor {
 	let modifier: ModifierType
-	func apply(on shadow: Shadow<some Component>) async throws {
+	func apply(on shadow: some Shadow) async throws {
 		try await modifier.update(shadow)
 	}
 }
@@ -65,6 +67,6 @@ extension Component {
 public protocol Modifier : Sendable {
 	
 	/// Modifies a given shadowed component.
-	func update<Component>(_ shadow: Shadow<Component>) async throws
+	func update(_ shadow: some Shadow) async throws
 	
 }

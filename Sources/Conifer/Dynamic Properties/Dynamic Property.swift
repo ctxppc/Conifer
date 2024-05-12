@@ -17,7 +17,7 @@ public protocol DynamicProperty : Sendable {
 	///
 	/// - Parameter shadow: The shadow of the component being rendered.
 	/// - Parameter propertyIdentifier: An identifier for `self` among other properties on the dependent component.
-	mutating func update(for shadow: UntypedShadow, propertyIdentifier: some Hashable & Sendable) async throws
+	mutating func update(for shadow: some Shadow, propertyIdentifier: some Hashable & Sendable) async throws
 	
 	/// The property's value.
 	///

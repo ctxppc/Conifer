@@ -13,11 +13,11 @@ extension Never : Component {
 
 extension Never : FoundationalComponent {
 	
-	func childLocations(for shadow: Shadow<Never>) async throws -> [Location] {
+	func childLocations(for shadow: some Shadow<Self>) async throws -> [Location] {
 		switch self {}
 	}
 	
-	func child(at location: Location, for shadow: Shadow<Never>) async throws -> any Component {
+	func child(at location: Location, for shadow: some Shadow<Self>) async throws -> any Component {
 		switch self {}
 	}
 	

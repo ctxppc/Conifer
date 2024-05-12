@@ -14,7 +14,7 @@ public struct PolymorphicShadowFunctor<Result> {
 	private var functorsByComponentType = [ObjectIdentifier : any TypedShadowFunctorProtocol<Result>]()
 	
 	/// Returns a copy of `self` that applies a given function to shadows of a given component type.
-	public func match<C>(_ type: C.Type, do function: @escaping (Shadow<C>) -> Result) -> Self {
+	public func match<C : Component>(_ type: C.Type, do function: @escaping (any Shadow<C>) -> Result) -> Self {
 		with(self) {
 			$0.functorsByComponentType[.init(type)] = TypedShadowFunctor(function: function)
 		}
@@ -23,7 +23,7 @@ public struct PolymorphicShadowFunctor<Result> {
 	/// Applies `self` on a given untyped shadow.
 	///
 	/// - Returns: The result of the function applied on `shadow`, or `nil` if `self` does not have a function for the underlying component type.
-	fileprivate func apply(on shadow: UntypedShadow) async throws -> Result? {
+	fileprivate func apply(on shadow: some Shadow) async throws -> Result? {
 		guard let functor = functorsByComponentType[.init(type(of: try await shadow.subject))] else { return nil }
 		return try await functor.apply(on: shadow)
 	}
@@ -31,7 +31,7 @@ public struct PolymorphicShadowFunctor<Result> {
 }
 
 /// Returns a functor that applies a given function to shadows of a given component type.
-public func match<C, Result>(_ type: C.Type, do function: @escaping (Shadow<C>) -> Result) -> PolymorphicShadowFunctor<Result> {
+public func match<C : Component, Result>(_ type: C.Type, do function: @escaping (any Shadow<C>) -> Result) -> PolymorphicShadowFunctor<Result> {
 	PolymorphicShadowFunctor().match(type, do: function)
 }
 
@@ -41,7 +41,7 @@ private protocol TypedShadowFunctorProtocol<Result> {
 	/// Applies the functor on a given shadow.
 	///
 	/// - Requires: The shadowed component is of the type expected by the functor.
-	func apply(on shadow: UntypedShadow) async throws -> Result
+	func apply(on shadow: some Shadow) async throws -> Result
 	associatedtype Result
 	
 }
@@ -50,21 +50,17 @@ private protocol TypedShadowFunctorProtocol<Result> {
 private struct TypedShadowFunctor<ComponentType : Component, Result> : TypedShadowFunctorProtocol {
 	
 	/// The function to apply on a typed shadow.
-	let function: (Shadow<ComponentType>) async throws -> Result
-	
-	// See protocol.
-	func apply(on shadow: UntypedShadow) async throws -> Result {
-		try await apply(on: Shadow(shadow) !! "Typed shadow visitor expected component typed \(ComponentType.self)")
-	}
+	let function: (any Shadow<ComponentType>) async throws -> Result
 	
 	/// Applies the functor on given typed shadow.
-	func apply(on shadow: Shadow<ComponentType>) async throws -> Result {
-		try await function(shadow)
+	func apply(on shadow: some Shadow) async throws -> Result {
+		guard let shadow = shadow as? any Shadow<ComponentType> else { preconditionFailure("Expected \(shadow) to be over a \(ComponentType.self)") }
+		return try await function(shadow)
 	}
 	
 }
 
-extension UntypedShadow {
+extension Shadow {
 	
 	/// Applies a given functor on the shadow.
 	///

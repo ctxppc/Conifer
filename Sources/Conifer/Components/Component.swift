@@ -23,7 +23,33 @@ public protocol Component : Sendable {
 	@ComponentBuilder
 	var body: Body { get async throws }
 	
-	/// A component that acts as the body of instances of `Self`.
+	/// A component that represents the contents of an instance of `Self`.
 	associatedtype Body : Component
+	
+}
+
+extension Component {
+	
+	/// Creates a shadow over `self` with a given graph and a given location on the graph.
+	///
+	/// - Parameters:
+	///   - graph: The graph.
+	///   - location: The location of `self` in `graph`.
+	///
+	/// - Requires: `graph[location]` is equal to `self`. This also implies that `location` refers to a rendered component in `graph`.
+	func makeShadow(graph: ShadowGraph, location: Location) -> some Shadow<Self> {
+		ShadowType(graph: graph, location: location)
+	}
+	
+	/// Creates an untyped shadow over `self` with a given graph and a given location on the graph.
+	///
+	/// - Parameters:
+	///   - graph: The graph.
+	///   - location: The location of `self` in `graph`.
+	///
+	/// - Requires: `graph[location]` is equal to `self`. This also implies that `location` refers to a rendered component in `graph`.
+	func makeUntypedShadow(graph: ShadowGraph, location: Location) -> some Shadow {
+		ShadowType<Self>(graph: graph, location: location)
+	}
 	
 }
