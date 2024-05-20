@@ -1,7 +1,5 @@
 // Conifer © 2019–2024 Constantino Tsarouhas
 
-import AsyncAlgorithms
-
 /// A value that propagates up a component tree.
 ///
 /// A component has a preference that is equal to, whichever applies first,
