@@ -2,7 +2,7 @@
 
 extension Component {
 	
-	/// Returns a component where the contextualised value for `key` for `content` is set to `value`.
+	/// Sets the contextual value for `key` to `value`.
 	public func context<Value>(_ key: Context.Key<Value>, _ value: Value) -> Modified<Self, some Modifier> {
 		modifier(ContextModifier(key: key, value: value))
 	}
