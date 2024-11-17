@@ -12,7 +12,7 @@ public protocol TypeName : Sendable, ExpressibleByStringInterpolation where Stri
 	var source: TypeNameSource { get }
 	
 	/// The pattern that names of this type conform to.
-	static var pattern: Regex<Substring> { get }
+	static nonisolated var pattern: Regex<Substring> { get }
 	
 }
 
