@@ -20,6 +20,7 @@ struct DSLMacro : PeerMacro {
 		
 		let protocolNameToken = protocolDecl.name
 		
+		_ = protocolNameToken	// silence warning for now
 		TODO.unimplemented
 		
 	}

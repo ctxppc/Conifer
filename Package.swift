@@ -1,4 +1,4 @@
-// swift-tools-version:5.9
+// swift-tools-version:6.0
 
 // Conifer © 2019–2024 Constantino Tsarouhas
 
@@ -37,5 +37,6 @@ let package = Package(
 			.product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
 		]),
 		
-	]
+	],
+	swiftLanguageModes: [.v6]
 )

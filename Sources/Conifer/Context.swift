@@ -45,7 +45,7 @@ public struct Context : @unchecked Sendable {	// KeyPath, an immutable class, is
 	/// The contextual values.
 	private var values = [AnyKey : any Sendable]()
 	public typealias AnyKey = PartialKeyPath<Self>
-	public typealias Key<Value> = WritableKeyPath<Self, Value>
+	public typealias Key<Value> = WritableKeyPath<Self, Value> where Value : Sendable
 	
 	/// Accesses the contextual value at a given key.
 	public subscript <Value>(key: Key<Value>) -> Value {

@@ -6,7 +6,7 @@ import DepthKit
 ///
 /// Accessing a contextual value that is not specified by an ancestor is not permitted.
 @propertyWrapper
-public struct Contextual<Value> : DynamicProperty, @unchecked Sendable {	// KeyPath, an immutable class, is not declared Sendable
+public struct Contextual<Value : Sendable> : DynamicProperty, @unchecked Sendable {	// KeyPath, an immutable class, is not declared Sendable
 	
 	/// Creates a contextual property.
 	///

@@ -2,7 +2,7 @@
 
 /// A value that can read and write a value owned by a source of truth.
 @propertyWrapper
-public struct Binding<Value> : Sendable {
+public struct Binding<Value : Sendable> : Sendable {
 	
 	/// Creates a binding with given getter and setter.
 	public init(get: @escaping Accessor, set: @escaping Mutator) {
