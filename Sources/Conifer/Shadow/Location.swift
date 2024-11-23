@@ -3,7 +3,7 @@
 /// A component's location in a shadow relative to an anchor.
 ///
 /// Locations are ordered in pre-order form: ancestors precede their descendants, siblings are ordered normally, and a component's descendants are ordered before the siblings that follow that component.
-public struct Location : Hashable, @unchecked Sendable {	// AnyHashable isn't Sendable
+public struct Location : Hashable, Encodable, Sendable {
 	
 	/// The location referring to the anchor.
 	static let anchor = Self(directions: [])
@@ -17,19 +17,44 @@ public struct Location : Hashable, @unchecked Sendable {	// AnyHashable isn't Se
 	}
 	
 	/// A location referring to the anchor's child with given identifier.
-	static func child(identifiedBy id: some Hashable, position: Int) -> Self {
+	static func child(identifiedBy id: some Identifier, position: Int) -> Self {
 		Self(directions: [.identifier(.init(id), position: position)])
 	}
 	
 	/// The location's directions, starting with the direction from the anchor.
 	private(set) var directions: [Direction]
-	enum Direction : Hashable, @unchecked Sendable {
+	enum Direction : Hashable, Encodable, Sendable {
 		
 		/// The component identified by given position.
 		case position(Int)
 		
 		/// The component identified by given identifier in the mapping component.
-		case identifier(AnyHashable, position: Int)
+		case identifier(AnyIdentifier, position: Int)
+		
+	}
+	
+	struct AnyIdentifier : Hashable, Encodable, @unchecked Sendable {	// AnyHashable and encode functions are conditionally Sendable
+		
+		init(_ identifier: some Identifier) {
+			hashable = .init(identifier)
+			encode = identifier.encode(to:)
+		}
+		
+		func hash(into hasher: inout Hasher) {
+			hashable.hash(into: &hasher)
+		}
+		
+		static func == (lhs: Self, rhs: Self) -> Bool {
+			lhs.hashable == rhs.hashable
+		}
+		
+		private let hashable: AnyHashable
+		
+		func encode(to encoder: any Encoder) throws {
+			try self.encode(encoder)
+		}
+		
+		private let encode: (any Encoder) throws -> ()
 		
 	}
 	
@@ -88,3 +113,5 @@ extension Location.Direction : Comparable {
 		}
 	}
 }
+
+public typealias Identifier = Hashable & Encodable & Sendable
