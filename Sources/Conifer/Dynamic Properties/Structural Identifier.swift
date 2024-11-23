@@ -9,7 +9,11 @@ import Foundation
 /// * the element's identifier in mapping components (`ForEach`)
 ///
 /// A location can be considered stable if identifiers in mapping components are assigned correctly between renderings.
+@propertyWrapper
 public struct StructuralIdentifier : DynamicProperty {
+	
+	/// Creates a structural identifier.
+	public init() {}
 	
 	// See protocol.
 	public mutating func update(for shadow: some Shadow, propertyIdentifier: some Hashable & Sendable) async throws {
