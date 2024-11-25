@@ -14,7 +14,7 @@ let package = Package(
 	dependencies: [
 		.package(url: "https://github.com/apple/swift-algorithms.git", .upToNextMinor(from: "1.2.0")),
 		.package(url: "https://github.com/apple/swift-syntax", from: "509.0.0"),
-		.package(url: "https://github.com/ctxppc/DepthKit.git", .upToNextMinor(from: "0.10.0")),
+		.package(url: "https://github.com/ctxppc/DepthKit.git", .upToNextMinor(from: "0.11.0")),
 		.package(url: "https://github.com/philipturner/swift-reflection-mirror", branch: "main"),
 	],
 	targets: [

@@ -49,8 +49,25 @@ extension Shadow {
 		}
 	}
 	
-	/// Returns the subject's children.
+	/// Returns the shadow of the nearest ancestor whose subject is of a given type, or `nil` if there is no such ancestor.
+	public func nearestAncestor<T : Component>(ofComponentType type: T.Type) async -> (some Shadow<T>)? {
+		await location
+			.ancestors
+			.first { await graph[prerendered: $0] is T }
+			.map { ShadowType(graph: graph, location: $0) }
+	}
+	
+	/// Returns the shadow of the nearest ancestor of a given type, or `nil` if there is no such ancestor.
+	public func nearestAncestor<T : Shadow>(ofType type: T.Type) async -> T? {
+		await location
+			.ancestors
+			.first { await graph[prerendered: $0] is T.Subject }
+			.map { T(graph: graph, location: $0) }
+	}
+	
+	/// Returns the children of `self`, i.e., shadows over the non-foundational components that are direct descendants of `subject`.
 	///
+	/// - Requires: Each child is typed `type`.
 	/// - Invariant: No component in `children` is a foundational component.
 	public func children<T>(ofType type: T.Type) -> ShadowChildren<Self, T> {
 		.init(parentShadow: self)

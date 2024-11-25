@@ -2,7 +2,7 @@
 
 import DepthKit
 
-/// A shadow over a `Component`.
+/// A shadow over a `Subject`.
 @dynamicMemberLookup
 public struct ShadowType<Subject : Component> : Shadow {
 	
