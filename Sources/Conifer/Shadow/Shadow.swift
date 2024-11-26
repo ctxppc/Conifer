@@ -1,6 +1,72 @@
 // Conifer © 2019–2024 Constantino Tsarouhas
 
-/// A view into a rendered component and its contents.
+/// A value representing a rendered component, its content, and its associated elements.
+///
+/// # Components Are Rendered in a Shadow Graph
+/// Every non-foundational component of type `T` is represented by some `Shadow<T>` value in a `ShadowGraph` in a process called **rendering**. Foundational components (`Either`, `Empty`, `ForEach`, `Group`, `Modified`, and `Never`) do not have a corresponding shadow; their constituent components, if there any, are rendered in their place.
+///
+/// A component can be rendered using the global `makeShadow(over:)` function.
+///
+/// 	let documentComponent = HTMLDocument { … }
+/// 	let documentShadow = makeShadow(over: documentComponent)
+///
+/// A shadow's descendants can be accessed via its `children` property. The shadow graph lazily renders components as they are accessed. A shadow's parent can be accessed via its `parent` property. A rendered component's ancestors are always rendered.
+///
+/// # Shadows Can Have Associated Elements
+/// Besides storing a rendered representation of a component, a shadow can have associated elements. Each element is identified by the type of element.
+///
+/// The `update(_:ofType:)` method on a shadow associates an element of a given type with the shadow. The `element(ofType:)` method retrieves it.
+///
+/// 	documentShadow.update("test", ofType: String.self)
+///		documentShadow.element(ofType: String.self)		// "test"
+///
+/// The element type in `update(_:ofType:)` defaults to the value's concrete type. The first method call can therefore also be written as:
+///
+///		documentShadow.update("test")
+///
+/// In some cases, it's useful to use a supertype, such as an existential type, as an identifier.
+///
+/// 	documentShadow.update("test", ofType: (any Comparable).self)
+/// 	documentShadow.element(ofType: (any Comparable).self)		// "test"
+/// 	documentShadow.update(60, ofType: (any Comparable).self)
+/// 	documentShadow.element(ofType: (any Comparable).self)		// 60
+///
+/// Shadow graphs are actors. Elements must therefore be `Sendable` since they often cross a shadow graph's isolation boundary.
+///
+/// # Conifer Provides a Conforming Type
+/// Conifer provides `ShadowType`, a concrete type that conforms to `Shadow`. There is usually no need for a custom implementation of `Shadow`, nor will Conifer instantiate such types.
+///
+/// To add methods, subscripts, and computed properties, extend `Shadow`. For storage, use associated elements.
+///
+/// # Specialising the Shadow Protocol
+/// When specialising the `Component` protocol, also specialise the `Shadow` protocol and add conformance to the concrete `ShadowType` type to enable dynamic casting. For example, given following `Component` specialisation
+///
+/// 	protocol HTMLElement : Component where Body : HTMLElement { … }
+///
+/// define this `Shadow` specialisation and `ShadowType` conformance
+///
+/// 	protocol HTMLElementShadow : Shadow where Subject : HTMLElement {}
+/// 	extension ShadowType : HTMLElementShadow where Subject : HTMLElement {}
+///
+/// Add any extensions conditionally to `Shadow` instead of adding them unconditionally to the `Shadow` specialisation. For example,
+///
+/// 	extension Shadow where Subject : HTMLElement {
+///			var htmlRepresentation: String { … }
+///			var prefersPrettyPrint: Bool { … }
+///			func preferPrettyPrint(_ newValue: Bool) async { … }
+/// 	}
+///
+/// Conifer API never constrains, and indeed cannot contrain, shadows to domain-specific component types. The specialisation allows you to use dynamic casting over unconstrained `Shadow` values, like when defining a modifier type,
+///
+/// 	struct PrettyPrintModifier : Modifier {
+///			func update(_ shadow: some Shadow) async {
+///				if let s = shadow as? HTMLElementShadow {
+///					s.preferPrettyPrint(true)
+///				} else {
+///					// do something else
+///				}
+///			}
+/// 	}
 @dynamicMemberLookup
 public protocol Shadow<Subject> : Sendable {
 	
@@ -47,22 +113,6 @@ extension Shadow {
 			}
 			return nil
 		}
-	}
-	
-	/// Returns the shadow of the nearest ancestor whose subject is of a given type, or `nil` if there is no such ancestor.
-	public func nearestAncestor<T : Component>(ofComponentType type: T.Type) async -> (some Shadow<T>)? {
-		await location
-			.ancestors
-			.first { await graph[prerendered: $0] is T }
-			.map { ShadowType(graph: graph, location: $0) }
-	}
-	
-	/// Returns the shadow of the nearest ancestor of a given type, or `nil` if there is no such ancestor.
-	public func nearestAncestor<T : Shadow>(ofType type: T.Type) async -> T? {
-		await location
-			.ancestors
-			.first { await graph[prerendered: $0] is T.Subject }
-			.map { T(graph: graph, location: $0) }
 	}
 	
 	/// Returns the children of `self`, i.e., shadows over the non-foundational components that are direct descendants of `subject`.
