@@ -23,7 +23,7 @@ public actor ShadowGraph {
 	private var elements = [ElementKey : Any]()
 	private struct ElementKey : Hashable {
 		
-		/// Creates a key for an element of a given type (concrete or existential) at a given location in a graph.
+		/// Creates a key for an element of a given (concrete or existential) type at a given location in a graph.
 		init<T>(location: Location, type: T.Type) {
 			self.location = location
 			self.type = .init(type)
@@ -32,9 +32,9 @@ public actor ShadowGraph {
 		/// The location of the element in the graph.
 		let location: Location
 		
-		/// The identifier of the type of the element.
+		/// The type of the element that identifies the kind of associated element.
 		///
-		/// The type is usually a concrete type but can also be an existential type.
+		/// The type is either a concrete or existential type.
 		let type: ObjectIdentifier
 		
 	}

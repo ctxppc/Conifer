@@ -3,7 +3,7 @@
 /// A value representing a rendered component, its content, and its associated elements.
 ///
 /// # Components Are Rendered in a Shadow Graph
-/// Every non-foundational component of type `T` is represented by some `Shadow<T>` value in a `ShadowGraph` in a process called **rendering**. Foundational components (`Either`, `Empty`, `ForEach`, `Group`, `Modified`, and `Never`) do not have a corresponding shadow; their constituent components, if there any, are rendered in their place.
+/// Every non-foundational component of type `T` is represented by some `Shadow<T>` value in a `ShadowGraph` in a process called **rendering**. Foundational components (`Either`, `Empty`, `ForEach`, `Group`, `Modified`, and `Never`) do not have a shadow in a shadow graph; their constituent components, if there any, are rendered in their place.
 ///
 /// A component can be rendered using the global `makeShadow(over:)` function.
 ///
