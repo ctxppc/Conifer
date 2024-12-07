@@ -14,14 +14,14 @@ public struct State<Value : Sendable> : DynamicProperty {
 	}
 	
 	// See protocol.
-	public mutating func update(for shadow: some Shadow, propertyIdentifier: some Hashable & Sendable) async {
+	public mutating func update<Component>(for shadow: some Shadow<Component>, keyPath: Self.KeyPath<Component>) async {
 		
 		// If state container already has a value, replace the initial value.
-		if let value: Value = await shadow.element(ofType: StateContainer.self)?[propertyIdentifier] {
+		if let value: Value = await shadow.element(ofType: StateContainer.self)?[keyPath] {
 			storedValue = value
 		}
 		
-		backReference = .init(shadow: shadow, propertyIdentifier: propertyIdentifier)
+		backReference = .init(shadow: shadow, keyPath: keyPath)
 		
 	}
 	
@@ -33,7 +33,7 @@ public struct State<Value : Sendable> : DynamicProperty {
 			if let backReference {
 				Task { [newValue] in
 					var container = await backReference.shadow.element(ofType: StateContainer.self) ?? .init()
-					container[backReference.propertyIdentifier] = newValue
+					container[backReference.keyPath] = newValue
 					// FIXME: Other updates to the container between the suspention points are lost.
 					await backReference.shadow.update(container)
 				}
@@ -46,31 +46,31 @@ public struct State<Value : Sendable> : DynamicProperty {
 	
 	/// A reference to the shadow graph.
 	private var backReference: BackReference?
-	private struct BackReference : Sendable {
+	private struct BackReference : @unchecked Sendable {	// Conifer only provides sendable key paths
 		let shadow: any Shadow
-		let propertyIdentifier: any Hashable & Sendable
+		let keyPath: AnyKeyPath
 	}
 	
 }
 
 /// A mapping of state properties to their values for a component.
-private struct StateContainer : @unchecked Sendable {	// AnyHashable with Sendable bases only
+private struct StateContainer : @unchecked Sendable {	// Conifer only provides sendable key paths
 	
 	/// Accesses a value in the state container.
-	subscript <Value : Sendable>(propertyIdentifier: some Hashable & Sendable) -> Value? {
+	subscript <Value : Sendable>(keyPath: AnyKeyPath) -> Value? {
 		
 		get {
-			guard let value = valuesByPropertyIdentifier[propertyIdentifier] else { return nil }
+			guard let value = valuesByKeyPath[keyPath] else { return nil }
 			return value as? Value !! "Expected state value of type \(Value.self); got \(value) instead"
 		}
 		
 		set {
-			valuesByPropertyIdentifier[propertyIdentifier] = newValue
+			valuesByKeyPath[keyPath] = newValue
 		}
 		
 	}
 	
 	/// The container's storage.
-	private var valuesByPropertyIdentifier = [AnyHashable : any Sendable]()
+	private var valuesByKeyPath = [AnyKeyPath : any Sendable]()
 	
 }

@@ -16,8 +16,9 @@ public protocol DynamicProperty : Sendable {
 	/// - Warning: When this method is invoked, the children of `shadow` may not be (re)rendered yet.
 	///
 	/// - Parameter shadow: The shadow of the component being rendered.
-	/// - Parameter propertyIdentifier: An identifier for `self` among other properties on the dependent component.
-	mutating func update(for shadow: some Shadow, propertyIdentifier: some Hashable & Sendable) async throws
+	/// - Parameter keyPath: A key path from `shadow`'s subject to `self`.
+	mutating func update<Component>(for shadow: some Shadow<Component>, keyPath: KeyPath<Component>) async throws
+	typealias KeyPath<Component> = WritableKeyPath<Component, Self> & Sendable
 	
 	/// The property's value.
 	///

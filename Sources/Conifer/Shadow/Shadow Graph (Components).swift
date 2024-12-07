@@ -14,7 +14,7 @@ extension ShadowGraph {
 				return component
 			}
 			
-			try await renderChildren(ofComponentAt: location.parent !! "Expected root component to be already rendered")
+			try await renderChildren(ofComponentAt: location.parent !! "Expected parent of component at \(location) to be already rendered")
 			return self[prerendered: location]
 			
 		}
@@ -28,12 +28,12 @@ extension ShadowGraph {
 	}
 	
 	/// Returns the component at a given location, or `nil` if it has not been rendered yet.
-	func componentIfRendered(at location: ShadowLocation) -> (any Component)? {
+	private func componentIfRendered(at location: ShadowLocation) -> (any Component)? {
 		element(ofType: (any Component).self, at: location)
 	}
 	
 	/// Assigns or replaces the component at a given location in the graph.
-	func update(component: any Component, at location: ShadowLocation) {
+	private func update(component: any Component, at location: ShadowLocation) {
 		update(component, ofType: (any Component).self, at: location)
 	}
 	
@@ -42,7 +42,7 @@ extension ShadowGraph {
 	/// - Requires: `parentLocation` refers to an already rendered component in `self`.
 	/// - Postcondition: `childLocationsByLocation[parentLocation]` is not `nil`.
 	/// - Postcondition: For each `location` in `childLocationsByLocation[parentLocation]`, `componentsByLocation[location]` is not `nil`.
-	func renderChildren(ofComponentAt parentLocation: ShadowLocation) async throws {
+	private func renderChildren(ofComponentAt parentLocation: ShadowLocation) async throws {
 		_ = try await childLocations(ofComponentAt: parentLocation)
 	}
 	
@@ -58,11 +58,7 @@ extension ShadowGraph {
 		}
 		
 		let parent = self[prerendered: parentLocation]
-		if let parent = parent as? any FoundationalComponent {
-			return try await parent.render(in: self, at: parentLocation)
-		} else {
-			return try await parent.render(in: self, at: parentLocation)
-		}
+		return try await parent.render(in: self, at: parentLocation)
 		
 	}
 	
@@ -117,9 +113,11 @@ private protocol DynamicPropertyKeyPath<Root> {
 
 extension WritableKeyPath : DynamicPropertyKeyPath where Root : Component, Value : DynamicProperty {
 	func prepareDynamicProperty(on component: inout Root, forRendering shadow: some Shadow<Root>) async throws {
-		try await component[keyPath: self].update(for: shadow, propertyIdentifier: "\(self)")
+		try await component[keyPath: self].update(for: shadow, keyPath: self)
 	}
 }
+
+extension WritableKeyPath : @unchecked @retroactive Sendable where Root : Component, Value : DynamicProperty {}
 
 private extension Component {
 	
@@ -127,6 +125,11 @@ private extension Component {
 	///
 	/// - Requires: The properties on `self` are prepared.
 	func render(in graph: isolated ShadowGraph, at location: ShadowLocation) async throws -> ShadowChildLocations {
+		
+		// Special-case foundational components.
+		if let component = self as? any FoundationalComponent {
+			return try await component.render(in: graph, at: location)
+		}
 		
 		// Render body.
 		let childLocation = location[.body]

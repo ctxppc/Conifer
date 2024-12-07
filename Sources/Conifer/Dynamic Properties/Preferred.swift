@@ -13,7 +13,7 @@ public struct Preferred<PreferenceType : Preference> : DynamicProperty {
 	public private(set) var wrappedValue: PreferenceType = .default
 	
 	// See protocol.
-	public mutating func update(for shadow: some Shadow, propertyIdentifier: some Hashable & Sendable) async throws {
+	public mutating func update<Component>(for shadow: some Shadow<Component>, keyPath: Self.KeyPath<Component>) async throws {
 		// FIXME: Causes an infinite loop during the first rendering?
 		wrappedValue = try await shadow.preference(ofType: PreferenceType.self)
 	}

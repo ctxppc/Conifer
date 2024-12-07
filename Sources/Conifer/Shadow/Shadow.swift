@@ -3,7 +3,7 @@
 /// A value representing a rendered component, its content, and its associated elements.
 ///
 /// # Components Are Rendered in a Shadow Graph
-/// Every non-foundational component of type `T` is represented by some `Shadow<T>` value in a `ShadowGraph` in a process called **rendering**. Foundational components (`Either`, `Empty`, `ForEach`, `Group`, `Modified`, and `Never`) do not have a shadow in a shadow graph; their constituent components, if there any, are rendered in their place.
+/// Every non-foundational component of type `T` is represented by some `Shadow<T>` value in a `ShadowGraph` in a process called **rendering**. Foundational components (`Either`, `Empty`, `ForEach`, `Group`, `Modified`, and `Never`) do not have a shadow in a shadow graph; their constituent components, if there are any, are rendered in their place.
 ///
 /// A component can be rendered using the global `makeShadow(over:)` function.
 ///
@@ -34,7 +34,7 @@
 /// Shadow graphs are actors. Elements must therefore be `Sendable` since they often cross a shadow graph's isolation boundary.
 ///
 /// # Conifer Provides a Conforming Type
-/// Conifer provides `ShadowType`, a concrete type that conforms to `Shadow`. There is usually no need for a custom implementation of `Shadow`, nor will Conifer instantiate such types.
+/// Conifer provides `ShadowType`, a concrete type that conforms to `Shadow`. There is usually no need for a custom type conforming to `Shadow`, nor will Conifer instantiate or store such types.
 ///
 /// To add methods, subscripts, and computed properties, extend `Shadow`. For storage, use associated elements.
 ///
@@ -48,7 +48,7 @@
 /// 	protocol HTMLElementShadow : Shadow where Subject : HTMLElement {}
 /// 	extension ShadowType : HTMLElementShadow where Subject : HTMLElement {}
 ///
-/// Add any extensions conditionally to `Shadow` instead of adding them unconditionally to the `Shadow` specialisation. For example,
+/// Add any extensions conditionally to the general `Shadow` protocol instead of adding them unconditionally to the `Shadow` specialisation. For example,
 ///
 /// 	extension Shadow where Subject : HTMLElement {
 ///			var htmlRepresentation: String { … }

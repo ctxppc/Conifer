@@ -16,7 +16,7 @@ public struct StructuralIdentifier : DynamicProperty {
 	public init() {}
 	
 	// See protocol.
-	public mutating func update(for shadow: some Shadow, propertyIdentifier: some Hashable & Sendable) async throws {
+	public mutating func update<Component>(for shadow: some Shadow<Component>, keyPath: Self.KeyPath<Component>) async throws {
 		wrappedValue = try JSONEncoder().encode(shadow.location)	// TODO: Replace with more compact encoder (Protobuf?)
 	}
 	
