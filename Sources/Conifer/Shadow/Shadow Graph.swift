@@ -24,13 +24,13 @@ public actor ShadowGraph {
 	private struct ElementKey : Hashable {
 		
 		/// Creates a key for an element of a given (concrete or existential) type at a given location in a graph.
-		init<T>(location: Location, type: T.Type) {
+		init<T>(location: ShadowLocation, type: T.Type) {
 			self.location = location
 			self.type = .init(type)
 		}
 		
 		/// The location of the element in the graph.
-		let location: Location
+		let location: ShadowLocation
 		
 		/// The type of the element that identifies the kind of associated element.
 		///
@@ -48,7 +48,7 @@ public actor ShadowGraph {
 	///   - location: The location of the element in `self`.
 	///
 	/// - Returns: The element of type `type` at `location` in `self`.
-	func element<Element : Sendable>(ofType type: Element.Type = Element.self, at location: Location) -> Element? {
+	func element<Element : Sendable>(ofType type: Element.Type = Element.self, at location: ShadowLocation) -> Element? {
 		if let element = elements[.init(location: location, type: type)] {
 			return (element as! Element)
 		} else {
@@ -64,7 +64,7 @@ public actor ShadowGraph {
 	///   - element: The new element.
 	///   - type: The element's type. The default value is the element's concrete type, which is sufficient unless an existential type is desired.
 	///   - location: The location of the element in `self`.
-	func update<Element : Sendable>(_ element: Element, ofType type: Element.Type = Element.self, at location: Location) {
+	func update<Element : Sendable>(_ element: Element, ofType type: Element.Type = Element.self, at location: ShadowLocation) {
 		elements[.init(location: location, type: type)] = element
 	}
 	

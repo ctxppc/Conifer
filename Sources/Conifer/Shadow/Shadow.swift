@@ -75,7 +75,7 @@ public protocol Shadow<Subject> : Sendable {
 	/// - Parameters:
 	///   - graph: The graph.
 	///   - location: The subject's location in the graph.
-	init(graph: ShadowGraph, location: Location)
+	init(graph: ShadowGraph, location: ShadowLocation)
 	
 	/// The graph backing `self`.
 	var graph: ShadowGraph { get }
@@ -83,7 +83,7 @@ public protocol Shadow<Subject> : Sendable {
 	/// The location of the subject relative to the root component in `graph`.
 	///
 	/// - Invariant: `location` refers to an already rendered component in `graph`.
-	var location: Location { get }
+	var location: ShadowLocation { get }
 	
 	/// A component represented by an instance of`Self`.
 	associatedtype Subject : Component

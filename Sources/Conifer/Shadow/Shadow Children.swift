@@ -22,7 +22,7 @@ public struct ShadowChildren<Parent : Shadow, Element> : AsyncSequence {
 		}
 		
 		/// Creates an iterator of shadows of non-foundational child components of the component at `parentLocation` in `graph`.
-		private init(graph: ShadowGraph, parentLocation: Location) {
+		private init(graph: ShadowGraph, parentLocation: ShadowLocation) {
 			self.graph = graph
 			self.state = .initial(parentLocation: parentLocation)
 		}
@@ -37,18 +37,18 @@ public struct ShadowChildren<Parent : Shadow, Element> : AsyncSequence {
 			/// The iterator hasn't been used yet.
 			///
 			/// - Parameter parentLocation: The location of the parent component relative to the root component in `graph`.
-			case initial(parentLocation: Location)
+			case initial(parentLocation: ShadowLocation)
 			
 			/// The iterator is iterating through the parent component's children.
 			///
 			/// - Parameter childLocations: A list of locations of (already rendered) children of the parent component that are to be returned or traversed.
-			case shallow(childLocations: ArraySlice<Location>)
+			case shallow(childLocations: ArraySlice<ShadowLocation>)
 			
 			/// The iterator provides nested children provided by a subiterator before resuming iteration through the parent component's children.
 			///
 			/// - Parameter 1: An iterator providing nested children.
 			/// - Parameter childLocations: A list of (already rendered) locations of children of the parent component that are to be returned or traversed after processing the nested iterator.
-			indirect case deep(AsyncIterator, childLocations: ArraySlice<Location>)
+			indirect case deep(AsyncIterator, childLocations: ArraySlice<ShadowLocation>)
 			
 		}
 		

@@ -7,7 +7,7 @@ extension ShadowGraph {
 	/// Accesses a component in the shadow graph at a given location relative to the root component, rendering it if needed.
 	///
 	/// - Requires: `location` refers to a (possibly not-yet-rendered) component whose parent is already rendered.
-	subscript (location: Location) -> any Component {
+	subscript (location: ShadowLocation) -> any Component {
 		get async throws {
 			
 			if let component = componentIfRendered(at: location) {
@@ -23,17 +23,17 @@ extension ShadowGraph {
 	/// Accesses an already rendered component in the shadow graph at a given location relative to the root component.
 	///
 	/// - Requires: `location` refers to an already rendered component in `self`.
-	subscript (prerendered location: Location) -> any Component {
+	subscript (prerendered location: ShadowLocation) -> any Component {
 		componentIfRendered(at: location) !! "Expected component at \(location) to be already rendered"
 	}
 	
 	/// Returns the component at a given location, or `nil` if it has not been rendered yet.
-	func componentIfRendered(at location: Location) -> (any Component)? {
+	func componentIfRendered(at location: ShadowLocation) -> (any Component)? {
 		element(ofType: (any Component).self, at: location)
 	}
 	
 	/// Assigns or replaces the component at a given location in the graph.
-	func update(component: any Component, at location: Location) {
+	func update(component: any Component, at location: ShadowLocation) {
 		update(component, ofType: (any Component).self, at: location)
 	}
 	
@@ -42,7 +42,7 @@ extension ShadowGraph {
 	/// - Requires: `parentLocation` refers to an already rendered component in `self`.
 	/// - Postcondition: `childLocationsByLocation[parentLocation]` is not `nil`.
 	/// - Postcondition: For each `location` in `childLocationsByLocation[parentLocation]`, `componentsByLocation[location]` is not `nil`.
-	func renderChildren(ofComponentAt parentLocation: Location) async throws {
+	func renderChildren(ofComponentAt parentLocation: ShadowLocation) async throws {
 		_ = try await childLocations(ofComponentAt: parentLocation)
 	}
 	
@@ -51,7 +51,7 @@ extension ShadowGraph {
 	/// - Requires: `parentLocation` refers to an already rendered component in `self`.
 	/// - Postcondition: `childLocationsByLocation[parentLocation]` is equal to this method's result.
 	/// - Postcondition: For each `location` in the returned array, `componentsByLocation[location]` is not `nil`.
-	func childLocations(ofComponentAt parentLocation: Location) async throws -> ShadowChildLocations {
+	func childLocations(ofComponentAt parentLocation: ShadowLocation) async throws -> ShadowChildLocations {
 		
 		if let childLocations = element(ofType: ShadowChildLocations.self, at: parentLocation) {
 			return childLocations
@@ -67,7 +67,7 @@ extension ShadowGraph {
 	}
 	
 	/// Prepares a given component's dynamic properties and adds it at a given location to the shadow graph.
-	func render(component: some Component, at location: Location) async throws {
+	func render(component: some Component, at location: ShadowLocation) async throws {
 		var component = component
 		try await component.prepareForRendering(shadow: component.makeShadow(graph: self, location: location))
 		update(component: component, at: location)
@@ -126,7 +126,7 @@ private extension Component {
 	/// Renders `self` in a given graph at given location and returns the locations of the children of `self`.
 	///
 	/// - Requires: The properties on `self` are prepared.
-	func render(in graph: isolated ShadowGraph, at location: Location) async throws -> ShadowChildLocations {
+	func render(in graph: isolated ShadowGraph, at location: ShadowLocation) async throws -> ShadowChildLocations {
 		
 		// Render body.
 		let childLocation = location[.body]
@@ -147,7 +147,7 @@ private extension FoundationalComponent {
 	/// Renders `self` in a given graph at given location and returns the locations of the children of `self`.
 	///
 	/// - Requires: The properties on `self` are prepared.
-	func render(in graph: isolated ShadowGraph, at location: Location) async throws -> ShadowChildLocations {
+	func render(in graph: isolated ShadowGraph, at location: ShadowLocation) async throws -> ShadowChildLocations {
 		
 		// Determine child locations.
 		let shadow = makeShadow(graph: graph, location: location)

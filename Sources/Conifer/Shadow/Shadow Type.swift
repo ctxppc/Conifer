@@ -7,7 +7,7 @@ import DepthKit
 public struct ShadowType<Subject : Component> : Shadow {
 	
 	// See protocol.
-	public init(graph: ShadowGraph, location: Location) {
+	public init(graph: ShadowGraph, location: ShadowLocation) {
 		self.graph = graph
 		self.location = location
 	}
@@ -16,6 +16,6 @@ public struct ShadowType<Subject : Component> : Shadow {
 	public let graph: ShadowGraph
 	
 	// See protocol.
-	public let location: Location
+	public let location: ShadowLocation
 	
 }

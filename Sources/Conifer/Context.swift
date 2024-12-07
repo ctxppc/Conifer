@@ -57,7 +57,9 @@ public struct Context : @unchecked Sendable {	// KeyPath, an immutable class, is
 
 extension Shadow {
 	
-	/// The context of `self`.
+	/// The context of `self`, which consists of contextual values set on the subject and on the subjects of ancestors of `self`.
+	///
+	/// The context cannot be mutated on a shadow. The `context(_:_:)` modifier on components is the only supported method to set contextual values.
 	var context: Context {
 		get async throws {
 			if let context = await element(ofType: Context.self) {

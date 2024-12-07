@@ -31,7 +31,7 @@ public struct State<Value : Sendable> : DynamicProperty {
 		set {
 			storedValue = newValue
 			if let backReference {
-				Task {
+				Task { [newValue] in
 					var container = await backReference.shadow.element(ofType: StateContainer.self) ?? .init()
 					container[backReference.propertyIdentifier] = newValue
 					// FIXME: Other updates to the container between the suspention points are lost.

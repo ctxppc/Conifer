@@ -37,7 +37,7 @@ extension Component {
 	///   - location: The location of `self` in `graph`.
 	///
 	/// - Requires: `graph[location]` is equal to `self`. This also implies that `location` refers to a rendered component in `graph`.
-	func makeShadow(graph: ShadowGraph, location: Location) -> some Shadow<Self> {
+	func makeShadow(graph: ShadowGraph, location: ShadowLocation) -> some Shadow<Self> {
 		ShadowType(graph: graph, location: location)
 	}
 	
@@ -48,7 +48,7 @@ extension Component {
 	///   - location: The location of `self` in `graph`.
 	///
 	/// - Requires: `graph[location]` is equal to `self`. This also implies that `location` refers to a rendered component in `graph`.
-	func makeUntypedShadow(graph: ShadowGraph, location: Location) -> some Shadow {
+	func makeUntypedShadow(graph: ShadowGraph, location: ShadowLocation) -> some Shadow {
 		ShadowType<Self>(graph: graph, location: location)
 	}
 	

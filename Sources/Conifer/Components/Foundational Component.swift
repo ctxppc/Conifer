@@ -7,23 +7,27 @@ protocol FoundationalComponent : Component where Body == Never {
 	
 	/// Returns the locations relative to `self` for each child of `self`.
 	///
+	/// Locations can be used as stable identifiers across renderings.
+	///
 	/// - Warning: Accessing `shadow`'s descendants may cause an infinite loop.
 	///
 	/// - Parameter shadow: The shadow over `self`.
 	///
 	/// - Returns: The locations relative to `self` for each child of `self`.
-	func childLocations(for shadow: some Shadow<Self>) async throws -> [Location]
+	func childLocations(for shadow: some Shadow<Self>) async throws -> [ShadowLocation]
 	
 	/// Returns the child of `self` at a given location relative to `self`.
 	///
 	/// - Warning: Accessing `shadow`'s descendants may cause an infinite loop.
+	///
+	/// - Requires: `location` is an element of the array returned by `self.childLocations(for:)`.
 	///
 	/// - Parameters:
 	///    - location: The location relative to `self` of the requested child.
 	///    - shadow: The shadow over `self`.
 	///
 	/// - Returns: The child at `shadow.location[location]` in `shadow.graph`.
-	func child(at location: Location, for shadow: some Shadow<Self>) async throws -> any Component
+	func child(at location: ShadowLocation, for shadow: some Shadow<Self>) async throws -> any Component
 	
 	/// Performs additional post-rendering actions on the shadow of `self`.
 	///

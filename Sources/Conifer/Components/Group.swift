@@ -27,8 +27,8 @@ public struct Group<each Child : Component> : Component {
 
 extension Group : FoundationalComponent {
 	
-	func childLocations(for shadow: some Shadow<Self>) async throws -> [Location] {
-		var locations = [Location]()
+	func childLocations(for shadow: some Shadow<Self>) async throws -> [ShadowLocation] {
+		var locations = [ShadowLocation]()
 		var position = 0
 		for _ in repeat each children {
 			locations.append(.child(at: position))
@@ -37,7 +37,7 @@ extension Group : FoundationalComponent {
 		return locations
 	}
 	
-	func child(at location: Location, for shadow: some Shadow<Self>) async throws -> any Component {
+	func child(at location: ShadowLocation, for shadow: some Shadow<Self>) async throws -> any Component {
 		
 		guard case .position(let desiredPosition)? = location.directions.first, location.directions.count == 1 else {
 			preconditionFailure("\(location) does not refer to a positional child in \(shadow)")
