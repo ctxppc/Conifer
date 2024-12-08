@@ -2,7 +2,7 @@
 
 /// A component's location in a shadow relative to an anchor.
 ///
-/// A location is a path, i.e., a list of directions starting from the anchor. Each direction identifies the child to visit.
+/// A location is a path, i.e., a list of directions starting from the anchor. Each direction identifies the child to visit. When the anchor is a root component, the location is *absolute*; otherwise, it is a *relative* location.
 ///
 /// Locations can be used as stable identifiers across renderings.
 ///

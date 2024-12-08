@@ -112,8 +112,8 @@ extension Shadow {
 	///
 	/// - Requires: Each child is typed `type`.
 	/// - Invariant: No component in `children` is a foundational component.
-	public func children<T>(ofType type: T.Type) -> ShadowChildren<Self, T> {
-		.init(parentShadow: self)
+	public func children<T>(ofType type: T.Type) -> some AsyncSequence<T, any Error> {
+		ShadowChildren(parent: self)
 	}
 	
 	/// Returns the associated element of a given type.
