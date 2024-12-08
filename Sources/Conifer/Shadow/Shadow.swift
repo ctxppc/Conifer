@@ -92,13 +92,6 @@ public protocol Shadow<Subject> : Sendable {
 
 extension Shadow {
 	
-	/// The component represented by `self`.
-	public var subject: Subject {
-		get async throws {
-			try await graph[location] as! Subject
-		}
-	}
-	
 	/// The shadow of the nearest non-foundational ancestor component, or `nil` if `self` is a root component.
 	///
 	/// - Invariant: `parent` is not a foundational component.
@@ -106,7 +99,7 @@ extension Shadow {
 		get async {
 			// Sequence.map and .compactMap do not support await (yet) so we use a conventional loop.
 			for location in sequence(first: location, next: \.parent) {
-				let subject = await graph[prerendered: location]
+				let subject = await graph.prerenderedComponent(at: location)
 				if !(subject is any FoundationalComponent) {
 					return subject.makeUntypedShadow(graph: graph, location: location)
 				}
@@ -139,11 +132,30 @@ extension Shadow {
 		await graph.update(element, ofType: type, at: location)
 	}
 	
-	/// Accesses the subject.
-	public subscript <Value>(dynamicMember keyPath: KeyPath<Subject, Value>) -> Value {
-		get async throws {
-			try await subject[keyPath: keyPath]
-		}
+}
+
+extension Component {
+	
+	/// Creates a shadow over `self` with a given graph and a given location on the graph.
+	///
+	/// - Parameters:
+	///   - graph: The graph.
+	///   - location: The location of `self` in `graph`.
+	///
+	/// - Requires: `location` refers to a rendered component in `graph` that is equal to `self`.
+	func makeShadow(graph: ShadowGraph, location: ShadowLocation) -> some Shadow<Self> {
+		ShadowType(graph: graph, location: location)
+	}
+	
+	/// Creates an untyped shadow over `self` with a given graph and a given location on the graph.
+	///
+	/// - Parameters:
+	///   - graph: The graph.
+	///   - location: The location of `self` in `graph`.
+	///
+	/// - Requires: `location` refers to a rendered component in `graph` that is equal to `self`.
+	func makeUntypedShadow(graph: ShadowGraph, location: ShadowLocation) -> some Shadow {
+		ShadowType<Self>(graph: graph, location: location)
 	}
 	
 }
@@ -158,6 +170,6 @@ extension Shadow {
 ///
 /// - Returns: A shadow over `subject` in a new shadow graph.
 public func makeShadow<C : Component>(over subject: C) async throws -> some Shadow<C> {
-	precondition(!(subject is any FoundationalComponent), "\(subject) is a foundational component")
+	precondition(!(subject is any FoundationalComponent), "Cannot make a shadow over foundational component \(subject)")
 	return ShadowType(graph: try await .init(root: subject), location: .anchor)
 }

@@ -57,12 +57,12 @@ public struct ShadowChildren<Parent : Shadow, Element> : AsyncSequence {
 			switch state {
 				
 			case .initial(parentLocation: let location):
-				state = .shallow(childLocations: try await graph.childLocations(ofComponentAt: location)[...])	// triggers a render if needed
+				state = .shallow(childLocations: try await graph.renderIfNeededChildren(ofComponentAt: location)[...])	// triggers a render if needed
 				return try await next()
 				
 				case .shallow(childLocations: var childLocations):
 				guard let childLocation = childLocations.popFirst() else { return nil }
-				let child = await graph[prerendered: childLocation]
+				let child = await graph.prerenderedComponent(at: childLocation)
 				if child is any FoundationalComponent {
 					state = .deep(.init(graph: graph, parentLocation: childLocation), childLocations: childLocations)	// same Element type
 					return try await next()

@@ -13,6 +13,8 @@ public protocol DynamicProperty : Sendable {
 	///
 	/// The system invokes this method just before (re)rendering `shadow` and after (re)rendering the ancestors of `shadow`.
 	///
+	/// - Precondition: Dynamic properties on `self` are updated.
+	///
 	/// - Warning: When this method is invoked, the children of `shadow` may not be (re)rendered yet.
 	///
 	/// - Parameter shadow: The shadow of the component being rendered.

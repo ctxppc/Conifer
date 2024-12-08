@@ -13,7 +13,7 @@ public actor ShadowGraph {
 	
 	/// Creates a shadow graph with given root component.
 	init(root: some Component) async throws {
-		try await render(component: root, at: .anchor)
+		try await render(root, at: .anchor)
 	}
 	
 	/// The shadow elements, keyed by location relative to the root component.

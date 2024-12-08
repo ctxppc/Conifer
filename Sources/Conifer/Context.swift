@@ -37,7 +37,7 @@ import DepthKit
 ///		}
 ///
 /// Prefer contextual properties above ordinary properties when propagation makes sense, like a database connection or a font size.
-public struct Context : @unchecked Sendable {	// KeyPath, an immutable class, is not declared Sendable
+public struct Context : @unchecked Sendable {	// Only immutable key paths without functions
 	
 	/// Creates an empty context.
 	init() {}
