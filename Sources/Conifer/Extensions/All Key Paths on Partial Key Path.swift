@@ -4,8 +4,8 @@
 
 extension PartialKeyPath {
 	
-	/// Returns all key paths from `Root` to properties on `Root`.
-	static func allKeyPaths() -> [PartialKeyPath] {
+	/// Returns key paths from `Root` to each stored property on `Root`.
+	static func allStoredPropertyKeyPaths() -> [PartialKeyPath] {
 		var keyPaths = [PartialKeyPath]()
 		let success = _forEachFieldWithKeyPath(of: Root.self) { _, keyPath in
 			keyPaths.append(keyPath)

@@ -16,6 +16,7 @@ public protocol DynamicProperty : Sendable {
 	/// - Precondition: Dynamic properties on `self` are updated.
 	///
 	/// - Warning: When this method is invoked, the children of `shadow` may not be (re)rendered yet.
+	/// - Warning: `shadow.subject` is being updated and therefore cannot be accessed.
 	///
 	/// - Parameter shadow: The shadow of the component being rendered.
 	/// - Parameter keyPath: A key path from `shadow`'s subject to `self`.

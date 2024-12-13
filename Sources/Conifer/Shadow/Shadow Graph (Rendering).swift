@@ -6,6 +6,8 @@ extension ShadowGraph {
 	
 	/// Renders if needed the component at a given location in `self` and returns the rendered component.
 	///
+	/// If the component is known to be rendered, use `prerenderedComponent(at:)` instead.
+	///
 	/// - Requires: `location` refers to a (possibly not-yet-rendered) component whose parent is already rendered.
 	func renderIfNeededComponent(at location: ShadowLocation) async throws -> any Component {
 		
@@ -19,6 +21,8 @@ extension ShadowGraph {
 	}
 	
 	/// Returns an already rendered component in the shadow graph at a given location relative to the root component.
+	///
+	/// If the component is not known to be rendered, use `renderIfNeededComponent(at:)` instead.
 	///
 	/// - Requires: `location` refers to an already rendered component in `self`.
 	func prerenderedComponent(at location: ShadowLocation) -> any Component {
@@ -61,9 +65,10 @@ extension ShadowGraph {
 	/// This method supports both foundational and non-foundational `parent`s.
 	///
 	/// - Requires: The properties on `parent` are prepared.
+	/// - Postcondition: `element(ofType: ShadowChildLocations.self, at: parentLocation)` is equal to this method's result.
 	///
 	/// - Parameter parent: The component whose children to render.
-	/// - Parameter parentLocation: The location of `parent`'s shadow in `self`.
+	/// - Parameter parentLocation: The location of `parent` in `self`.
 	///
 	/// - Returns: The locations of the rendered children.
 	fileprivate func renderChildren(of parent: some Component, under parentLocation: ShadowLocation) async throws -> ShadowChildLocations {
@@ -90,9 +95,10 @@ extension ShadowGraph {
 	/// This method overloads `renderChildren(of:under:)` for foundational `parent`s.
 	///
 	/// - Requires: The properties on `parent` are prepared.
+	/// - Postcondition: `element(ofType: ShadowChildLocations.self, at: parentLocation)` is equal to this method's result.
 	///
 	/// - Parameter parent: The component whose children to render.
-	/// - Parameter parentLocation: The location of `parent`'s shadow in `self`.
+	/// - Parameter parentLocation: The location of `parent` in `self`.
 	///
 	/// - Returns: The locations of the rendered children.
 	fileprivate func renderChildren(of parent: some FoundationalComponent, under parentLocation: ShadowLocation) async throws -> ShadowChildLocations {
@@ -122,7 +128,7 @@ extension ShadowGraph {
 	/// Prepares a given component's dynamic properties and adds it at a given location to the shadow graph.
 	func render(_ component: some Component, at location: ShadowLocation) async throws {
 		var component = component
-		try await component.prepareForRendering(shadow: component.makeShadow(graph: self, location: location))
+		try await component.updateDynamicProperties(for: component.makeShadow(graph: self, location: location))
 		update(component, at: location)
 	}
 	

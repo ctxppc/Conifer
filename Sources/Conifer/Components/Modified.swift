@@ -39,7 +39,7 @@ extension Modified : FoundationalComponent {
 	}
 	
 	func finalise(_ shadow: some Shadow<Self>) async throws {
-		for try await child in shadow.children(ofType: Shadow.self) {	// only non-foundational children
+		for try await child in shadow.children(ofType: (any Shadow).self) {	// only non-foundational children
 			await child.update(shadow)
 		}
 	}

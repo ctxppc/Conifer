@@ -4,11 +4,11 @@ import DepthKit
 
 /// A tree structure of rendered components and other types of elements.
 ///
-/// Each node in a shadow graph can contain any number of elements but at most one per type. Rendered components are elements of type `any Component`. The existential type ensures that no two components can occupy the same node. Although nothing prevents one from assigning a component of concrete type (e.g., `Either<…, …>`), `ShadowChildren` does not traverse or return those types of components.
+/// Each node in a shadow graph can contain any number of elements but at most one per type. Each node contains at least an element of type `any Component`, representing the rendered component. The existential type ensures that no two components can occupy the same node. Although nothing prevents one from assigning a component of concrete type (e.g., an `Either`), `ShadowChildren` does not traverse or return those types of components.
 ///
-/// Foundational components (such as `Either`) appear as elements of a shadow graph but do not appear in shadows (`Shadow` values).
+/// A node containing children has an associated `ShadowChildLocations` element which points to the child nodes. This element is computed and stored when the component's children are rendered.
 ///
-/// The shadow graph lazily renders components as they are requested. When a component is first rendered, it is instantiated, its dynamic properties are prepared, and it is added to the graph, simultaneously with the locations of its children. A rendered component's children may not be rendered but the shadow graph can readily do so since the parent's dynamic properties are ready for use.
+/// Foundational components (such as `Either`) appear as elements of a shadow graph but do not appear in shadows (`Shadow` values). This is the crucial difference between *components in a shadow graph* and *shadows* over components in the shadow graph: not every component in a shadow graph is represented by a shadow, but every shadow represents a component in a shadow graph.
 public actor ShadowGraph {
 	
 	/// Creates a shadow graph with given root component.
@@ -18,8 +18,9 @@ public actor ShadowGraph {
 	
 	/// The shadow elements, keyed by location relative to the root component.
 	///
-	/// - Invariant: `elements[.init(location: .anchor, type: (any Component).self)]` is not `nil`.
+	/// - Invariant: `elements[.init(location: .anchor, type: (any Component).self)]` is not `nil`. That is, `elements` stores at least a rendered root component.
 	/// - Invariant: Each dynamic property in each rendered component in the graph, i.e., each element of type `any Component` in `elements`, is prepared.
+	/// - Invariant: For every location named in `elements`, there is at least an element of type `any Component`. Stated differently, `elements` only stores elements for rendered components.
 	private var elements = [ElementKey : Any]()
 	private struct ElementKey : Hashable {
 		

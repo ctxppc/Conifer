@@ -1,9 +1,9 @@
 // Conifer © 2019–2024 Constantino Tsarouhas
 
-/// A value representing a rendered component, its content, and its associated elements.
+/// A value representing a rendered non-foundational component and its associated elements.
 ///
 /// # Components Are Rendered in a Shadow Graph
-/// Every non-foundational component of type `T` is represented by some `Shadow<T>` value in a `ShadowGraph` in a process called **rendering**. Foundational components (`Either`, `Empty`, `ForEach`, `Group`, `Modified`, and `Never`) do not have a shadow in a shadow graph; their constituent components, if there are any, are rendered in their place.
+/// Every non-foundational component of type `T` is represented by some `Shadow<T>` value in a `ShadowGraph` in a process called **rendering**. Foundational components (`Either`, `Empty`, `ForEach`, `Group`, `Modified`, and `Never`) are part of a shadow graph but are not directly represented by shadows. They are instead represented by their non-foundational children.
 ///
 /// A component can be rendered using the global `makeShadow(over:)` function.
 ///
@@ -32,6 +32,8 @@
 /// 	documentShadow.element(ofType: (any Comparable).self)		// 60
 ///
 /// Shadow graphs are actors. Elements must therefore be `Sendable` since they often cross a shadow graph's isolation boundary.
+///
+/// Conifer uses the `any Component` existential type to represent rendered components. Do not use this type when invoking `update(_:ofType:)` as this breaks internal invariants. Avoid accessing rendered components via `element(ofType:)` as this is not part of the API's contract and may change at any time.
 ///
 /// # Conifer Provides a Conforming Type
 /// Conifer provides `ShadowType`, a concrete type that conforms to `Shadow`. There is usually no need for a custom type conforming to `Shadow`, nor will Conifer instantiate or store such types.
@@ -72,6 +74,8 @@ public protocol Shadow<Subject> : Sendable {
 	
 	/// Creates a shadow in a given graph over a component at given location in the graph.
 	///
+	/// - Requires: `graph.renderIfNeededComponent(at: location)` returns a component of type `Subject`.
+	///
 	/// - Parameters:
 	///   - graph: The graph.
 	///   - location: The subject's location in the graph.
@@ -111,8 +115,9 @@ extension Shadow {
 	/// Returns the children of `self`, i.e., shadows over the non-foundational components that are direct descendants of `subject`.
 	///
 	/// - Requires: Each child is typed `type`.
+	/// - Requires: `Child` conforms to `Shadow` or is an existential `Shadow` type. (This constraint cannot be formalised as of writing; existential types cannot conform to protocols yet.)
 	/// - Invariant: No component in `children` is a foundational component.
-	public func children<T>(ofType type: T.Type) -> some AsyncSequence<T, any Error> {
+	public func children<Child>(ofType type: Child.Type) -> some AsyncSequence<Child, any Error> {
 		ShadowChildren(parent: self)
 	}
 	
