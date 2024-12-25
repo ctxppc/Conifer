@@ -12,9 +12,8 @@ let package = Package(
 		.library(name: "Conifer", targets: ["Conifer"]),
 	],
 	dependencies: [
-		.package(url: "https://github.com/apple/swift-algorithms.git", .upToNextMinor(from: "1.2.0")),
 		.package(url: "https://github.com/apple/swift-syntax", from: "509.0.0"),
-		.package(url: "https://github.com/ctxppc/DepthKit.git", .upToNextMinor(from: "0.12.0")),
+		.package(url: "https://github.com/ctxppc/DepthKit.git", .upToNextMinor(from: "0.12.1")),
 		.package(url: "https://github.com/philipturner/swift-reflection-mirror", branch: "main"),
 	],
 	targets: [
@@ -24,7 +23,6 @@ let package = Package(
 			dependencies: [
 				"ConiferMacros",
 				"DepthKit",
-				.product(name: "Algorithms", package: "swift-algorithms"),
 				.product(name: "ReflectionMirror", package: "swift-reflection-mirror"),
 			],
 			swiftSettings: [.enableExperimentalFeature("FreestandingMacros")]
