@@ -1,13 +1,13 @@
 {
-  "originHash" : "6134092e89cbe98ce22eeac160c20fbbbd1daa2417f213acd2d3d44381145030",
+  "originHash" : "3f6a67c2b0a06402ca94684dc0fa8fbb886808bf2d28b6b49ac174ad78c5e3d9",
   "pins" : [
     {
       "identity" : "depthkit",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/ctxppc/DepthKit.git",
       "state" : {
-        "revision" : "f7c1a5c6ed41703b8c7672412654174030e11364",
-        "version" : "0.11.0"
+        "revision" : "f3dd7af6f7d76b1becd8a457ce4f5906db39b494",
+        "version" : "0.12.0"
       }
     },
     {
