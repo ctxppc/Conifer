@@ -25,7 +25,7 @@ public protocol DynamicProperty : Sendable {
 	
 	/// The property's value.
 	///
-	/// - Warning: `wrappedValue` is unspecified before the first invocation of `update(for:propertyIdentifier:)`.
+	/// - Precondition: `self` has been updated, i.e., `update(for:keyPath:)` has been invoked.
 	var wrappedValue: Value { get }
 	associatedtype Value
 	

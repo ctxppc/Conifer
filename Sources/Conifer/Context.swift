@@ -6,7 +6,7 @@ import DepthKit
 ///
 /// The context of a component is set up by its ancestor components. It is a mechanism by which information can flow from parent component to child components without having to define a property for every possible piece of information that needs to flow downwards.
 ///
-/// # `@Contextual` Properties
+/// ## `@Contextual` Properties
 ///
 /// Contexts are prominently visible via `@Contextual` properties and the `context(_:_:)` modifier method. A parent component can assign a contextual property using the modifier; a descendant component can then access this value via a contextual property.
 ///

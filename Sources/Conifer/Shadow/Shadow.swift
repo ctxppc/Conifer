@@ -2,7 +2,7 @@
 
 /// A value representing a rendered non-foundational component and its associated elements.
 ///
-/// # Components Are Rendered in a Shadow Graph
+/// ## Components Are Rendered in a Shadow Graph
 /// Every non-foundational component of type `T` is represented by some `Shadow<T>` value in a `ShadowGraph` in a process called **rendering**. Foundational components (`Either`, `Empty`, `ForEach`, `Group`, `Modified`, and `Never`) are part of a shadow graph but are not directly represented by shadows. They are instead represented by their non-foundational children.
 ///
 /// A component can be rendered using the global `makeShadow(over:)` function.
@@ -12,7 +12,7 @@
 ///
 /// A shadow's descendants can be accessed via its `children` property. The shadow graph lazily renders components as they are accessed. A shadow's parent can be accessed via its `parent` property. A rendered component's ancestors are always rendered.
 ///
-/// # Shadows Can Have Associated Elements
+/// ## Shadows Can Have Associated Elements
 /// Besides storing a rendered representation of a component, a shadow can have associated elements. Each element is identified by the type of element.
 ///
 /// The `update(_:ofType:)` method on a shadow associates an element of a given type with the shadow. The `element(ofType:)` method retrieves it.
@@ -35,12 +35,12 @@
 ///
 /// Conifer uses the `any Component` existential type to represent rendered components. Do not use this type when invoking `update(_:ofType:)` as this breaks internal invariants. Avoid accessing rendered components via `element(ofType:)` as this is not part of the API's contract and may change at any time.
 ///
-/// # Conifer Provides a Conforming Type
+/// ## Conifer Provides a Conforming Type
 /// Conifer provides `ShadowType`, a concrete type that conforms to `Shadow`. There is usually no need for a custom type conforming to `Shadow`, nor will Conifer instantiate or store such types.
 ///
 /// To add methods, subscripts, and computed properties, extend `Shadow`. For storage, use associated elements.
 ///
-/// # Specialising the Shadow Protocol
+/// ## Specialising the Shadow Protocol
 /// When specialising the `Component` protocol, also specialise the `Shadow` protocol and add conformance to the concrete `ShadowType` type to enable dynamic casting. For example, given following `Component` specialisation
 ///
 /// 	protocol HTMLElement : Component where Body : HTMLElement { … }
@@ -126,15 +126,29 @@ extension Shadow {
 		await graph.element(ofType: type, at: location)
 	}
 	
-	/// Assigns or replaces the associated element of its type.
+	/// Assigns, replaces, or removes the associated element of its type.
 	///
 	/// `type` can be either a concrete or existential type. Concrete and existential types are never equal; the same type must be provided to `element(ofType:)` to retrieve the same element. It's for example possible to simultaneously assign a `String` element using the `Any` type and another using the `String` type at the same location.
 	///
 	/// - Parameters:
-	///   - element: The new element.
+	///   - element: The new element, or `nil` to remove it.
 	///   - type: The element's type. The default value is the element's concrete type, which is sufficient unless an existential type is desired.
-	public func update<Element : Sendable>(_ element: Element, ofType type: Element.Type = Element.self) async {
+	public func update<Element : Sendable>(_ element: Element?, ofType type: Element.Type = Element.self) async {
 		await graph.update(element, ofType: type, at: location)
+	}
+	
+	/// Assigns, replaces, or removes the associated element of its type using a given update function.
+	///
+	/// `type` can be either a concrete or existential type. Concrete and existential types are never equal; the same type must be provided to `element(ofType:)` to retrieve the same element. It's for example possible to simultaneously assign a `String` element using the `Any` type and another using the `String` type at the same location.
+	///
+	/// - Parameters:
+	///   - type: The element's type.
+	///   - update: A function that accepts the current element of type `type` (or `nil` if `self` has no such element) and produces the new element (or `nil` if there should be no such element).
+	public func update<Element : Sendable, Failure>(
+		_ type:			Element.Type,
+		with update:	sending (Element?) async throws(Failure) -> Element?
+	) async throws(Failure) {
+		try await graph.update(type, with: update, at: location)
 	}
 	
 }

@@ -5,7 +5,7 @@
 /// A component has a preference that is equal to, whichever applies first,
 /// * the value directly assigned using `.preference(_:)`,
 /// * the preference value merged from its children's preference values, or
-/// * the identity preference value.
+/// * the `default` preference value.
 public protocol Preference : Sendable {
 	
 	/// The default preference value.
@@ -13,7 +13,8 @@ public protocol Preference : Sendable {
 	
 	/// Returns the combination of `self` and a preference value of a successor component at the same level.
 	///
-	/// - Invariant: `Preference.default.merged(with: x)` equals `x` for all `x`.
+	/// - Invariant: `Self.default.merged(with: x)` equals `x` for all `x`.
+	/// - Invariant: `x.merged(with: Self.default)` equals `x` for all `x`.
 	func merged(with next: Self) async throws -> Self
 	
 }

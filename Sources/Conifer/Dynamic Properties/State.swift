@@ -6,9 +6,9 @@ import DepthKit
 ///
 /// When a component is rendered, Conifer updates each `State` value used as a property wrapper in the component value or in any of its dynamic properties with
 @propertyWrapper
-public struct State<Value : Sendable> : DynamicProperty {
+public struct State<Value : Sendable> : MutableDynamicProperty {
 	
-	/// Creates a state property with given inital value.
+	/// Creates a state property with given initial value.
 	public init(wrappedValue: Value) {
 		self.storedValue = wrappedValue
 	}
@@ -21,21 +21,23 @@ public struct State<Value : Sendable> : DynamicProperty {
 			storedValue = value
 		}
 		
+		// Establish a back reference for sending updated values.
 		backReference = .init(shadow: shadow, keyPath: keyPath)
 		
 	}
 	
 	// See protocol.
 	public var wrappedValue: Value {
-		get { storedValue }
-		set {
-			storedValue = newValue
-			if let backReference {
-				Task { [newValue] in
-					var container = await backReference.shadow.element(ofType: StateContainer.self) ?? .init()
-					container[backReference.keyPath] = newValue
-					// FIXME: Other updates to the container between the suspention points are lost.
-					await backReference.shadow.update(container)
+		storedValue
+	}
+	
+	// See protocol.
+	public func send(updatedValue: Value) {
+		guard let backReference else { preconditionFailure("Cannot update @State property outside of a rendering context") }
+		Task { [updatedValue] in
+			await backReference.shadow.update(StateContainer.self) {
+				with($0 ?? .init()) {
+					$0[backReference.keyPath] = updatedValue
 				}
 			}
 		}
@@ -44,7 +46,7 @@ public struct State<Value : Sendable> : DynamicProperty {
 	/// The backing value.
 	private var storedValue: Value
 	
-	/// A reference to the shadow graph.
+	/// A reference to the shadow graph for sending updated values.
 	private var backReference: BackReference?
 	private struct BackReference : @unchecked Sendable {	// Conifer only provides sendable key paths
 		let shadow: any Shadow

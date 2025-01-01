@@ -4,6 +4,9 @@ import DepthKit
 
 /// A tree structure of rendered components and other types of elements.
 ///
+/// Conifer clients do not create or directly interact with `ShadowGraph`s, except possibly for comparing graph identity with `===`. All other interactions happen via `Shadow`s.
+///
+/// ## Implementation Notes
 /// Each node in a shadow graph can contain any number of elements but at most one per type. Each node contains at least an element of type `any Component`, representing the rendered component. The existential type ensures that no two components can occupy the same node. Although nothing prevents one from assigning a component of concrete type (e.g., an `Either`), `ShadowChildren` does not traverse or return those types of components.
 ///
 /// A node containing children has an associated `ShadowChildLocations` element which points to the child nodes. This element is computed and stored when the component's children are rendered.
@@ -57,16 +60,32 @@ public actor ShadowGraph {
 		}
 	}
 	
-	/// Assigns or replaces the element of its type at a given location in the graph.
+	/// Assigns, replaces, or removes the element of its type at a given location in the graph.
 	///
 	/// `type` can be either a concrete or existential type. Concrete and existential types are never equal; the same type must be provided to `element(ofType:at:)` to retrieve the same element. It's for example possible to simultaneously assign a `String` element using the `Any` type and another using the `String` type at the same location.
 	///
 	/// - Parameters:
-	///   - element: The new element.
+	///   - element: The new element, or `nil` to remove it.
 	///   - type: The element's type. The default value is the element's concrete type, which is sufficient unless an existential type is desired.
 	///   - location: The location of the element in `self`.
-	func update<Element : Sendable>(_ element: Element, ofType type: Element.Type = Element.self, at location: ShadowLocation) {
+	func update<Element : Sendable>(_ element: Element?, ofType type: Element.Type = Element.self, at location: ShadowLocation) {
 		elements[.init(location: location, type: type)] = element
+	}
+	
+	/// Assigns, replaces, or removes the associated element of its type using a given update function.
+	///
+	/// `type` can be either a concrete or existential type. Concrete and existential types are never equal; the same type must be provided to `element(ofType:)` to retrieve the same element. It's for example possible to simultaneously assign a `String` element using the `Any` type and another using the `String` type at the same location.
+	///
+	/// - Parameters:
+	///   - type: The element's type.
+	///   - update: A function that accepts the current element of type `type` (or `nil` if `self` has no such element) and produces the new element (or `nil` if there should be no such element).
+	///   - location: The location of the element in `self`.
+	public func update<Element : Sendable, Failure>(
+		_ type:			Element.Type,
+		with update:	sending (Element?) async throws(Failure) -> Element?,
+		at location:	ShadowLocation
+	) async throws(Failure) {
+		self.update(try await update(element(ofType: type, at: location)), ofType: type, at: location)
 	}
 	
 }
