@@ -127,9 +127,22 @@ extension ShadowGraph {
 	
 	/// Prepares a given component's dynamic properties and adds it at a given location to the shadow graph.
 	func render(_ component: some Component, at location: ShadowLocation) async throws {
+		
+		assert(renderingLocation == nil)
+		renderingLocation = location
+		defer { renderingLocation = nil }
+		
 		var component = component
 		try await component.updateDynamicProperties(for: component.makeShadow(graph: self, location: location))
 		update(component, at: location)
+		
+	}
+	
+	/// Invalidates the component at a given location.
+	///
+	/// The shadow graph rerenders the component when it is next requested.
+	func invalidateComponent(at location: ShadowLocation) {
+		update(nil, ofType: (any Component).self, at: location)
 	}
 	
 }

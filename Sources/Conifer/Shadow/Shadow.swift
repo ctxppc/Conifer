@@ -35,6 +35,13 @@
 ///
 /// Conifer uses the `any Component` existential type to represent rendered components. Do not use this type when invoking `update(_:ofType:)` as this breaks internal invariants. Avoid accessing rendered components via `element(ofType:)` as this is not part of the API's contract and may change at any time.
 ///
+/// ## Associated Elements Create Dependencies During Rendering
+/// A modifier or dynamic property that reads or writes an element during rendering creates a dependency that the shadow graph tracks and uses for invalidation.
+///
+/// When a modifier or dynamic property *reads* an element, that element becomes a **graph input** for the modifier or the dynamic property's dependent component (the component on which the dynamic property is declared). The graph invalidates the modifier or component whenever the graph input is updated and rerenders it during the next render cycle.
+///
+/// When a modifier or dynamic property *writes* an element, that element becomes a **graph output** for the modifier or the dependent component.
+///
 /// ## Conifer Provides a Conforming Type
 /// Conifer provides `ShadowType`, a concrete type that conforms to `Shadow`. There is usually no need for a custom type conforming to `Shadow`, nor will Conifer instantiate or store such types.
 ///
@@ -147,24 +154,32 @@ extension Shadow {
 	}
 	
 	/// Returns the associated element of a given type.
+	///
+	/// If a component is being rendered, this method records a dependency between the component being rendered, i.e., the *dependent component*, and the element being accessed. The graph invalidates the dependent component when the element of type `type` is updated on `self`.
 	public func element<Element : Sendable>(ofType type: Element.Type) async -> Element? {
-		await graph.element(ofType: type, at: location)
+		await graph.recordReadAccess(elementType: type, at: location)
+		return await graph.element(ofType: type, at: location)
 	}
 	
 	/// Assigns, replaces, or removes the associated element of its type.
 	///
 	/// `type` can be either a concrete or existential type. Concrete and existential types are never equal; the same type must be provided to `element(ofType:)` to retrieve the same element. It's for example possible to simultaneously assign a `String` element using the `Any` type and another using the `String` type at the same location.
 	///
+	/// This method invalidates any components that depend on the element being updated.
+	///
 	/// - Parameters:
 	///   - element: The new element, or `nil` to remove it.
 	///   - type: The element's type. The default value is the element's concrete type, which is sufficient unless an existential type is desired.
 	public func update<Element : Sendable>(_ element: Element?, ofType type: Element.Type = Element.self) async {
+		await graph.recordWriteAccess(elementType: type, at: location)
 		await graph.update(element, ofType: type, at: location)
 	}
 	
 	/// Assigns, replaces, or removes the associated element of its type using a given update function.
 	///
 	/// `type` can be either a concrete or existential type. Concrete and existential types are never equal; the same type must be provided to `element(ofType:)` to retrieve the same element. It's for example possible to simultaneously assign a `String` element using the `Any` type and another using the `String` type at the same location.
+	///
+	/// If a component is being rendered, this method records a dependency between the component being rendered, i.e., the *dependent component*, and the element being accessed. The graph invalidates the dependent component when the element of type `type` is updated on `self`. Additionally, this method invalidates any components that depend on the element being updated.
 	///
 	/// - Parameters:
 	///   - type: The element's type.
@@ -173,6 +188,8 @@ extension Shadow {
 		_ type:			Element.Type,
 		with update:	sending (Element?) async throws(Failure) -> Element?
 	) async throws(Failure) {
+		await graph.recordReadAccess(elementType: type, at: location)
+		await graph.recordWriteAccess(elementType: type, at: location)	// TODO: Does this work?
 		try await graph.update(type, with: update, at: location)
 	}
 	
