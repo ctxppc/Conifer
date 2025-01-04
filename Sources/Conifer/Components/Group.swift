@@ -31,7 +31,7 @@ extension Group : FoundationalComponent {
 		var locations = [ShadowLocation]()
 		var position = 0
 		for _ in repeat each children {
-			locations.append(.child(at: position))
+			locations.append(.anchor.child(at: position))
 			position += 1
 		}
 		return locations
@@ -39,7 +39,7 @@ extension Group : FoundationalComponent {
 	
 	func child(at location: ShadowLocation, for shadow: some Shadow<Self>) async throws -> any Component {
 		
-		guard case .position(let desiredPosition)? = location.directions.first, location.directions.count == 1 else {
+		guard case .positionalChild(position: let desiredPosition, parent: .anchor) = location else {
 			preconditionFailure("\(location) does not refer to a positional child in \(shadow)")
 		}
 		

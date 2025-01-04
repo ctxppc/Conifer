@@ -69,12 +69,37 @@
 ///				}
 ///			}
 /// 	}
+///
+/// ## Do Not Store Shadows in a Shadow Graph
+/// A `Shadow` keeps a strong reference to the underlying shadow graph, i.e., a shadow graph exists as long as any `Shadow` references it. While this is desirable behaviour in most case, it causes a strong reference cycle if a shadow is stored in a shadow graph, which may cause a resource leak, as in the example below.
+///
+///		struct MyElement : Sendable {
+///			var selfReference: any Shadow
+///		}
+///		let component: some Component = …
+///		let shadow = try await makeShadow(over: component)
+///		let graph = shadow.graph
+///		await shadow.update(MyElement(selfReference: shadow)
+///		let shadow2 = shadow.element(ofType: MyElement.self)!.selfReference
+///		// `graph`, `shadow`, and `shadow2` are not used anymore, yet `graph` is not deallocated
+///
+/// To avoid this, store the shadow location and recreate the shadow whenever needed instead.
+///
+///		struct MyElement : Sendable {
+///			var selfReference: ShadowLocation	// store a location instead of a shadow
+///		}
+///		let component: some Component = …
+///		let shadow = try await makeShadow(over: component)
+///		let graph = shadow.graph
+///		await shadow.update(MyElement(selfReference: shadow.location)	// store a location instead of a shadow
+///		let shadow2 = ShadowType(graph: graph, location: shadow.element(ofType: MyElement.self)!.selfReference)	// recreate shadow
+///		// `graph`, `shadow`, and `shadow2` are not used anymore, thus `graph` is deallocated
 @dynamicMemberLookup
 public protocol Shadow<Subject> : Sendable {
 	
 	/// Creates a shadow in a given graph over a component at given location in the graph.
 	///
-	/// - Requires: `graph.renderIfNeededComponent(at: location)` returns a component of type `Subject`.
+	/// - Requires: The component at `location` in `graph` exists and is a `Subject`. Or more formally, `graph.renderIfNeededComponent(at: location)` returns a component of type `Subject`.
 	///
 	/// - Parameters:
 	///   - graph: The graph.

@@ -40,13 +40,12 @@ extension ForEach : FoundationalComponent {
 	
 	func childLocations(for shadow: some Shadow<Self>) -> [ShadowLocation] {
 		data.enumerated().map { position, datum in
-			.child(identifiedBy: identifierProvider(datum), position: position)
+			.anchor.child(identifiedBy: identifierProvider(datum), position: position)
 		}
 	}
 	
 	func child(at location: ShadowLocation, for shadow: some Shadow<Self>) -> any Component {
-		precondition(location.directions.count == 1, "Expected one direction")
-		guard case .identifier(_, position: let offset) = location.directions.first else { preconditionFailure("Expected identifier direction") }
+		guard case .child(identifier: _, position: let offset, parent: .anchor) = location else { preconditionFailure("No child at \(location) in \(self)") }
 		return contentProducer(data[data.index(data.startIndex, offsetBy: offset)])
 	}
 	

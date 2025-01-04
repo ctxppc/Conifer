@@ -79,7 +79,7 @@ extension ShadowGraph {
 		}
 		
 		// Render body.
-		let childLocation = parentLocation[.body]
+		let childLocation = parentLocation.body
 		try await render(parent.body, at: childLocation)
 		
 		// Update child locations on graph.
