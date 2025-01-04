@@ -6,7 +6,7 @@
 ///
 /// A dynamic property can only be declared within a component (the *dependent component*) or within another dynamic property. Conifer ensures that all declared dynamic properties are properly updated before the dependent component is (re)rendered and its `body` is accessed.
 ///
-/// A dynamic property can itself declare and use dynamic properties, which the system updates before invoking `update(for:keyPath:)`. Common nested dynamic properties are
+/// A dynamic property can itself declare and use dynamic properties, which the framework updates before invoking `update(for:keyPath:)`. Common nested dynamic properties are
 /// * `@State` properties for storing computed values such as database results that are then vended through `wrappedValue`,
 /// * `@Context` properties for reading contextual values such as a database connection, and
 /// * a `@StructuralIdentity` property for identifying `self` within the shadow graph.

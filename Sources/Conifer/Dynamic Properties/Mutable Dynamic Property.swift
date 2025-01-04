@@ -1,6 +1,6 @@
 // Conifer © 2019–2025 Constantino Tsarouhas
 
-/// A dynamic property that can be updated from within a component.
+/// A dynamic property that can submit updates to its source of truth.
 public protocol MutableDynamicProperty : DynamicProperty where Value : Sendable {
 	
 	/// Sends given value to the source of truth, requesting it be updated.

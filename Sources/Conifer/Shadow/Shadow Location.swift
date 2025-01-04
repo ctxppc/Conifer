@@ -84,7 +84,28 @@ public indirect enum ShadowLocation : Sendable, Hashable {
 }
 
 extension ShadowLocation : Comparable {
-	public static func < (lhs: Self, rhs: Self) -> Bool {
-		TODO.unimplemented
+	public static func < (first: Self, second: Self) -> Bool {
+		switch (first, second) {
+			
+			case (_, .anchor):
+			return false
+			
+			case (.anchor, _):	// (.anchor, .anchor) is handled above
+			return true
+			
+			case (.body(parent: let a), .body(parent: let b)),
+				(.body(parent: let a), .positionalChild(_, parent: let b)),
+				(.body(parent: let a), .child(_, _, parent: let b)),
+				(.positionalChild(_, parent: let a), .body(parent: let b)),
+				(.positionalChild(_, parent: let a), .child(_, _, parent: let b)),
+				(.child(_, _, parent: let a), .body(parent: let b)),
+				(.child(_, _, parent: let a), .positionalChild(_, parent: let b)):
+			return a < b
+			
+			case (.positionalChild(position: let a, parent: let parentA), .positionalChild(position: let b, parent: let parentB)),
+				(.child(_, position: let a, parent: let parentA), .child(_, position: let b, parent: let parentB)):
+			return parentA == parentB ? a < b : parentA < parentB
+			
+		}
 	}
 }
