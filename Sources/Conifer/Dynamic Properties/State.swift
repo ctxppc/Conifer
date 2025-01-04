@@ -1,10 +1,8 @@
-// Conifer © 2019–2024 Constantino Tsarouhas
+// Conifer © 2019–2025 Constantino Tsarouhas
 
 import DepthKit
 
 /// A dynamic property whose lifetime is shared with the component's shadow.
-///
-/// When a component is rendered, Conifer updates each `State` value used as a property wrapper in the component value or in any of its dynamic properties with
 @propertyWrapper
 public struct State<Value : Sendable> : MutableDynamicProperty {
 	

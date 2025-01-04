@@ -1,4 +1,4 @@
-// Conifer © 2019–2024 Constantino Tsarouhas
+// Conifer © 2019–2025 Constantino Tsarouhas
 
 /// A value that can read and update a value owned by a source of truth.
 ///

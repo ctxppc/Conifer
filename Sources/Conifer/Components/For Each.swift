@@ -1,4 +1,4 @@
-// Conifer © 2019–2024 Constantino Tsarouhas
+// Conifer © 2019–2025 Constantino Tsarouhas
 
 /// A mapping component; a component that represents a sequence of components generated from an underlying collection of data.
 ///

@@ -1,4 +1,4 @@
-// Conifer © 2019–2024 Constantino Tsarouhas
+// Conifer © 2019–2025 Constantino Tsarouhas
 
 import DepthKit
 
@@ -44,7 +44,7 @@ public struct Context : @unchecked Sendable {	// Only immutable key paths withou
 	
 	/// The contextual values.
 	private var values = [AnyKey : any Sendable]()
-	public typealias AnyKey = PartialKeyPath<Self>
+	private typealias AnyKey = PartialKeyPath<Self>
 	public typealias Key<Value> = WritableKeyPath<Self, Value> where Value : Sendable
 	
 	/// Accesses the contextual value at a given key.

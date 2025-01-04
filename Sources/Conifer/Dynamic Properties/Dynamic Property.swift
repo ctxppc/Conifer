@@ -1,4 +1,4 @@
-// Conifer © 2019–2024 Constantino Tsarouhas
+// Conifer © 2019–2025 Constantino Tsarouhas
 
 /// A property of a component whose value is determined outside of the component.
 ///

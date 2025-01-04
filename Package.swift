@@ -1,6 +1,6 @@
 // swift-tools-version:6.0
 
-// Conifer © 2019–2024 Constantino Tsarouhas
+// Conifer © 2019–2025 Constantino Tsarouhas
 
 import CompilerPluginSupport
 import PackageDescription
@@ -13,7 +13,7 @@ let package = Package(
 	],
 	dependencies: [
 		.package(url: "https://github.com/apple/swift-syntax", from: "509.0.0"),
-		.package(url: "https://github.com/ctxppc/DepthKit", .upToNextMinor(from: "0.13.0")),
+		.package(url: "https://github.com/ctxppc/DepthKit", .upToNextMinor(from: "0.14.0")),
 		.package(url: "https://github.com/philipturner/swift-reflection-mirror", branch: "main"),
 	],
 	targets: [
