@@ -125,7 +125,7 @@ extension ShadowGraph {
 		
 	}
 	
-	/// Prepares a given component's dynamic properties and adds it at a given location to the shadow graph.
+	/// Updates a given component's dynamic properties and adds it at a given location to the shadow graph.
 	func render(_ component: some Component, at location: Location) async throws {
 		
 		assert(renderingLocation == nil)

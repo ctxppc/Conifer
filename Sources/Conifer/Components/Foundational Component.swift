@@ -20,7 +20,7 @@ protocol FoundationalComponent : Component where Body == Never {
 	///
 	/// - Warning: Accessing `shadow`'s descendants may cause an infinite loop.
 	///
-	/// - Requires: `location` is an element of the array returned by `self.childLocations(for:)`.
+	/// - Requires: `location` is an element of the array returned by `childLocations(for:)`.
 	///
 	/// - Parameters:
 	///    - location: The location relative to `self` of the requested child.

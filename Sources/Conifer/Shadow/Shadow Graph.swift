@@ -22,7 +22,7 @@ public actor ShadowGraph {
 	/// The shadow elements, keyed by location relative to the root component.
 	///
 	/// - Invariant: `elements[.init(location: .anchor, type: (any Component).self)]` is not `nil`. That is, `elements` stores at least a rendered root component.
-	/// - Invariant: Each dynamic property in each rendered component in the graph, i.e., each element of type `any Component` in `elements`, is prepared.
+	/// - Invariant: Each dynamic property in each rendered component in the graph, i.e., each element of type `any Component` in `elements`, has been updated at least once.
 	/// - Invariant: For every location named in `elements`, there is at least an element of type `any Component`. Stated differently, `elements` only stores elements for rendered components.
 	private var elements = [ElementKey : Any]()
 	private struct ElementKey : Hashable {

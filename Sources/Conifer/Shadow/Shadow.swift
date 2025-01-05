@@ -1,9 +1,9 @@
 // Conifer © 2019–2025 Constantino Tsarouhas
 
-/// A value representing a rendered non-foundational component and its associated elements.
+/// A value representing a rendered component and its associated elements.
 ///
 /// ## Components Are Rendered in a Shadow Graph
-/// Every non-foundational component of type `T` is represented by some `Shadow<T>` value in a `ShadowGraph` in a process called **rendering**. Foundational components (`Either`, `Empty`, `ForEach`, `Group`, `Modified`, and `Never`) are part of a shadow graph but are not directly represented by shadows. They are instead represented by their non-foundational children.
+/// Every non-foundational component of type `T` is represented by some `Shadow<T>` value in a `ShadowGraph` in a process called **rendering**. Foundational components (`Either`, `Empty`, `ForEach`, `Group`, `Modified`, and `Never`) are part of a shadow graph but are not directly represented by shadows (except in a few internal cases). They are instead represented by their non-foundational children.
 ///
 /// A component can be rendered using the global `makeShadow(over:)` function.
 ///
