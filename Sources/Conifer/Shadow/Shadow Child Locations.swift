@@ -8,20 +8,20 @@ struct ShadowChildLocations : Sendable {
 	/// Creates an ordered collection of locations of a component's direct children.
 	///
 	/// - Requires: `location` is sorted.
-	init(_ locations: [ShadowLocation]) {
+	init(_ locations: [ShadowGraph.Location]) {
 		self.locations = locations
 	}
 	
 	/// The locations of the children of the associated component.
 	///
 	/// - Invariant: `location` is sorted.
-	private var locations: [ShadowLocation]
+	private var locations: [ShadowGraph.Location]
 	
 	/// Adds given location to `self`.
 	///
 	/// - Requires: `location` is not in `self`.
 	/// - Requires: If `self` is nonempty, there is a location in `self` that is a direct sibling of `location`.
-	mutating func add(_ location: ShadowLocation) {
+	mutating func add(_ location: ShadowGraph.Location) {
 		if let last = locations.last, location > last {
 			locations.append(location)
 		} else {
@@ -35,6 +35,6 @@ struct ShadowChildLocations : Sendable {
 extension ShadowChildLocations : RandomAccessCollection {
 	var startIndex: Int { locations.startIndex }
 	var endIndex: Int { locations.endIndex }
-	subscript (position: Int) -> ShadowLocation { locations[position] }
-	subscript (bounds: Range<Int>) -> ArraySlice<ShadowLocation> { locations[bounds] }
+	subscript (position: Int) -> ShadowGraph.Location { locations[position] }
+	subscript (bounds: Range<Int>) -> ArraySlice<ShadowGraph.Location> { locations[bounds] }
 }

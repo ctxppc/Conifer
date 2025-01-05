@@ -29,11 +29,11 @@ public struct Modified<Content : Component, ModifierType : Modifier> : Component
 
 extension Modified : FoundationalComponent {
 	
-	func childLocations(for shadow: some Shadow<Self>) async throws -> [ShadowLocation] {
+	func childLocations(for shadow: some Shadow<Self>) async throws -> [ShadowGraph.Location] {
 		[.anchor.body]
 	}
 	
-	func child(at location: ShadowLocation, for shadow: some Shadow<Self>) async throws -> any Component {
+	func child(at location: ShadowGraph.Location, for shadow: some Shadow<Self>) async throws -> any Component {
 		precondition(location == .anchor.body, "Expected body location")
 		return content
 	}

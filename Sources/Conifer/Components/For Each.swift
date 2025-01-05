@@ -38,13 +38,13 @@ public struct ForEach<Data : RandomAccessCollection & Sendable, Identifier : Con
 
 extension ForEach : FoundationalComponent {
 	
-	func childLocations(for shadow: some Shadow<Self>) -> [ShadowLocation] {
+	func childLocations(for shadow: some Shadow<Self>) -> [ShadowGraph.Location] {
 		data.enumerated().map { position, datum in
 			.anchor.child(identifiedBy: identifierProvider(datum), position: position)
 		}
 	}
 	
-	func child(at location: ShadowLocation, for shadow: some Shadow<Self>) -> any Component {
+	func child(at location: ShadowGraph.Location, for shadow: some Shadow<Self>) -> any Component {
 		guard case .child(identifier: _, position: let offset, parent: .anchor) = location else { preconditionFailure("No child at \(location) in \(self)") }
 		return contentProducer(data[data.index(data.startIndex, offsetBy: offset)])
 	}

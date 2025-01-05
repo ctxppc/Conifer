@@ -28,13 +28,13 @@ public actor ShadowGraph {
 	private struct ElementKey : Hashable {
 		
 		/// Creates a key for an element of a given (concrete or existential) type at a given location in a graph.
-		init<T>(location: ShadowLocation, type: T.Type) {
+		init<T>(location: Location, type: T.Type) {
 			self.location = location
 			self.type = .init(type)
 		}
 		
 		/// The location of the element in the graph.
-		let location: ShadowLocation
+		let location: Location
 		
 		/// The type of the element that identifies the kind of associated element.
 		///
@@ -44,20 +44,20 @@ public actor ShadowGraph {
 	}
 	
 	/// The location of the component currently being rendered, or `nil` if no component is being rendered.
-	var renderingLocation: ShadowLocation?
+	var renderingLocation: Location?
 	
 	/// Returns the element of a given type at a given location in the graph, or `nil` if no such element exists.
 	///
 	/// `type` can be either a concrete or existential type. Concrete and existential types are never equal; the type of the desired element must match the type provided to `update(_:ofType:at:)` when the element was assigned.
 	///
-	/// If a component is being rendered, this method records a dependency between the component being rendered, i.e., the *dependent component*, and the element being accessed. The graph invalidates the dependent component when the element of type `type` is updated on `self`.
+	/// This method does not record the access for determining dependencies. If appropriate, record reads using `recordRead(at:elementType:)`.
 	///
 	/// - Parameters:
 	///   - type: The element's concrete or existential type.
 	///   - location: The location of the element in `self`.
 	///
 	/// - Returns: The element of type `type` at `location` in `self`.
-	func element<Element : Sendable>(ofType type: Element.Type = Element.self, at location: ShadowLocation) -> Element? {
+	func element<Element : Sendable>(ofType type: Element.Type = Element.self, at location: Location) -> Element? {
 		if let element = elements[.init(location: location, type: type)] {
 			return (element as! Element)
 		} else {
@@ -69,17 +69,21 @@ public actor ShadowGraph {
 	///
 	/// `type` can be either a concrete or existential type. Concrete and existential types are never equal; the same type must be provided to `element(ofType:at:)` to retrieve the same element. It's for example possible to simultaneously assign a `String` element using the `Any` type and another using the `String` type at the same location.
 	///
+	/// This method does not record the access for invalidating components. If appropriate, record writes using `recordWrite(at:elementType:)`.
+	///
 	/// - Parameters:
 	///   - element: The new element, or `nil` to remove it.
 	///   - type: The element's type. The default value is the element's concrete type, which is sufficient unless an existential type is desired.
 	///   - location: The location of the element in `self`.
-	func update<Element : Sendable>(_ element: Element?, ofType type: Element.Type = Element.self, at location: ShadowLocation) {
+	func update<Element : Sendable>(_ element: Element?, ofType type: Element.Type = Element.self, at location: Location) {
 		elements[.init(location: location, type: type)] = element
 	}
 	
 	/// Assigns, replaces, or removes the associated element of its type using a given update function.
 	///
 	/// `type` can be either a concrete or existential type. Concrete and existential types are never equal; the same type must be provided to `element(ofType:)` to retrieve the same element. It's for example possible to simultaneously assign a `String` element using the `Any` type and another using the `String` type at the same location.
+	///
+	/// This method does not record the access for determining dependencies and invalidating components. If appropriate, reads and writes using `recordRead(at:elementType:)` and `recordWrite(at:elementType:)`.
 	///
 	/// - Parameters:
 	///   - type: The element's type.
@@ -88,7 +92,7 @@ public actor ShadowGraph {
 	public func update<Element : Sendable, Failure>(
 		_ type:			Element.Type,
 		with update:	sending (Element?) throws(Failure) -> Element?,
-		at location:	ShadowLocation
+		at location:	Location
 	) throws(Failure) {
 		self.update(try update(element(ofType: type, at: location)), ofType: type, at: location)
 	}
@@ -97,6 +101,8 @@ public actor ShadowGraph {
 	///
 	/// `type` can be either a concrete or existential type. Concrete and existential types are never equal; the same type must be provided to `element(ofType:)` to retrieve the same element. It's for example possible to simultaneously assign a `String` element using the `Any` type and another using the `String` type at the same location.
 	///
+	/// This method does not record the access for determining dependencies and invalidating components. If appropriate, reads and writes using `recordRead(at:elementType:)` and `recordWrite(at:elementType:)`.
+	///
 	/// - Parameters:
 	///   - type: The element's type.
 	///   - update: A function that accepts the current element of type `type` (or `nil` if `self` has no such element) and produces the new element (or `nil` if there should be no such element).
@@ -104,7 +110,7 @@ public actor ShadowGraph {
 	public func update<Element : Sendable, Failure>(
 		_ type:			Element.Type,
 		with update:	sending (Element?) async throws(Failure) -> Element?,
-		at location:	ShadowLocation
+		at location:	Location
 	) async throws(Failure) {
 		self.update(try await update(element(ofType: type, at: location)), ofType: type, at: location)
 	}

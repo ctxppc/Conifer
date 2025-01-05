@@ -24,14 +24,14 @@ public enum Either<First : Component, Second : Component> : Component {
 
 extension Either : FoundationalComponent {
 	
-	func childLocations(for shadow: some Shadow<Self>) async throws -> [ShadowLocation] {
+	func childLocations(for shadow: some Shadow<Self>) async throws -> [ShadowGraph.Location] {
 		switch self {
 			case .first:	return [.anchor.child(at: 0)]
 			case .second:	return [.anchor.child(at: 1)]
 		}
 	}
 	
-	func child(at location: ShadowLocation, for shadow: some Shadow<Self>) async throws -> any Component {
+	func child(at location: ShadowGraph.Location, for shadow: some Shadow<Self>) async throws -> any Component {
 		switch (self, location) {
 			
 			case (.first(let child), .anchor.child(at: 0)):

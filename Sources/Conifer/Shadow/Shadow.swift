@@ -36,11 +36,13 @@
 /// Conifer uses the `any Component` existential type to represent rendered components. Do not use this type when invoking `update(_:ofType:)` as this breaks internal invariants. Avoid accessing rendered components via `element(ofType:)` as this is not part of the API's contract and may change at any time.
 ///
 /// ## Associated Elements Create Dependencies During Rendering
-/// A modifier or dynamic property that reads or writes an element during rendering creates a dependency that the shadow graph tracks and uses for invalidation.
+/// A shadow graph tracks accesses to elements while a component is being rendered.
 ///
-/// When a modifier or dynamic property *reads* an element, that element becomes a **graph input** for the modifier or the dynamic property's dependent component (the component on which the dynamic property is declared). The graph invalidates the modifier or component whenever the graph input is updated and rerenders it during the next render cycle.
+/// A modifier or dynamic property that *reads* an element using `element(ofType:)` or `update(_:with:)` creates a **dependency** between the element and the modifier resp. property's dependent component.
 ///
-/// When a modifier or dynamic property *writes* an element, that element becomes a **graph output** for the modifier or the dependent component.
+/// A modifier or dynamic property that *writes* an element using `update(_:ofType:)` or `update(_:with:)` invalidates the components that depend on it.
+///
+/// Carefully document the elements a component defines (writes) or uses (reads) to avoid cyclic dependencies.
 ///
 /// ## Conifer Provides a Conforming Type
 /// Conifer provides `ShadowType`, a concrete type that conforms to `Shadow`. There is usually no need for a custom type conforming to `Shadow`, nor will Conifer instantiate or store such types.
@@ -111,7 +113,7 @@ public protocol Shadow<Subject> : Sendable {
 	/// - Parameters:
 	///   - graph: The graph.
 	///   - location: The subject's location in the graph.
-	init(graph: ShadowGraph, location: ShadowLocation)
+	init(graph: ShadowGraph, location: ShadowGraph.Location)
 	
 	/// The graph backing `self`.
 	var graph: ShadowGraph { get }
@@ -119,7 +121,7 @@ public protocol Shadow<Subject> : Sendable {
 	/// The location of the subject relative to the root component in `graph`.
 	///
 	/// - Invariant: `location` refers to an already rendered component in `graph`.
-	var location: ShadowLocation { get }
+	var location: ShadowGraph.Location { get }
 	
 	/// A component represented by an instance of`Self`.
 	associatedtype Subject : Component
@@ -157,7 +159,7 @@ extension Shadow {
 	///
 	/// If a component is being rendered, this method records a dependency between the component being rendered, i.e., the *dependent component*, and the element being accessed. The graph invalidates the dependent component when the element of type `type` is updated on `self`.
 	public func element<Element : Sendable>(ofType type: Element.Type) async -> Element? {
-		await graph.recordReadAccess(elementType: type, at: location)
+		await graph.recordRead(at: location, elementType: type)
 		return await graph.element(ofType: type, at: location)
 	}
 	
@@ -171,7 +173,7 @@ extension Shadow {
 	///   - element: The new element, or `nil` to remove it.
 	///   - type: The element's type. The default value is the element's concrete type, which is sufficient unless an existential type is desired.
 	public func update<Element : Sendable>(_ element: Element?, ofType type: Element.Type = Element.self) async {
-		await graph.recordWriteAccess(elementType: type, at: location)
+		await graph.recordWrite(at: location, elementType: type)
 		await graph.update(element, ofType: type, at: location)
 	}
 	
@@ -188,8 +190,8 @@ extension Shadow {
 		_ type:			Element.Type,
 		with update:	sending (Element?) async throws(Failure) -> Element?
 	) async throws(Failure) {
-		await graph.recordReadAccess(elementType: type, at: location)
-		await graph.recordWriteAccess(elementType: type, at: location)	// TODO: Does this work?
+		await graph.recordRead(at: location, elementType: type)
+		await graph.recordWrite(at: location, elementType: type)	// TODO: Does this work?
 		try await graph.update(type, with: update, at: location)
 	}
 	
@@ -204,7 +206,7 @@ extension Component {
 	///   - location: The location of `self` in `graph`.
 	///
 	/// - Requires: `location` refers to a rendered component in `graph` that is equal to `self`.
-	func makeShadow(graph: ShadowGraph, location: ShadowLocation) -> some Shadow<Self> {
+	func makeShadow(graph: ShadowGraph, location: ShadowGraph.Location) -> some Shadow<Self> {
 		ShadowType(graph: graph, location: location)
 	}
 	
@@ -215,7 +217,7 @@ extension Component {
 	///   - location: The location of `self` in `graph`.
 	///
 	/// - Requires: `location` refers to a rendered component in `graph` that is equal to `self`.
-	func makeUntypedShadow(graph: ShadowGraph, location: ShadowLocation) -> some Shadow {
+	func makeUntypedShadow(graph: ShadowGraph, location: ShadowGraph.Location) -> some Shadow {
 		ShadowType<Self>(graph: graph, location: location)
 	}
 	

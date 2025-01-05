@@ -14,7 +14,7 @@ protocol FoundationalComponent : Component where Body == Never {
 	/// - Parameter shadow: The shadow over `self`.
 	///
 	/// - Returns: The locations relative to `self` for each child of `self`.
-	func childLocations(for shadow: some Shadow<Self>) async throws -> [ShadowLocation]
+	func childLocations(for shadow: some Shadow<Self>) async throws -> [ShadowGraph.Location]
 	
 	/// Returns the child of `self` at a given location relative to `self`.
 	///
@@ -27,7 +27,7 @@ protocol FoundationalComponent : Component where Body == Never {
 	///    - shadow: The shadow over `self`.
 	///
 	/// - Returns: The child at `shadow.location[location]` in `shadow.graph`.
-	func child(at location: ShadowLocation, for shadow: some Shadow<Self>) async throws -> any Component
+	func child(at location: ShadowGraph.Location, for shadow: some Shadow<Self>) async throws -> any Component
 	
 	/// Performs additional post-rendering actions on the shadow of `self`.
 	///

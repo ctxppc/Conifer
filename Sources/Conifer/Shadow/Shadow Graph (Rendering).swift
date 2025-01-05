@@ -9,7 +9,7 @@ extension ShadowGraph {
 	/// If the component is known to be rendered, use `prerenderedComponent(at:)` instead.
 	///
 	/// - Requires: `location` refers to a (possibly not-yet-rendered) component whose parent is already rendered.
-	func renderIfNeededComponent(at location: ShadowLocation) async throws -> any Component {
+	func renderIfNeededComponent(at location: Location) async throws -> any Component {
 		
 		if let component = componentIfRendered(at: location) {
 			return component
@@ -25,17 +25,17 @@ extension ShadowGraph {
 	/// If the component is not known to be rendered, use `renderIfNeededComponent(at:)` instead.
 	///
 	/// - Requires: `location` refers to an already rendered component in `self`.
-	func prerenderedComponent(at location: ShadowLocation) -> any Component {
+	func prerenderedComponent(at location: Location) -> any Component {
 		componentIfRendered(at: location) !! "Expected component at \(location) to be already rendered"
 	}
 	
 	/// Returns the component at a given location, or `nil` if it has not been rendered yet.
-	fileprivate func componentIfRendered(at location: ShadowLocation) -> (any Component)? {
+	fileprivate func componentIfRendered(at location: Location) -> (any Component)? {
 		element(ofType: (any Component).self, at: location)
 	}
 	
 	/// Assigns or replaces the component at a given location in the graph.
-	fileprivate func update(_ component: any Component, at location: ShadowLocation) {
+	fileprivate func update(_ component: any Component, at location: Location) {
 		update(component, ofType: (any Component).self, at: location)
 	}
 	
@@ -49,7 +49,7 @@ extension ShadowGraph {
 	///
 	/// - Returns: The locations of the children of the component at `parentLocation`.
 	@discardableResult
-	func renderIfNeededChildren(ofComponentAt parentLocation: ShadowLocation) async throws -> ShadowChildLocations {
+	func renderIfNeededChildren(ofComponentAt parentLocation: Location) async throws -> ShadowChildLocations {
 		
 		if let childLocations = element(ofType: ShadowChildLocations.self, at: parentLocation) {
 			return childLocations
@@ -71,7 +71,7 @@ extension ShadowGraph {
 	/// - Parameter parentLocation: The location of `parent` in `self`.
 	///
 	/// - Returns: The locations of the rendered children.
-	fileprivate func renderChildren(of parent: some Component, under parentLocation: ShadowLocation) async throws -> ShadowChildLocations {
+	fileprivate func renderChildren(of parent: some Component, under parentLocation: Location) async throws -> ShadowChildLocations {
 		
 		// Special-case foundational components.
 		if let component = self as? any FoundationalComponent {
@@ -101,7 +101,7 @@ extension ShadowGraph {
 	/// - Parameter parentLocation: The location of `parent` in `self`.
 	///
 	/// - Returns: The locations of the rendered children.
-	fileprivate func renderChildren(of parent: some FoundationalComponent, under parentLocation: ShadowLocation) async throws -> ShadowChildLocations {
+	fileprivate func renderChildren(of parent: some FoundationalComponent, under parentLocation: Location) async throws -> ShadowChildLocations {
 		
 		// Determine child locations.
 		let shadow = parent.makeShadow(graph: self, location: parentLocation)
@@ -126,7 +126,7 @@ extension ShadowGraph {
 	}
 	
 	/// Prepares a given component's dynamic properties and adds it at a given location to the shadow graph.
-	func render(_ component: some Component, at location: ShadowLocation) async throws {
+	func render(_ component: some Component, at location: Location) async throws {
 		
 		assert(renderingLocation == nil)
 		renderingLocation = location
@@ -141,7 +141,7 @@ extension ShadowGraph {
 	/// Invalidates the component at a given location.
 	///
 	/// The shadow graph rerenders the component when it is next requested.
-	func invalidateComponent(at location: ShadowLocation) {
+	func invalidateComponent(at location: Location) {
 		update(nil, ofType: (any Component).self, at: location)
 	}
 	
