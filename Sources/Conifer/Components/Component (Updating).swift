@@ -36,8 +36,8 @@ private extension DynamicProperty {
 	
 }
 
-/// A key path from a component to a (stored, possibly nested) dynamic property.
-private protocol DynamicPropertyKeyPath<Root> {
+/// A sendable key path from a component to a (stored, possibly nested) dynamic property.
+private protocol DynamicPropertyKeyPath<Root> /* implies Sendable but we currently cannot express this formally */ {
 	
 	/// A value on which `self` can be applied to.
 	associatedtype Root : Component
@@ -61,8 +61,6 @@ extension WritableKeyPath : DynamicPropertyKeyPath where Root : Component, Value
 		for nestedKeyPath in Value.allDynamicPropertyKeyPaths(prefix: self) {
 			try await nestedKeyPath.updateDynamicProperty(on: &component, shadow: shadow)
 		}
-		try await component[keyPath: self].update(for: shadow, keyPath: self)
+		try await component[keyPath: self].update(for: shadow, keyPath: self as! WritableKeyPath & Sendable)
 	}
 }
-
-extension WritableKeyPath : @unchecked @retroactive Sendable where Root : Component, Value : DynamicProperty {}

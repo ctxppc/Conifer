@@ -5,10 +5,10 @@
 extension PartialKeyPath {
 	
 	/// Returns key paths from `Root` to each stored property on `Root`.
-	static func allStoredPropertyKeyPaths() -> [PartialKeyPath] {
-		var keyPaths = [PartialKeyPath]()
+	static func allStoredPropertyKeyPaths() -> [PartialKeyPath & Sendable] {
+		var keyPaths = [PartialKeyPath & Sendable]()
 		let success = _forEachFieldWithKeyPath(of: Root.self) { _, keyPath in
-			keyPaths.append(keyPath)
+			keyPaths.append(keyPath as! PartialKeyPath & Sendable)
 			return true
 		}
 		precondition(success, "Could not determine all key paths from \(Root.self)")

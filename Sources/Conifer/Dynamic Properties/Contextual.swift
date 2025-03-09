@@ -19,8 +19,8 @@ public struct Contextual<Value : Sendable> : DynamicProperty, @unchecked Sendabl
 	let key: Context.Key<Value>
 	
 	// See protocol.
-	public mutating func update<Component>(for shadow: some Shadow<Component>, keyPath: Self.KeyPath<Component>) async throws {
-		storedValue = try await shadow.context[keyPath: key]
+	public mutating func update<Component>(for shadow: some Shadow<Component>, keyPath: Path<Component>) async {
+		storedValue = await shadow.context[keyPath: key]
 	}
 	
 	// See protocol.

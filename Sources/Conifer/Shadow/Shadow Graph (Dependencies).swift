@@ -2,33 +2,47 @@
 
 extension ShadowGraph {
 	
-	/// Records a dependency of a component being rendered on an element in the graph.
+	/// Records a dependency on a shadow property.
 	///
 	/// This method does nothing if no component is being rendered. A shadow graph only records internal dependencies.
-	func recordRead<E>(at accessedLocation: Location, elementType: E.Type) {
+	///
+	/// - Requires: `accessedLocation` refers to a rendered component.
+	func recordRead(from accessedLocation: Location, property: ShadowSnapshot.Property) {
 		guard let dependentLocation = renderingLocation else { return }
-		update([Dependency].self, with: { dependencies in
-			(dependencies ?? []).appending(.init(elementType: elementType, dependentLocation: dependentLocation))
-		}, at: accessedLocation)
+		guard var s = self[accessedLocation] else {	// FIXME: Components may record reads *while* being rendered!!
+			preconditionFailure("\(accessedLocation) does not refer to a rendered component")
+		}
+		s.dependencies.append(.init(dependentLocation: dependentLocation, dependentProperty: property))
+		self[accessedLocation] = s
 	}
 	
-	/// Invalidates components that depend on an element in the graph.
-	func recordWrite<E>(at accessedLocation: Location, elementType: E.Type) {
-		guard let dependencies = element(ofType: [Dependency].self, at: accessedLocation) else { return }
-		for dependency in dependencies where dependency.elementType == elementType {
+	/// Invalidates components that depend on a shadow property.
+	func recordWrite(to accessedLocation: Location, property: ShadowSnapshot.Property) {
+		guard let dependencies = self[accessedLocation]?.dependencies else { return }
+		for dependency in dependencies where dependency.dependentProperty == property {
 			invalidateComponent(at: dependency.dependentLocation)
 		}
 	}
 	
 	/// An element on a shadow of a dependable component specifying a dependency of a dependent shadow on the dependable component.
-	private struct Dependency : Sendable {
+	fileprivate struct Dependency : Sendable {
 		
-		/// The element type of the dependent element.
-		var elementType: Any.Type
-		
-		/// The location of the shadow that depends on an element of type `elementType`.
+		/// The location of the dependent shadow.
 		var dependentLocation: Location
 		
+		/// A key path to the dependent shadow property.
+		var dependentProperty: ShadowSnapshot.Property
+		
+	}
+	
+}
+
+fileprivate extension ShadowSnapshot {
+	
+	/// The dependencies that other components have on `self`.
+	var dependencies: [ShadowGraph.Dependency] {
+		get { self[\.dependencies] ?? [] }
+		set { self[\.dependencies] = newValue }
 	}
 	
 }

@@ -16,7 +16,7 @@ public struct StructuralIdentifier : DynamicProperty {
 	public init() {}
 	
 	// See protocol.
-	public mutating func update<Component>(for shadow: some Shadow<Component>, keyPath: Self.KeyPath<Component>) async throws {
+	public mutating func update<Component>(for shadow: some Shadow<Component>, keyPath: Path<Component>) async throws {
 		TODO.unimplemented
 	}
 	

@@ -40,7 +40,7 @@ extension Modified : FoundationalComponent {
 	
 	func finalise(_ shadow: some Shadow<Self>) async throws {
 		for try await child in shadow.children(ofType: (any Shadow).self) {	// only non-foundational children
-			await child.update(shadow)
+			try await modifier.update(child)
 		}
 	}
 	
@@ -52,12 +52,5 @@ extension Component {
 	public func modifier<M : Modifier>(_ modifier: M) -> Modified<Self, M> {
 		.init(content: self, modifier: modifier)
 	}
-	
-}
-
-public protocol Modifier : Sendable {
-	
-	/// Modifies a given shadowed component.
-	func update(_ shadow: some Shadow) async throws
 	
 }

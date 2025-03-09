@@ -14,10 +14,5 @@ extension Shadow {
 	}
 	
 	/// Accesses the subject.
-	public subscript <Value>(dynamicMember keyPath: KeyPath<Subject, Value>) -> Value {
-		get async throws {
-			try await subject[keyPath: keyPath]
-		}
-	}
 	
 }

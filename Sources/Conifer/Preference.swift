@@ -23,14 +23,32 @@ extension Shadow {
 	
 	/// Returns the preference of a given type of `self`.
 	func preference<P : Preference>(ofType type: P.Type) async throws -> P {
-		if let preference = await element(ofType: type) {
-			return preference
-		} else {
-			return try await children(ofType: (any Shadow).self)
-				.map { try await $0.preference(ofType: type) }
-				.reduce(P?.none) { try await $0?.merged(with: $1) ?? $1}
-				?? P.default
-		}
+		TODO.unimplemented
+	}
+	
+	var preferences: Preferences? {
+			TODO.unimplemented
+	}
+	
+}
+
+fileprivate extension ShadowSnapshot {
+	
+	/// The preferences of the shadow, i.e., including preferences from child shadows, or `nil` if they have not been computed yet.
+	var computedPreferences: Preferences? {
+		get { self[\.computedPreferences] }
+		set { self[\.computedPreferences] = newValue }
+	}
+	
+}
+
+struct Preferences : Sendable {
+	
+	var preferencesByType: [ObjectIdentifier : any Preference] = [:]
+	
+	subscript <P : Preference>(_ type: P.Type) -> P {
+		get { preferencesByType[.init(type)] as! P }
+		set { preferencesByType[.init(type)] = newValue }
 	}
 	
 }

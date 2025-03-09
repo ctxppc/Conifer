@@ -57,19 +57,35 @@ public struct Context : @unchecked Sendable {	// Only immutable key paths withou
 
 extension Shadow {
 	
-	/// The context of `self`, which consists of contextual values set on the subject and on the subjects of ancestors of `self`.
-	///
-	/// The context cannot be mutated on a shadow. The `context(_:_:)` modifier on components is the only supported method to set contextual values.
+	/// The context of the shadow, i.e., including contextual values from parent shadows.
 	var context: Context {
-		get async throws {
-			if let context = await element(ofType: Context.self) {
-				return context
-			} else if let context = try await parent?.context {
+		get async {
+			if let context = await self.computedContext {
 				return context
 			} else {
-				return .init()
+				// FIXME: Collapse multiple suspension points to avoid read-write races.
+				let context = await parent?.context ?? .init()	// TODO: Quid dependency tracking?
+				await set(\.computedContext, context)
+				return context
 			}
 		}
+	}
+	
+	/// Assigns or reassigns the contextual value for given key.
+	func set<Value>(_ key: Context.Key<Value>, _ value: Value) async {
+		var context = await self.context
+		context[keyPath: key] = value
+		await self.set(\.computedContext, context)
+	}
+	
+}
+
+fileprivate extension ShadowSnapshot {
+	
+	/// The context of the shadow, i.e., including contextual values from parent shadows, or `nil` if it has not been computed yet.
+	var computedContext: Context? {
+		get { self[\.computedContext] }
+		set { self[\.computedContext] = newValue }
 	}
 	
 }

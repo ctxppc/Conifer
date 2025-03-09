@@ -11,7 +11,8 @@ extension ShadowGraph {
 	/// - Requires: `location` refers to a (possibly not-yet-rendered) component whose parent is already rendered.
 	func renderIfNeededComponent(at location: Location) async throws -> any Component {
 		
-		if let component = componentIfRendered(at: location) {
+		if let component = self[location]?.subject {
+			// TODO: Rerender component if invalidated.
 			return component
 		}
 		
@@ -26,32 +27,32 @@ extension ShadowGraph {
 	///
 	/// - Requires: `location` refers to an already rendered component in `self`.
 	func prerenderedComponent(at location: Location) -> any Component {
-		componentIfRendered(at: location) !! "Expected component at \(location) to be already rendered"
-	}
-	
-	/// Returns the component at a given location, or `nil` if it has not been rendered yet.
-	fileprivate func componentIfRendered(at location: Location) -> (any Component)? {
-		element(ofType: (any Component).self, at: location)
+		self[location]?.subject !! "Expected component at \(location) to be already rendered"
 	}
 	
 	/// Assigns or replaces the component at a given location in the graph.
 	fileprivate func update(_ component: any Component, at location: Location) {
-		update(component, ofType: (any Component).self, at: location)
+		if var snapshot = self[location] {
+			snapshot.subject = component
+			self[location] = snapshot
+		} else {
+			self[location] = .init(subject: component)
+		}
 	}
 	
 	/// Renders if needed the children of the component at `parentLocation` and returns their locations.
 	///
 	/// - Requires: `parentLocation` refers to a rendered component in `self`.
-	/// - Postcondition: `element(ofType: ShadowChildLocations.self, at: parentLocation)` is equal to this method's result.
-	/// - Postcondition: Each `location` in the returned array refers to a rendered component in `self`.
+	/// - Postcondition: `self[parentLocation]!.childLocations` is equal to this method's result.
+	/// - Postcondition: Each location in the returned array refers to a rendered component in `self`.
 	///
 	/// - Parameter parentLocation: The location of the component whose children to render if necessary.
 	///
 	/// - Returns: The locations of the children of the component at `parentLocation`.
 	@discardableResult
-	func renderIfNeededChildren(ofComponentAt parentLocation: Location) async throws -> ShadowChildLocations {
+	func renderIfNeededChildren(ofComponentAt parentLocation: Location) async throws -> [Location] {
 		
-		if let childLocations = element(ofType: ShadowChildLocations.self, at: parentLocation) {
+		if let childLocations = self[parentLocation]!.childLocations {	// FIXME: Remove force-unwrap
 			return childLocations
 		}
 		
@@ -64,14 +65,14 @@ extension ShadowGraph {
 	///
 	/// This method supports both foundational and non-foundational `parent`s.
 	///
-	/// - Requires: The properties on `parent` are prepared.
-	/// - Postcondition: `element(ofType: ShadowChildLocations.self, at: parentLocation)` is equal to this method's result.
+	/// - Requires: The dynamic properties on `parent` are up-to-date.
+	/// - Postcondition: `self[parentLocation]!.childLocations` is equal to this method's result.
 	///
 	/// - Parameter parent: The component whose children to render.
 	/// - Parameter parentLocation: The location of `parent` in `self`.
 	///
 	/// - Returns: The locations of the rendered children.
-	fileprivate func renderChildren(of parent: some Component, under parentLocation: Location) async throws -> ShadowChildLocations {
+	fileprivate func renderChildren(of parent: some Component, under parentLocation: Location) async throws -> [Location] {
 		
 		// Special-case foundational components.
 		if let component = self as? any FoundationalComponent {
@@ -83,8 +84,8 @@ extension ShadowGraph {
 		try await render(parent.body, at: childLocation)
 		
 		// Update child locations on graph.
-		let childLocations = ShadowChildLocations([childLocation])
-		update(childLocations, at: parentLocation)
+		let childLocations = [childLocation]
+		self[parentLocation]!.childLocations = childLocations	// FIXME: Remove force-unwrap
 		
 		return childLocations
 		
@@ -94,14 +95,14 @@ extension ShadowGraph {
 	///
 	/// This method overloads `renderChildren(of:under:)` for foundational `parent`s.
 	///
-	/// - Requires: The properties on `parent` are prepared.
-	/// - Postcondition: `element(ofType: ShadowChildLocations.self, at: parentLocation)` is equal to this method's result.
+	/// - Requires: The dynamic properties on `parent` are up-to-date.
+	/// - Postcondition: `self[parentLocation]!.childLocations` is equal to this method's result.
 	///
 	/// - Parameter parent: The component whose children to render.
 	/// - Parameter parentLocation: The location of `parent` in `self`.
 	///
 	/// - Returns: The locations of the rendered children.
-	fileprivate func renderChildren(of parent: some FoundationalComponent, under parentLocation: Location) async throws -> ShadowChildLocations {
+	fileprivate func renderChildren(of parent: some FoundationalComponent, under parentLocation: Location) async throws -> [Location] {
 		
 		// Determine child locations.
 		let shadow = parent.makeShadow(graph: self, location: parentLocation)
@@ -115,13 +116,12 @@ extension ShadowGraph {
 		}
 		
 		// Update child locations on graph.
-		let childLocations = ShadowChildLocations(absoluteChildLocations)
-		update(childLocations, at: parentLocation)
+		self[parentLocation]!.childLocations = absoluteChildLocations	// FIXME: Remove force-unwrap
 		
 		// Finalise.
 		try await parent.finalise(shadow)	// may trigger additional renderings
 		
-		return childLocations
+		return absoluteChildLocations
 		
 	}
 	
@@ -141,8 +141,26 @@ extension ShadowGraph {
 	/// Invalidates the component at a given location.
 	///
 	/// The shadow graph rerenders the component when it is next requested.
+	///
+	/// This method does nothing if the component has never been rendered.
 	func invalidateComponent(at location: Location) {
-		update(nil, ofType: (any Component).self, at: location)
+		self[location]?.subjectNeedsRerendering = true
+	}
+	
+}
+
+private extension ShadowSnapshot {
+	
+	/// A Boolean indicating whether `subject` needs to be rerendered the next time it is requested.
+	var subjectNeedsRerendering: Bool {
+		get { self[\.subjectNeedsRerendering] ?? false }
+		set { self[\.subjectNeedsRerendering] = newValue }
+	}
+	
+	/// The locations of the children of `subject` in the graph, or `nil` if the children of `subject` have not been rendered yet.
+	var childLocations: [ShadowGraph.Location]? {
+		get { self[\.childLocations] }
+		set { self[\.childLocations] = newValue }
 	}
 	
 }

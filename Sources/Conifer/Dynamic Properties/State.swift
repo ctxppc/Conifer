@@ -12,10 +12,10 @@ public struct State<Value : Sendable> : MutableDynamicProperty {
 	}
 	
 	// See protocol.
-	public mutating func update<Component>(for shadow: some Shadow<Component>, keyPath: Self.KeyPath<Component>) async {
+	public mutating func update<Component>(for shadow: some Shadow<Component>, keyPath: Path<Component>) async {
 		
 		// If state container already has a value, replace the initial value.
-		if let value: Value = await shadow.element(ofType: StateContainer.self)?[keyPath] {
+		if let value: Value = await shadow.stateContainer[keyPath] {
 			storedValue = value
 		}
 		
@@ -33,8 +33,8 @@ public struct State<Value : Sendable> : MutableDynamicProperty {
 	public func send(updatedValue: Value) {
 		guard let backReference else { preconditionFailure("Cannot update @State property outside of a rendering context") }
 		Task { [updatedValue] in
-			await backReference.shadow.update(StateContainer.self) {
-				with($0 ?? .init()) {
+			await backReference.shadow.update(\.stateContainer) {
+				with($0) {
 					$0[backReference.keyPath] = updatedValue
 				}
 			}
@@ -73,4 +73,11 @@ private struct StateContainer : @unchecked Sendable {	// Conifer only provides s
 	/// The container's storage.
 	private var valuesByKeyPath = [AnyKeyPath : any Sendable]()
 	
+}
+
+fileprivate extension ShadowSnapshot {
+	var stateContainer: StateContainer {
+		get { self[\.stateContainer] ?? .init() }
+		set { self[\.stateContainer] = newValue }
+	}
 }

@@ -45,7 +45,7 @@ public struct Binding<Value : Sendable> : MutableDynamicProperty {
 	}
 	
 	// See protocol.
-	public mutating func update<Component>(for shadow: some Shadow<Component>, keyPath: any Self.KeyPath<Component>) async throws {
+	public mutating func update<Component>(for shadow: some Shadow<Component>, keyPath: Path<Component>) {
 		// Bindings do not have external dependencies.
 	}
 	
