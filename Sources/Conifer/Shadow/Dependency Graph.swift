@@ -9,6 +9,7 @@ import Foundation
 /// Every element in the graph, including elements not known to graph, is either invalid or up-to-date. An element starts as invalid until it is marked as updated using `markAsUpdated(_:)`, at which points the graph also invalidates all elements that depend on that element either directly or indirectly. An element can be invalidated manually using `invalidate(_:)`, e.g., when external circumstances have caused it require an update in the future.
 ///
 /// A dependency graph detects cyclic dependencies when an element involved in such a dependency is invalidated. When such a cycle is detected, the graph throws an error and should no longer be used.
+@available(*, deprecated)
 struct DependencyGraph<Element : Hashable & Sendable> : Hashable, Sendable {
 	
 	/// The known valid elements.

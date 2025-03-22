@@ -16,7 +16,7 @@ private struct PreferenceModifier<PreferenceType : Preference> : Modifier, Senda
 	
 	// See protocol.
 	func update(_ shadow: some Shadow) async {
-		await shadow.update(preference)
+		TODO.unimplemented
 	}
 	
 }

@@ -15,7 +15,9 @@
 /// ## Shadow Properties
 /// Besides storing a rendered representation of a component, a shadow can have properties related to that component. Shadow properties can be either stored or computed.
 ///
-/// A **stored shadow property** is a shadow property whose storage is managed by the shadow graph. To declare a stored shadow property, declare a property in an extension of `ShadowSnapshot` (not `Shadow`). Stored shadow properties can be accessed and updated directly on a shadow, without having to acquire a snapshot first, even though the property is defined on `ShadowSnapshot` and not `Shadow`.
+/// A **stored shadow property** is a shadow property whose storage is managed by the shadow graph and whose value is set during rendering (such as a modifier that sets its value when its `update(_:)` is invoked) or by an external source (such as a database after it detects changes to a query result set).
+///
+/// To declare a stored shadow property, declare a property in an extension of `ShadowSnapshot` (not `Shadow`). Stored shadow properties can be accessed and updated directly on a shadow, without having to acquire a snapshot first, even though the property is defined on `ShadowSnapshot` and not `Shadow`.
 ///
 ///		extension ShadowSnapshot {	// not Shadow
 ///			var prefersPrettyPrint: Bool { … }
@@ -25,35 +27,31 @@
 /// 	let printPrettily = await myShadow.prefersPrettyPrint
 /// 	await myShadow.set(\.prefersPrettyPrint, false)
 ///
-/// A **computed shadow property** is a shadow property that depends on other shadow properties, whether the same or other shadows in the graph, or an external source of truth (such as a database). To declare a computed shadow property, declare a property on this protocol or a specialisation (not `ShadowSnapshot`). A computed shadow property has an `async` getter if it accesses the shadow graph.
+/// A **computed shadow property** is a shadow property that depends on other shadow properties, whether the same or other shadows in the graph. To declare a computed shadow property, declare a property on this protocol or a specialisation (not `ShadowSnapshot`). A computed shadow property has an `async` getter if it accesses the shadow graph.
 ///
 /// 	extension Shadow {	// not ShadowSnapshot
 ///			var isRootElement: Bool {
-///				get async { /* traverse ancestors to determine value */ }
+///				get async { return /* traverse ancestors to determine value */ }
 ///			}
 /// 	}
 ///
 /// 	let myShadow: any Shadow = …
 /// 	let isRootElement = await myShadow.isRootElement
 ///
-/// For best performance, a computed shadow property should cache its result in a stored shadow property.
+/// For best performance, a computed shadow property should cache its result in a stored shadow property. The computed shadow property should use `cached(_:_:)` so that Conifer can track the shadow property's dependencies and invalidate the backing stored property (of optional type) accordingly.
 ///
 /// 	extension Shadow {
 ///			var isRootElement: Bool {
-///				get async {
-///					if let isRootElement = await isRootElementIfKnown {
-///						return isRootElement
-///					} else {
-///						let isRootElement = /* traverse ancestors to determine value */
-///						set(\.isRootElementIfKnown, isRootElement)
-///						return isRootElement
+///				get async throws {
+///					try await cached(\.isRootElement) { // refers to the stored property defined in ShadowSnapshot below
+///						return /* traverse ancestors to determine value */
 ///					}
 ///				}
 ///			}
 ///		}
 ///
 ///		extension ShadowSnapshot {
-///			fileprivate var isRootElementIfKnown: Bool? { … }
+///			fileprivate var isRootElement: Bool? { … }	// of optional type
 ///		}
 ///
 /// ## Shadow Property Accesses Are Tracked During Rendering
@@ -152,101 +150,6 @@ public protocol Shadow<Subject> : Sendable {
 	
 	/// A component represented by an instance of`Self`.
 	associatedtype Subject : Component
-	
-}
-
-extension Shadow {
-	
-	/// The shadow of the nearest non-foundational ancestor component, or `nil` if `self` is a root component.
-	///
-	/// - Invariant: `parent` is not a foundational component.
-	public var parent: (any Shadow)? {
-		get async {
-			// Sequence.map and .compactMap do not support await (yet) so we use a conventional loop.
-			for location in sequence(first: location, next: \.parent) {
-				let subject = await graph.prerenderedComponent(at: location)
-				if !(subject is any FoundationalComponent) {
-					return subject.makeUntypedShadow(graph: graph, location: location)
-				}
-			}
-			return nil
-		}
-	}
-	
-	/// Returns the children of `self`, i.e., shadows over the non-foundational components that are direct descendants of `subject`.
-	///
-	/// - Requires: Each child is typed `type`.
-	/// - Requires: `Child` conforms to `Shadow` or is an existential `Shadow` type. (This constraint cannot be formalised as of writing; existential types cannot conform to protocols yet.)
-	/// - Invariant: No component in `children` is a foundational component.
-	public func children<Child>(ofType type: Child.Type) -> some AsyncSequence<Child, any Error> {
-		ShadowChildren(parent: self)
-	}
-	
-	/// Accesses a shadow property at a given key path on `self`.
-	///
-	/// If a component is being rendered, this method records a dependency of that component on the shadow property on `self`. That component is invalidated whenever the shadow property changes.
-	public subscript <Value : Sendable>(dynamicMember keyPath: WritableKeyPath<ShadowSnapshot, Value> & Sendable) -> Value {
-		get async {
-			await { (graph: isolated ShadowGraph) in
-				graph.recordRead(from: location, property: keyPath)
-				return graph[location]![keyPath: keyPath]
-			}(graph)
-		}
-	}
-	
-	/// Assigns or reassigns a value to a shadow property at a given key path on `self`.
-	///
-	/// This method invalidates all components that depend on the shadow property.
-	public func set<Value : Sendable>(_ keyPath: WritableKeyPath<ShadowSnapshot, Value> & Sendable, _ newValue: Value) async {
-		await { (graph: isolated ShadowGraph) in
-			graph.recordWrite(to: location, property: keyPath)
-			graph[location]![keyPath: keyPath] = newValue
-		}(graph)
-	}
-	
-	/// Updates a value to a shadow property at a given key path on `self`.
-	///
-	/// This method invalidates all components that depend on the shadow property.
-	public func update<Value : Sendable>(_ keyPath: WritableKeyPath<ShadowSnapshot, Value> & Sendable, with transform: sending (Value) -> Value) async {
-		await { (graph: isolated ShadowGraph) in
-			graph.recordRead(from: location, property: keyPath)
-			graph.recordWrite(to: location, property: keyPath)
-			graph[location]![keyPath: keyPath] = transform(graph[location]![keyPath: keyPath])
-		}(graph)
-	}
-	
-	/// Returns the associated element of a given type.
-	@available(*, deprecated)
-	public func element<Element : Sendable>(ofType type: Element.Type) async -> Element? {
-		return await graph.element(ofType: type, at: location)
-	}
-	
-	/// Assigns, replaces, or removes the associated element of its type.
-	///
-	/// `type` can be either a concrete or existential type. Concrete and existential types are never equal; the same type must be provided to `element(ofType:)` to retrieve the same element. It's for example possible to simultaneously assign a `String` element using the `Any` type and another using the `String` type at the same location.
-	///
-	/// - Parameters:
-	///   - element: The new element, or `nil` to remove it.
-	///   - type: The element's type. The default value is the element's concrete type, which is sufficient unless an existential type is desired.
-	@available(*, deprecated)
-	public func update<Element : Sendable>(_ element: Element?, ofType type: Element.Type = Element.self) async {
-		await graph.update(element, ofType: type, at: location)
-	}
-	
-	/// Assigns, replaces, or removes the associated element of its type using a given update function.
-	///
-	/// `type` can be either a concrete or existential type. Concrete and existential types are never equal; the same type must be provided to `element(ofType:)` to retrieve the same element. It's for example possible to simultaneously assign a `String` element using the `Any` type and another using the `String` type at the same location.
-	///
-	/// - Parameters:
-	///   - type: The element's type.
-	///   - update: A function that accepts the current element of type `type` (or `nil` if `self` has no such element) and produces the new element (or `nil` if there should be no such element).
-	@available(*, deprecated)
-	public func update<Element : Sendable, Failure>(
-		_ type:			Element.Type,
-		with update:	sending (Element?) async throws(Failure) -> Element?
-	) async throws(Failure) {
-		try await graph.update(type, with: update, at: location)
-	}
 	
 }
 

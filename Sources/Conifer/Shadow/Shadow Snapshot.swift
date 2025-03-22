@@ -4,7 +4,7 @@ import DepthKit
 
 /// A container of stored shadow properties associated with a component.
 ///
-/// A stored shadow property is a property associated with a component whose storage is managed by a shadow graph. A snapshot is container of such properties associated with a single component.
+/// See `Shadow` for a discussion of the different kinds of shadow properties.
 ///
 /// To declare a stored shadow property, declare a property in an extension of this type whose getter resp. setter returns resp. assigns `self[keyPath]` where `keyPath` is the key path of the shadow property. `self[keyPath]` returns `nil` when the property does not have an assigned value; you may choose to provide a default value instead.
 ///
@@ -15,7 +15,7 @@ import DepthKit
 ///			}
 /// 	}
 ///
-/// Stored shadow properties can be directly accessed on a shadow. Unlike accessing a stored shadow property on a snapshot, accessing a stored shadow property through a shadow is an asynchronous operation.
+/// Stored shadow properties can be directly accessed on a shadow. Unlike accessing a stored shadow property on a *snapshot*, accessing a stored shadow property through a *shadow* is an asynchronous operation.
 ///
 /// 	let myShadow: any Shadow = …
 /// 	let printPrettily = await myShadow.prefersPrettyPrint
@@ -59,6 +59,8 @@ public struct ShadowSnapshot : Sendable {
 }
 
 extension ShadowSnapshot {
+	
+	// TODO: Use computed shadow property to compute subject?
 	
 	/// The rendered subject.
 	///
