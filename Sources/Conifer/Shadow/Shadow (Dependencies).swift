@@ -5,46 +5,55 @@ import Foundation
 
 extension Shadow {
 	
-	/// Records a shadow value read, recording it as a dependency of the shadow value being computed (if applicable).
+	/// Records a shadow value read on `self`, recording it as a dependency of the shadow value being computed (if applicable).
+	///
+	/// The shadow value being computed (if applicable) will be invalidated whenever `readProperty` is written to.
 	///
 	/// - Requires: `graph === self.graph`. The parameter only exists to pass isolation.
 	///
 	/// - Parameters:
-	///    - readValue: A reference to the shadow value being read.
+	///    - readProperty: A shadow property being read.
 	///    - graph: The shadow graph.
-	func recordRead<V>(from readValue: ShadowValueReference<V>, graph: isolated ShadowGraph) {
-		TODO.unimplemented
+	func recordRead<V>(from readProperty: ShadowSnapshot.Property<V>, graph: isolated ShadowGraph) {
+		guard let shadowValueBeingComputed else { return }
+		graph[location]!.dependentsByDependedShadowProperty[readProperty, default: []].insert(shadowValueBeingComputed)
 	}
 	
-	/// Records a shadow value write, invalidating any shadow values depending on it.
+	/// Records a shadow value write on `self`, invalidating any shadow values depending on it.
 	///
 	/// - Requires: `graph === self.graph`. The parameter only exists to pass isolation.
 	///
 	/// - Parameters:
-	///    - writtenValue: A reference to the shadow value being written.
+	///    - writtenProperty: The shadow property being written.
 	///    - graph: The shadow graph.
 	///
 	/// - Throws: `DependencyError.cycle` if a cyclic dependency is detected.
-	func recordWrite<V>(to writtenValue: ShadowValueReference<V>, graph: isolated ShadowGraph) throws(DependencyError) {
-		for dependent in graph[location]!.dependentsByDependedShadowProperty[writtenValue.property] ?? [] {
-			try dependent.invalidate(in: graph, trace: [.init(writtenValue)])
+	func recordWrite<V>(
+		to writtenProperty:	ShadowSnapshot.Property<V>,
+		graph:				isolated ShadowGraph
+	) throws(DependencyError) {
+		for dependent in graph[location]!.dependentsByDependedShadowProperty[writtenProperty] ?? [] {
+			try dependent.invalidate(in: graph, trace: [.init(location: location, property: writtenProperty)])
 		}
 	}
 	
 	/// Runs a given function, records any reads during its execution as dependencies of a given shadow property on `self`, and returns the value returned by the function.
+	///
+	/// - Note: This method does not update `property`.
 	func recordDependencies<Value>(
 		of property:	ShadowSnapshot.Property<Value?>,
 		graph:			isolated ShadowGraph,
 		compute:		sending () async throws -> Value
 	) async throws -> Value {
-		try await $shadowValueBeingComputed.withValue(.init(location: location, property: property), operation: compute)
+		try await $shadowValueBeingComputed
+			.withValue(.init(ShadowValueReference(location: location, property: property)), operation: compute)
 	}
 	
 }
 
 /// The shadow value being computed as part of the current `Shadow.cached(in:compute:)` call, or `nil` if no shadow value is being computed.
 @TaskLocal
-private var shadowValueBeingComputed: AnyShadowValueReference?
+private var shadowValueBeingComputed: AnyInvalidatableShadowValueReference?
 
 fileprivate extension ShadowSnapshot {
 	
@@ -83,6 +92,10 @@ extension ShadowValueReference : InvalidatableShadowValueReference where Value :
 }
 
 private struct AnyInvalidatableShadowValueReference : InvalidatableShadowValueReference {
+	
+	init(_ wrapped: some InvalidatableShadowValueReference) {
+		self.wrapped = wrapped
+	}
 	
 	var wrapped: any InvalidatableShadowValueReference
 	

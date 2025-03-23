@@ -8,7 +8,7 @@ extension Shadow {
 	public subscript <Value : Sendable>(dynamicMember property: ShadowSnapshot.Property<Value>) -> Value {
 		get async {
 			await { (graph: isolated ShadowGraph) in
-				recordRead(from: .init(location: location, property: property), graph: graph)
+				recordRead(from: property, graph: graph)
 				return graph[location]![keyPath: property]
 			}(graph)
 		}
@@ -21,7 +21,7 @@ extension Shadow {
 	/// - Throws: `DependencyError.cycle` if a cyclic dependency is detected.
 	public func set<Value : Sendable>(_ property: ShadowSnapshot.Property<Value>, _ newValue: Value) async throws(DependencyError) {
 		try await { (graph: isolated ShadowGraph) throws(DependencyError) in
-			try recordWrite(to: .init(location: location, property: property), graph: graph)
+			try recordWrite(to: property, graph: graph)
 			graph[location]![keyPath: property] = newValue
 		}(graph)
 	}
@@ -33,8 +33,8 @@ extension Shadow {
 	/// - Throws: `DependencyError.cycle` if a cyclic dependency is detected.
 	public func update<Value : Sendable>(_ property: ShadowSnapshot.Property<Value>, with transform: sending (Value) -> Value) async throws(DependencyError) {
 		try await { (graph: isolated ShadowGraph) throws(DependencyError) in
-			recordRead(from: .init(location: location, property: property), graph: graph)
-			try recordWrite(to: .init(location: location, property: property), graph: graph)
+			recordRead(from: property, graph: graph)
+			try recordWrite(to: property, graph: graph)
 			graph[location]![keyPath: property] = transform(graph[location]![keyPath: property])
 		}(graph)
 	}
@@ -49,7 +49,7 @@ extension Shadow {
 	///    - storedProperty: The shadow property storing the cached value (or `nil` if invalid).
 	///    - compute: A function that computes the shadow value (when the stored shadow value is invalid).
 	///
-	/// - Throws: `DependencyError.cyclicDependency` if Conifer detects a cyclic dependency, or any error thrown by `compute`.
+	/// - Throws: `DependencyError.cycle` if a cyclic dependency is detected; or any error thrown by `compute`.
 	public func cached<Value : Sendable>(
 		in storedProperty:	ShadowSnapshot.Property<Value?>,
 		compute:			sending () async throws -> Value
