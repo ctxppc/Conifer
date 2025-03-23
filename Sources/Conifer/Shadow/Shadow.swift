@@ -13,11 +13,11 @@
 /// A shadow's descendants can be accessed via its `children` property. The shadow graph lazily renders components as they are accessed. A shadow's parent can be accessed via its `parent` property. A rendered component's ancestors are always rendered.
 ///
 /// ## Shadow Properties
-/// Besides storing a rendered representation of a component, a shadow can have properties related to that component. Shadow properties can be either stored or computed.
+/// Besides storing a rendered representation of a component, a shadow can have properties related to that component. These **shadow properties** can be either stored or computed. A **shadow value** is a value of some shadow property of some shadow.
 ///
-/// A **stored shadow property** is a shadow property whose storage is managed by the shadow graph and whose value is set during rendering (such as a modifier that sets its value when its `update(_:)` is invoked) or by an external source (such as a database after it detects changes to a query result set).
+/// A **stored shadow property** is a shadow property whose storage is managed by the shadow graph and whose value is set during rendering (such as a modifier that sets its value when its `update(_:)` method is invoked) or by an external source (such as a database after it detects changes to a query result set).
 ///
-/// To declare a stored shadow property, declare a property in an extension of `ShadowSnapshot` (not `Shadow`). Stored shadow properties can be accessed and updated directly on a shadow, without having to acquire a snapshot first, even though the property is defined on `ShadowSnapshot` and not `Shadow`.
+/// To declare a stored shadow property, declare a property in an extension of `ShadowSnapshot` (not `Shadow`). Stored shadow properties can be accessed and updated directly on a shadow, without having to acquire a snapshot first, even though the property is defined on `ShadowSnapshot` and not `Shadow`. See `ShadowSnapshot` for more information on defining stored shadow properties.
 ///
 ///		extension ShadowSnapshot {	// not Shadow
 ///			var prefersPrettyPrint: Bool { … }
@@ -27,7 +27,7 @@
 /// 	let printPrettily = await myShadow.prefersPrettyPrint
 /// 	await myShadow.set(\.prefersPrettyPrint, false)
 ///
-/// A **computed shadow property** is a shadow property that depends on other shadow properties, whether the same or other shadows in the graph. To declare a computed shadow property, declare a property on this protocol or a specialisation (not `ShadowSnapshot`). A computed shadow property has an `async` getter if it accesses the shadow graph.
+/// A **computed shadow property** is a shadow property that depends on other shadow values, whether from the same or other shadows in the graph. To declare a computed shadow property, declare a property on this protocol or a specialisation (not `ShadowSnapshot`). A computed shadow property has an `async` getter if it accesses the shadow graph.
 ///
 /// 	extension Shadow {	// not ShadowSnapshot
 ///			var isRootElement: Bool {
@@ -38,12 +38,12 @@
 /// 	let myShadow: any Shadow = …
 /// 	let isRootElement = await myShadow.isRootElement
 ///
-/// For best performance, a computed shadow property should cache its result in a stored shadow property. The computed shadow property should use `cached(_:_:)` so that Conifer can track the shadow property's dependencies and invalidate the backing stored property (of optional type) accordingly.
+/// For best performance, a computed shadow property should cache its result in a stored shadow property. The computed shadow property should use `cached(in:compute:)` to participate in Conifer's dependency tracking mechanism. Each shadow value that is read during the call to `cached(in:compute:)` is recorded as a dependency of the computed shadow property. The computed shadow property is invalidated whenever any dependency changes, except if this occurs within the same `cached(in:compute:)` call. `cached(in:compute:)` stores the computed value in the backing stored property; Conifer resets it to `nil` when it is invalidated.
 ///
 /// 	extension Shadow {
 ///			var isRootElement: Bool {
 ///				get async throws {
-///					try await cached(\.isRootElement) { // refers to the stored property defined in ShadowSnapshot below
+///					try await cached(in: \.isRootElement) { // refers to the stored property defined in ShadowSnapshot below
 ///						return /* traverse ancestors to determine value */
 ///					}
 ///				}
@@ -54,19 +54,10 @@
 ///			fileprivate var isRootElement: Bool? { … }	// of optional type
 ///		}
 ///
-/// ## Shadow Property Accesses Are Tracked During Rendering
-/// A shadow graph tracks accesses to properties while a component is being rendered.
-///
-/// A modifier or dynamic property that *reads* a shadow property creates a **dependency** between the shadow property and the modifier resp. property's dependent component.
-///
-/// A modifier or dynamic property that *writes* a shadow property using `update(_:ofType:)` or `update(_:with:)` invalidates the components that depend on it.
-///
-/// Carefully document the shadow properties a component defines (writes) or uses (reads) to avoid cyclic dependencies.
-///
 /// ## Conifer Provides a Conforming Type
 /// Conifer provides `ShadowType`, a concrete type that conforms to `Shadow`. There is usually no need for a custom type conforming to `Shadow`, nor will Conifer instantiate or store such types.
 ///
-/// To add methods, subscripts, and computed properties, extend `Shadow`. For storage, define shadow properties (cf. above).
+/// To add methods, subscripts, and computed properties, extend `Shadow`. To add stored shadow properties, extend `ShadowSnapshot` (cf above).
 ///
 /// ## Specialising the Shadow Protocol
 /// When specialising the `Component` protocol, also specialise the `Shadow` protocol and add conformance to the concrete `ShadowType` type to enable dynamic casting. For example, given following `Component` specialisation
@@ -78,7 +69,7 @@
 /// 	protocol HTMLElementShadow : Shadow where Subject : HTMLElement {}
 /// 	extension ShadowType : HTMLElementShadow where Subject : HTMLElement {}
 ///
-/// Add any extensions conditionally to the general `Shadow` protocol instead of adding them unconditionally to the `Shadow` specialisation. For example,
+/// Add any extensions conditionally to the *general* `Shadow` protocol instead of adding them unconditionally to the `Shadow` *specialisation*. For example,
 ///
 /// 	extension Shadow where Subject : HTMLElement {
 ///			var htmlRepresentation: String { … }
@@ -86,7 +77,7 @@
 ///			func preferPrettyPrint(_ newValue: Bool) async { … }
 /// 	}
 ///
-/// Conifer API never constrains, and indeed cannot contrain, shadows to domain-specific component types. The specialisation allows you to use dynamic casting over unconstrained `Shadow` values, like when defining a modifier type.
+/// The reason for doing so is that Conifer API never constrains, and indeed cannot contrain, shadows to domain-specific component types. The specialisation allows you to use dynamic casting over unconstrained `Shadow` values, like when defining a modifier type. (Does this argument still hold?)
 ///
 /// 	struct PrettyPrintModifier : Modifier {
 ///			func update(_ shadow: some Shadow) async {

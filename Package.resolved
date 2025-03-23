@@ -1,13 +1,13 @@
 {
-  "originHash" : "0535cdd0d0d8092d684040c1eb3bb7f607fce3b44b0b198c68ce1dba1c4e4445",
+  "originHash" : "953b17a99b51469d78d6a310a3e21bbb42fb815a3fae36df2fe38f65c4c7bd8c",
   "pins" : [
     {
       "identity" : "depthkit",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/ctxppc/DepthKit",
       "state" : {
-        "revision" : "488bec9692db1f9adb3e64d5e4fc0b349e1f911a",
-        "version" : "0.14.0"
+        "revision" : "310fcaa81b61cb18c2108df1ce2d7949e3811c60",
+        "version" : "0.16.0"
       }
     },
     {
@@ -15,8 +15,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-algorithms.git",
       "state" : {
-        "revision" : "f6919dfc309e7f1b56224378b11e28bab5bccc42",
-        "version" : "1.2.0"
+        "revision" : "87e50f483c54e6efd60e885f7f5aa946cee68023",
+        "version" : "1.2.1"
       }
     },
     {
@@ -24,8 +24,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-numerics.git",
       "state" : {
-        "revision" : "0a5bc04095a675662cf24757cc0640aa2204253b",
-        "version" : "1.0.2"
+        "revision" : "e0ec0f5f3af6f3e4d5e7a19d2af26b481acb6ba8",
+        "version" : "1.0.3"
       }
     },
     {

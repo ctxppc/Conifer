@@ -2,61 +2,60 @@
 
 extension Shadow {
 	
-	/// Accesses a stored shadow property at a given key path on `self`.
+	/// Accesses a stored shadow value of a given property on `self`.
 	///
 	/// If a component is being rendered, this method records a dependency of that component on the shadow property on `self`. That component is invalidated whenever the shadow property changes.
-	public subscript <Value : Sendable>(dynamicMember keyPath: WritableKeyPath<ShadowSnapshot, Value> & Sendable) -> Value {
+	public subscript <Value : Sendable>(dynamicMember property: ShadowSnapshot.Property<Value>) -> Value {
 		get async {
 			await { (graph: isolated ShadowGraph) in
-				graph.recordRead(from: location, property: keyPath)
-				return graph[location]![keyPath: keyPath]
+				recordRead(from: .init(location: location, property: property), graph: graph)
+				return graph[location]![keyPath: property]
 			}(graph)
 		}
 	}
 	
-	/// Assigns or reassigns a value to a stored shadow property at a given key path on `self`.
+	/// Assigns or reassigns a stored shadow value of a given property on `self`.
 	///
 	/// This method invalidates all components that depend on the shadow property.
-	public func set<Value : Sendable>(_ keyPath: WritableKeyPath<ShadowSnapshot, Value> & Sendable, _ newValue: Value) async {
+	public func set<Value : Sendable>(_ property: ShadowSnapshot.Property<Value>, _ newValue: Value) async {
 		await { (graph: isolated ShadowGraph) in
-			graph.recordWrite(to: location, property: keyPath)
-			graph[location]![keyPath: keyPath] = newValue
+			recordWrite(to: .init(location: location, property: property), graph: graph)
+			graph[location]![keyPath: property] = newValue
 		}(graph)
 	}
 	
-	/// Updates a value to a stored shadow property at a given key path on `self`.
+	/// Updates a stored shadow value of a given property on `self`.
 	///
 	/// This method invalidates all components that depend on the shadow property.
-	public func update<Value : Sendable>(_ keyPath: WritableKeyPath<ShadowSnapshot, Value> & Sendable, with transform: sending (Value) -> Value) async {
+	public func update<Value : Sendable>(_ property: ShadowSnapshot.Property<Value>, with transform: sending (Value) -> Value) async {
 		await { (graph: isolated ShadowGraph) in
-			graph.recordRead(from: location, property: keyPath)
-			graph.recordWrite(to: location, property: keyPath)
-			graph[location]![keyPath: keyPath] = transform(graph[location]![keyPath: keyPath])
+			recordRead(from: .init(location: location, property: property), graph: graph)
+			recordWrite(to: .init(location: location, property: property), graph: graph)
+			graph[location]![keyPath: property] = transform(graph[location]![keyPath: property])
 		}(graph)
 	}
 	
-	/// Returns the value of a shadow property, computing it first if necessary.
+	/// Returns the shadow value backed by a given stored shadow property, computing it using a given function if necessary.
 	///
-	/// If the shadow property at `keyPath` is `nil`, this method performs `compute` to determine a value, sets the property at `keyPath` to this value, and returns the value. Every shadow property that `compute` accesses is recorded as a dependency for `keyPath`. Conifer sets `keyPath` to `nil`, thereby invalidating it, whenever any dependency changes.
+	/// If the stored shadow value is `nil`, this method performs `compute` to determine its new value, sets the stored shadow property to this value, and returns the value. Every shadow property that `compute` accesses is recorded as a dependency for `keyPath`. Conifer sets `keyPath` to `nil`, thereby invalidating it, whenever any dependency changes.
 	///
-	/// If the shadow property at `keyPath` is not `nil`, this method simply returns it.
+	/// If the stored shadow value is not `nil`, this method simply returns it.
 	///
 	/// - Parameters:
-	///    - keyPath: A key path from a shadow snapshot to a shadow property.
-	///    - compute: A function that computes the value of the shadow property.
+	///    - storedProperty: The shadow property storing the cached value (or `nil` if invalid).
+	///    - compute: A function that computes the shadow value (when the stored shadow value is invalid).
 	///
 	/// - Throws: `DependencyError.cyclicDependency` if Conifer detects a cyclic dependency, or any error thrown by `compute`.
 	public func cached<Value : Sendable>(
-		_ keyPath:	WritableKeyPath<ShadowSnapshot, Value?> & Sendable,
-		compute:	sending () async throws -> Value
+		in storedProperty:	ShadowSnapshot.Property<Value?>,
+		compute:			sending () async throws -> Value
 	) async throws -> Value {
 		try await { (graph: isolated ShadowGraph) in
-			if let value = graph[location]![keyPath: keyPath] {
+			if let value = graph[location]![keyPath: storedProperty] {
 				return value
 			} else {
-				// TODO: Track dependencies
-				let value = try await compute()
-				graph[location]![keyPath: keyPath] = value
+				let value = try await recordDependencies(of: storedProperty, graph: graph, compute: compute)
+				graph[location]![keyPath: storedProperty] = value
 				return value
 			}
 		}(graph)

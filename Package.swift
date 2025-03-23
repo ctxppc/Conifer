@@ -13,7 +13,7 @@ let package = Package(
 	],
 	dependencies: [
 		.package(url: "https://github.com/apple/swift-syntax", from: "509.0.0"),
-		.package(url: "https://github.com/ctxppc/DepthKit", .upToNextMinor(from: "0.14.0")),
+		.package(url: "https://github.com/ctxppc/DepthKit", .upToNextMinor(from: "0.16.0")),
 		.package(url: "https://github.com/philipturner/swift-reflection-mirror", branch: "main"),
 	],
 	targets: [

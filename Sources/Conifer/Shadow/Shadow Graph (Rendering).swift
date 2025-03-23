@@ -143,7 +143,7 @@ extension ShadowGraph {
 	/// The shadow graph rerenders the component when it is next requested.
 	///
 	/// This method does nothing if the component has never been rendered.
-	func invalidateComponent(at location: Location) {
+	func invalidateComponent(at location: Location) {	// TODO: Generalised dependency tracking?
 		self[location]?.subjectNeedsRerendering = true
 	}
 	
@@ -152,7 +152,7 @@ extension ShadowGraph {
 private extension ShadowSnapshot {
 	
 	/// A Boolean indicating whether `subject` needs to be rerendered the next time it is requested.
-	var subjectNeedsRerendering: Bool {
+	var subjectNeedsRerendering: Bool {	// TODO: Generalised dependency tracking?
 		get { self[\.subjectNeedsRerendering] ?? false }
 		set { self[\.subjectNeedsRerendering] = newValue }
 	}

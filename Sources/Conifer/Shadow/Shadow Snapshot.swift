@@ -37,13 +37,18 @@ public struct ShadowSnapshot : Sendable {
 	}
 	
 	/// The snapshot's values, keyed by property key path.
-	private var values: [Property : any Sendable] = [:]
-	typealias Property = PartialKeyPath<Self> & Sendable
+	private var values: [AnyProperty : any Sendable] = [:]
+	
+	/// A sendable key path from `Self` to any stored shadow value.
+	public typealias AnyProperty = PartialKeyPath<Self> & Sendable
+	
+	/// A writable, sendable key path from `Self` to any stored shadow value of type `Value`.
+	public typealias Property<Value> = WritableKeyPath<Self, Value> & Sendable
 	
 	/// Accesses a non-optional shadow property with a default value.
 	///
 	/// A `nil` value in this subscript operator represents the absence of an assigned value. The shadow property's getter provides a default value in that case, e.g., `self[\.prefersPrettyPrint] ?? true` for a shadow property of type `Bool`.
-	public subscript <Value : Sendable>(keyPath: WritableKeyPath<Self, Value> & Sendable) -> Value? {
+	public subscript <Value : Sendable>(keyPath: Property<Value>) -> Value? {
 		get { values[keyPath] as! Value? }
 		set { values[keyPath] = newValue }
 	}
@@ -51,7 +56,7 @@ public struct ShadowSnapshot : Sendable {
 	/// Accesses an optional shadow property.
 	///
 	/// A `nil` value in this subscript operator represents the absence of an assigned value.
-	public subscript <Value : Sendable>(keyPath: WritableKeyPath<Self, Value?> & Sendable) -> Value? {
+	public subscript <Value : Sendable>(keyPath: Property<Value?>) -> Value? {
 		get { values[keyPath] as! Value? }
 		set { values[keyPath] = newValue }
 	}

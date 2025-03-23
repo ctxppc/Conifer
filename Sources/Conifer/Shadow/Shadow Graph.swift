@@ -22,26 +22,12 @@ public actor ShadowGraph {
 	/// Unrendered components are represented by `nil` snapshots.
 	///
 	/// - Invariant: `self[.anchor]` is not `nil`. That is, `self` contains at least a rendered root component.
-	subscript (location: Location) -> ShadowSnapshot? {
+	subscript (location: Location) -> ShadowSnapshot? {	// TODO: Make non-optional with default snapshot?
 		get { snapshotsbyLocation[location] }
 		_modify { yield &snapshotsbyLocation[location] }
 	}
 	
 	/// The location of the component currently being rendered, or `nil` if no component is being rendered.
 	var renderingLocation: Location?	// TODO: Generalised dependency tracking?
-	
-	/// A graph of dependencies and *depended-by* edges.
-	fileprivate var dependencies = SimpleDirectedAcyclicGraph<ShadowValueReference>()
-	
-	/// A reference to a particular shadow property of a particular shadow.
-	fileprivate struct ShadowValueReference : Sendable, Hashable {
-		
-		/// The location of the shadow.
-		var location: Location
-		
-		/// A key path to the shadow property.
-		var property: ShadowSnapshot.Property
-		
-	}
 	
 }
