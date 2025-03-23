@@ -33,7 +33,7 @@ public struct State<Value : Sendable> : MutableDynamicProperty {
 	public func send(updatedValue: Value) {
 		guard let backReference else { preconditionFailure("Cannot update @State property outside of a rendering context") }
 		Task { [updatedValue] in
-			await backReference.shadow.update(\.stateContainer) {
+			try! await backReference.shadow.update(\.stateContainer) {	// FIXME: Handle error
 				with($0) {
 					$0[backReference.keyPath] = updatedValue
 				}

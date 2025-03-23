@@ -13,6 +13,16 @@ struct AnyShadowValueReference : Sendable, Hashable {
 	
 }
 
+extension AnyShadowValueReference {
+	
+	/// Erases the type from a given reference.
+	init<V>(_ reference: ShadowValueReference<V>) {
+		self.location = reference.location
+		self.property = reference.property
+	}
+	
+}
+
 /// A reference to a shadow value, i.e., to some shadow property of type `Value` on some shadow.
 struct ShadowValueReference<Value> : Sendable, Hashable {
 	

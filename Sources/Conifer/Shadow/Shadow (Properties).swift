@@ -17,9 +17,11 @@ extension Shadow {
 	/// Assigns or reassigns a stored shadow value of a given property on `self`.
 	///
 	/// This method invalidates all components that depend on the shadow property.
-	public func set<Value : Sendable>(_ property: ShadowSnapshot.Property<Value>, _ newValue: Value) async {
-		await { (graph: isolated ShadowGraph) in
-			recordWrite(to: .init(location: location, property: property), graph: graph)
+	///
+	/// - Throws: `DependencyError.cycle` if a cyclic dependency is detected.
+	public func set<Value : Sendable>(_ property: ShadowSnapshot.Property<Value>, _ newValue: Value) async throws(DependencyError) {
+		try await { (graph: isolated ShadowGraph) throws(DependencyError) in
+			try recordWrite(to: .init(location: location, property: property), graph: graph)
 			graph[location]![keyPath: property] = newValue
 		}(graph)
 	}
@@ -27,10 +29,12 @@ extension Shadow {
 	/// Updates a stored shadow value of a given property on `self`.
 	///
 	/// This method invalidates all components that depend on the shadow property.
-	public func update<Value : Sendable>(_ property: ShadowSnapshot.Property<Value>, with transform: sending (Value) -> Value) async {
-		await { (graph: isolated ShadowGraph) in
+	///
+	/// - Throws: `DependencyError.cycle` if a cyclic dependency is detected.
+	public func update<Value : Sendable>(_ property: ShadowSnapshot.Property<Value>, with transform: sending (Value) -> Value) async throws(DependencyError) {
+		try await { (graph: isolated ShadowGraph) throws(DependencyError) in
 			recordRead(from: .init(location: location, property: property), graph: graph)
-			recordWrite(to: .init(location: location, property: property), graph: graph)
+			try recordWrite(to: .init(location: location, property: property), graph: graph)
 			graph[location]![keyPath: property] = transform(graph[location]![keyPath: property])
 		}(graph)
 	}

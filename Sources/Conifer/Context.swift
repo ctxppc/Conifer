@@ -65,7 +65,7 @@ extension Shadow {
 			} else {
 				// FIXME: Collapse multiple suspension points to avoid read-write races.
 				let context = await parent?.context ?? .init()	// TODO: Quid dependency tracking?
-				await set(\.computedContext, context)
+				try! await set(\.computedContext, context)	// FIXME: Handle error
 				return context
 			}
 		}
@@ -75,7 +75,7 @@ extension Shadow {
 	func set<Value>(_ key: Context.Key<Value>, _ value: Value) async {
 		var context = await self.context
 		context[keyPath: key] = value
-		await self.set(\.computedContext, context)
+		try! await self.set(\.computedContext, context)	// FIXME: Handle error
 	}
 	
 }

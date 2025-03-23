@@ -1,6 +1,7 @@
 // Conifer © 2019–2025 Constantino Tsarouhas
 
 import DepthKit
+import Foundation
 
 extension Shadow {
 	
@@ -22,9 +23,11 @@ extension Shadow {
 	/// - Parameters:
 	///    - writtenValue: A reference to the shadow value being written.
 	///    - graph: The shadow graph.
-	func recordWrite<V>(to writtenValue: ShadowValueReference<V>, graph: isolated ShadowGraph) {
+	///
+	/// - Throws: `DependencyError.cycle` if a cyclic dependency is detected.
+	func recordWrite<V>(to writtenValue: ShadowValueReference<V>, graph: isolated ShadowGraph) throws(DependencyError) {
 		for dependent in graph[location]!.dependentsByDependedShadowProperty[writtenValue.property] ?? [] {
-			dependent.invalidate(in: graph)
+			try dependent.invalidate(in: graph, trace: [.init(writtenValue)])
 		}
 	}
 	
@@ -57,17 +60,24 @@ fileprivate extension ShadowSnapshot {
 private protocol InvalidatableShadowValueReference : Sendable, Hashable {
 	
 	/// Invalidates `self` in a given graph and any shadow values that depend on it.
-	func invalidate(in graph: isolated ShadowGraph)
+	///
+	/// - Parameters:
+	///    - graph: The graph.
+	///    - trace: The shadow value references that are part of this dependency trace.
+	///
+	/// - Throws: `DependencyError.cycle` if `self` appears in `trace`.
+	func invalidate(in graph: isolated ShadowGraph, trace: Set<AnyShadowValueReference>) throws(DependencyError)
 	
 }
 
 extension ShadowValueReference : InvalidatableShadowValueReference where Value : OptionalProtocol {
-	func invalidate(in graph: isolated ShadowGraph) {
+	func invalidate(in graph: isolated ShadowGraph, trace: Set<AnyShadowValueReference>) throws(DependencyError) {
+		guard !trace.contains(.init(self)) else { throw DependencyError.cycle }
 		guard graph[location]![keyPath: property].take() != nil else { return }
 		let dependents = graph[location]!.dependentsByDependedShadowProperty[property] ?? []
+		let trace = trace.union([.init(self)])
 		for dependent in dependents {
-			// TODO: Detect cycles
-			dependent.invalidate(in: graph)
+			try dependent.invalidate(in: graph, trace: trace)
 		}
 	}
 }
@@ -88,8 +98,17 @@ private struct AnyInvalidatableShadowValueReference : InvalidatableShadowValueRe
 		wrapped.hash(into: &hasher)
 	}
 	
-	func invalidate(in graph: isolated ShadowGraph) {
-		wrapped.invalidate(in: graph)
+	func invalidate(in graph: isolated ShadowGraph, trace: Set<AnyShadowValueReference>) throws(DependencyError) {
+		try wrapped.invalidate(in: graph, trace: trace)
 	}
 	
+}
+
+public enum DependencyError : LocalizedError {
+	case cycle
+	public var errorDescription: String? {
+		switch self {
+			case .cycle: "Dependency cycle detected"
+		}
+	}
 }
