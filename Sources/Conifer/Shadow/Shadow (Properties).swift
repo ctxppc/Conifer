@@ -7,10 +7,10 @@ extension Shadow {
 	/// If a component is being rendered, this method records a dependency of that component on the shadow property on `self`. That component is invalidated whenever the shadow property changes.
 	public subscript <Value : Sendable>(dynamicMember property: ShadowSnapshot.Property<Value>) -> Value {
 		get async {
-			await { (graph: isolated ShadowGraph) in
+			await withGraph { graph in
 				recordRead(from: property, graph: graph)
-				return graph[location]![keyPath: property]
-			}(graph)
+				return graph[location][keyPath: property]
+			}
 		}
 	}
 	
@@ -20,10 +20,10 @@ extension Shadow {
 	///
 	/// - Throws: `DependencyError.cycle` if a cyclic dependency is detected.
 	public func set<Value : Sendable>(_ property: ShadowSnapshot.Property<Value>, _ newValue: Value) async throws(DependencyError) {
-		try await { (graph: isolated ShadowGraph) throws(DependencyError) in
+		try await withGraph { graph throws(DependencyError) in
 			try recordWrite(to: property, graph: graph)
-			graph[location]![keyPath: property] = newValue
-		}(graph)
+			graph[location][keyPath: property] = newValue
+		}
 	}
 	
 	/// Updates a stored shadow value of a given property on `self`.
@@ -32,11 +32,11 @@ extension Shadow {
 	///
 	/// - Throws: `DependencyError.cycle` if a cyclic dependency is detected.
 	public func update<Value : Sendable>(_ property: ShadowSnapshot.Property<Value>, with transform: sending (Value) -> Value) async throws(DependencyError) {
-		try await { (graph: isolated ShadowGraph) throws(DependencyError) in
+		try await withGraph { graph throws(DependencyError) in
 			recordRead(from: property, graph: graph)
 			try recordWrite(to: property, graph: graph)
-			graph[location]![keyPath: property] = transform(graph[location]![keyPath: property])
-		}(graph)
+			graph[location][keyPath: property] = transform(graph[location][keyPath: property])
+		}
 	}
 	
 	/// Returns the shadow value backed by a given stored shadow property, computing it using a given function if necessary.
@@ -54,15 +54,15 @@ extension Shadow {
 		in storedProperty:	ShadowSnapshot.Property<Value?>,
 		compute:			sending () async throws -> Value
 	) async throws -> Value {
-		try await { (graph: isolated ShadowGraph) in
-			if let value = graph[location]![keyPath: storedProperty] {
+		try await withGraph { graph in
+			if let value = graph[location][keyPath: storedProperty] {
 				return value
 			} else {
 				let value = try await recordDependencies(of: storedProperty, graph: graph, compute: compute)
-				graph[location]![keyPath: storedProperty] = value
+				graph[location][keyPath: storedProperty] = value
 				return value
 			}
-		}(graph)
+		}
 	}
 	
 }

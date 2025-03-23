@@ -18,13 +18,9 @@ public actor ShadowGraph {
 	private var snapshotsbyLocation = [Location : ShadowSnapshot]()
 	
 	/// Accesses the shadow snapshot of the component at given location relative to the root component.
-	///
-	/// Unrendered components are represented by `nil` snapshots.
-	///
-	/// - Invariant: `self[.anchor]` is not `nil`. That is, `self` contains at least a rendered root component.
-	subscript (location: Location) -> ShadowSnapshot? {	// TODO: Make non-optional with default snapshot?
-		get { snapshotsbyLocation[location] }
-		_modify { yield &snapshotsbyLocation[location] }
+	subscript (location: Location) -> ShadowSnapshot {
+		get { snapshotsbyLocation[location] ?? .init() }
+		_modify { yield &snapshotsbyLocation[location, default: .init()] }
 	}
 	
 	/// The location of the component currently being rendered, or `nil` if no component is being rendered.

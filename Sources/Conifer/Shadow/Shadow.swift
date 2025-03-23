@@ -144,6 +144,15 @@ public protocol Shadow<Subject> : Sendable {
 	
 }
 
+extension Shadow {
+	
+	/// Performs a given function within the shadow graph's isolation domain and returns its result.
+	func withGraph<E, R : Sendable>(perform: (isolated ShadowGraph) async throws(E) -> R) async throws(E) -> R {
+		try await perform(graph)
+	}
+	
+}
+
 extension Component {
 	
 	/// Creates a shadow over `self` with a given graph and a given location on the graph.

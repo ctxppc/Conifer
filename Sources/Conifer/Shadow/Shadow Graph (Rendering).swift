@@ -2,6 +2,7 @@
 
 import DepthKit
 
+@available(*, deprecated)
 extension ShadowGraph {
 	
 	/// Renders if needed the component at a given location in `self` and returns the rendered component.
@@ -11,7 +12,7 @@ extension ShadowGraph {
 	/// - Requires: `location` refers to a (possibly not-yet-rendered) component whose parent is already rendered.
 	func renderIfNeededComponent(at location: Location) async throws -> any Component {
 		
-		if let component = self[location]?.subject {
+		if let component = self[location].subject {
 			// TODO: Rerender component if invalidated.
 			return component
 		}
@@ -27,17 +28,12 @@ extension ShadowGraph {
 	///
 	/// - Requires: `location` refers to an already rendered component in `self`.
 	func prerenderedComponent(at location: Location) -> any Component {
-		self[location]?.subject !! "Expected component at \(location) to be already rendered"
+		self[location].subject !! "Expected component at \(location) to be already rendered"
 	}
 	
 	/// Assigns or replaces the component at a given location in the graph.
 	fileprivate func update(_ component: any Component, at location: Location) {
-		if var snapshot = self[location] {
-			snapshot.subject = component
-			self[location] = snapshot
-		} else {
-			self[location] = .init(subject: component)
-		}
+		self[location].subject = component
 	}
 	
 	/// Renders if needed the children of the component at `parentLocation` and returns their locations.
@@ -52,7 +48,7 @@ extension ShadowGraph {
 	@discardableResult
 	func renderIfNeededChildren(ofComponentAt parentLocation: Location) async throws -> [Location] {
 		
-		if let childLocations = self[parentLocation]!.childLocations {	// FIXME: Remove force-unwrap
+		if let childLocations = self[parentLocation].childLocations {	// FIXME: Remove force-unwrap
 			return childLocations
 		}
 		
@@ -85,7 +81,7 @@ extension ShadowGraph {
 		
 		// Update child locations on graph.
 		let childLocations = [childLocation]
-		self[parentLocation]!.childLocations = childLocations	// FIXME: Remove force-unwrap
+		self[parentLocation].childLocations = childLocations	// FIXME: Remove force-unwrap
 		
 		return childLocations
 		
@@ -116,7 +112,7 @@ extension ShadowGraph {
 		}
 		
 		// Update child locations on graph.
-		self[parentLocation]!.childLocations = absoluteChildLocations	// FIXME: Remove force-unwrap
+		self[parentLocation].childLocations = absoluteChildLocations	// FIXME: Remove force-unwrap
 		
 		// Finalise.
 		try await parent.finalise(shadow)	// may trigger additional renderings
@@ -144,7 +140,7 @@ extension ShadowGraph {
 	///
 	/// This method does nothing if the component has never been rendered.
 	func invalidateComponent(at location: Location) {	// TODO: Generalised dependency tracking?
-		self[location]?.subjectNeedsRerendering = true
+		self[location].subjectNeedsRerendering = true
 	}
 	
 }
@@ -155,12 +151,6 @@ private extension ShadowSnapshot {
 	var subjectNeedsRerendering: Bool {	// TODO: Generalised dependency tracking?
 		get { self[\.subjectNeedsRerendering] ?? false }
 		set { self[\.subjectNeedsRerendering] = newValue }
-	}
-	
-	/// The locations of the children of `subject` in the graph, or `nil` if the children of `subject` have not been rendered yet.
-	var childLocations: [ShadowGraph.Location]? {
-		get { self[\.childLocations] }
-		set { self[\.childLocations] = newValue }
 	}
 	
 }

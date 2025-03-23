@@ -1,15 +1,19 @@
 // Conifer © 2019–2025 Constantino Tsarouhas
 
-import DepthKit
-
 extension Shadow {
 	
 	/// The component represented by `self`.
-	///
-	/// The component is first rendered if needed.
 	public var subject: Subject {
 		get async throws {
-			try await graph.renderIfNeededComponent(at: location) as! Subject
+			let raw = try await withGraph { graph in
+				try await cached(in: \.subject) {
+					TODO.unimplemented
+				}
+			}
+			guard let subject = raw as? Subject else {
+				preconditionFailure("Expected subject of type \(Subject.self); got \(type(of: raw)) instead")
+			}
+			return subject
 		}
 	}
 	
@@ -18,6 +22,17 @@ extension Shadow {
 		get async throws {
 			try await subject[keyPath: keyPath]
 		}
+	}
+	
+}
+
+
+extension ShadowSnapshot {
+	
+	/// The subject, or `nil` if not rendered or valid.
+	var subject: (any Component)? {
+		get { self[\.subject] }
+		set { self[\.subject] = newValue }
 	}
 	
 }

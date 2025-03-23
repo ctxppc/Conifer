@@ -16,7 +16,7 @@ extension Shadow {
 	///    - graph: The shadow graph.
 	func recordRead<V>(from readProperty: ShadowSnapshot.Property<V>, graph: isolated ShadowGraph) {
 		guard let shadowValueBeingComputed else { return }
-		graph[location]!.dependentsByDependedShadowProperty[readProperty, default: []].insert(shadowValueBeingComputed)
+		graph[location].dependentsByDependedShadowProperty[readProperty, default: []].insert(shadowValueBeingComputed)
 	}
 	
 	/// Records a shadow value write on `self`, invalidating any shadow values depending on it.
@@ -32,7 +32,7 @@ extension Shadow {
 		to writtenProperty:	ShadowSnapshot.Property<V>,
 		graph:				isolated ShadowGraph
 	) throws(DependencyError) {
-		for dependent in graph[location]!.dependentsByDependedShadowProperty[writtenProperty] ?? [] {
+		for dependent in graph[location].dependentsByDependedShadowProperty[writtenProperty] ?? [] {
 			try dependent.invalidate(in: graph, trace: [.init(location: location, property: writtenProperty)])
 		}
 	}
@@ -82,8 +82,8 @@ private protocol InvalidatableShadowValueReference : Sendable, Hashable {
 extension ShadowValueReference : InvalidatableShadowValueReference where Value : OptionalProtocol {
 	func invalidate(in graph: isolated ShadowGraph, trace: Set<AnyShadowValueReference>) throws(DependencyError) {
 		guard !trace.contains(.init(self)) else { throw DependencyError.cycle }
-		guard graph[location]![keyPath: property].take() != nil else { return }
-		let dependents = graph[location]!.dependentsByDependedShadowProperty[property] ?? []
+		guard graph[location][keyPath: property].take() != nil else { return }
+		let dependents = graph[location].dependentsByDependedShadowProperty[property] ?? []
 		let trace = trace.union([.init(self)])
 		for dependent in dependents {
 			try dependent.invalidate(in: graph, trace: trace)

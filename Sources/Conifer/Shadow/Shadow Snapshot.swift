@@ -31,10 +31,8 @@ import DepthKit
 /// Shadow graphs are actors. Properties must therefore be `Sendable` since they often cross a shadow graph's isolation boundary.
 public struct ShadowSnapshot : Sendable {
 	
-	/// Creates a snapshot with only the subject property set.
-	init(subject: any Component) {
-		self.subject = subject
-	}
+	/// Creates an empty snapshot.
+	init() {}
 	
 	/// The snapshot's values, keyed by property key path.
 	private var values: [AnyProperty : any Sendable] = [:]
@@ -59,20 +57,6 @@ public struct ShadowSnapshot : Sendable {
 	public subscript <Value : Sendable>(keyPath: Property<Value?>) -> Value? {
 		get { values[keyPath] as! Value? }
 		set { values[keyPath] = newValue }
-	}
-	
-}
-
-extension ShadowSnapshot {
-	
-	// TODO: Use computed shadow property to compute subject?
-	
-	/// The rendered subject.
-	///
-	/// - Invariant: Every dynamic property in `subject` has been updated at least once.
-	var subject: any Component {
-		get { self[\.subject] !! "Shadow snapshot with unrendered component" }
-		set { self[\.subject] = newValue }
 	}
 	
 }
