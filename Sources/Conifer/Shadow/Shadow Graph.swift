@@ -9,7 +9,7 @@ public actor ShadowGraph {
 	
 	/// Creates a shadow graph with given root component.
 	init(root: some Component) async throws {
-		try await render(root, at: .anchor)
+		self[.anchor].subject = root
 	}
 	
 	/// The latest shadow snapshots for each rendered component, keyed by location relative to the root component.

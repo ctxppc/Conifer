@@ -7,10 +7,25 @@ extension Shadow {
 		get async throws {
 			try await withGraph { graph in
 				try await cached(in: \.childLocations) {
-					TODO.unimplemented
+					if let subject = try await subject as? any FoundationalComponent {
+						return try await childLocations(of: subject)
+					} else {
+						return [.anchor.body]
+					}
 				}
 			}
 		}
+	}
+	
+	/// Determines the child locations of the subject.
+	///
+	/// - Requires: `subject` is the same as `self.subject`. The parameter only exists to open the existential.
+	///
+	/// - Parameter subject: The subject whose child locations to determine.
+	///
+	/// - Returns: The child locations of `subject`.
+	private func childLocations<Subject : FoundationalComponent>(of subject: Subject) async throws -> [Location] {
+		try await subject.childLocations(for: Subject.makeShadow(graph: graph, location: location))
 	}
 	
 }

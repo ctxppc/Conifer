@@ -1,5 +1,7 @@
 // Conifer © 2019–2025 Constantino Tsarouhas
 
+import DepthKit
+
 extension Shadow {
 	
 	/// The shadow of the nearest non-foundational ancestor component, or `nil` if `self` is a root component.
@@ -9,12 +11,23 @@ extension Shadow {
 		get async {
 			// Sequence.map and .compactMap do not support await (yet) so we use a conventional loop.
 			for location in sequence(first: location, next: \.parent) {
-				let subject = await graph.prerenderedComponent(at: location)
-				if !(subject is any FoundationalComponent) {
-					return subject.makeUntypedShadow(graph: graph, location: location)
+				let subjectType = await graph[location].subjectType !! "Expected known subject type for parent at \(location)"
+				if !(subjectType is any FoundationalComponent.Type) {
+					return subjectType.makeUntypedShadow(graph: graph, location: location)
 				}
 			}
 			return nil
+		}
+	}
+	
+	/// The shadow of the nearest ancestor component, or `nil` if `self` is a root component.
+	///
+	/// The parent may be a foundational component. For the nearest non-foundational component, use `parent` instead.
+	var actualParent: (any Shadow)? {
+		get async {
+			guard let parentLocation = location.parent else { return nil }
+			let subjectType = await graph[parentLocation].subjectType !! "Expected known subject type for parent at \(location)"
+			return subjectType.makeUntypedShadow(graph: graph, location: parentLocation)
 		}
 	}
 	

@@ -39,7 +39,14 @@ extension Shadow {
 	
 	/// Runs a given function, records any reads during its execution as dependencies of a given shadow property on `self`, and returns the value returned by the function.
 	///
+	/// - Requires: `graph === self.graph`. The parameter only exists to pass isolation.
+	///
 	/// - Note: This method does not update `property`.
+	///
+	/// - Parameters:
+	///    - property: The property whose dependencies to record.
+	///    - graph: The shadow graph. It is only used for isolating `compute` which may not be `Sendable`.
+	///    - compute: A function that computes a value and whose dependencies are recorded.
 	func recordDependencies<Value>(
 		of property:	ShadowSnapshot.Property<Value?>,
 		graph:			isolated ShadowGraph,

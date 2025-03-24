@@ -43,17 +43,46 @@ extension ShadowGraph {
 		}
 		
 		/// The location of the component containing the component referred to by `self`, or `nil` if `self` refers to an anchor component.
+		///
+		/// - Invariant: `parent` is `nil` *iff* `self` is `.anchor`.
 		var parent: Self? {
-			switch self {
-				
-				case .anchor:
-				return nil
-				
-				case .body(parent: let parent),
-					.positionalChild(position: _, parent: let parent),
-					.child(identifier: _, position: _, parent: let parent):
-				return parent
-				
+			get {
+				switch self {
+						
+					case .anchor:
+					return nil
+					
+					case .body(parent: let parent),
+						.positionalChild(position: _, parent: let parent),
+						.child(identifier: _, position: _, parent: let parent):
+					return parent
+					
+				}
+			}
+			set {
+				switch (self, newValue) {
+					
+					case (.anchor, nil):
+					break
+					
+					case (.anchor, let newParent?):
+					preconditionFailure("Cannot set the parent of an anchor to \(newParent)")
+					
+					case (.body(parent: _), let newParent?):
+					self = .body(parent: newParent)
+					
+					case (.positionalChild(position: let position, parent: _), let newParent?):
+					self = .positionalChild(position: position, parent: newParent)
+					
+					case (.child(identifier: let identifier, position: let position, parent: _), let newParent?):
+					self = .child(identifier: identifier, position: position, parent: newParent)
+					
+					case (.body, nil),
+						(.positionalChild, nil),
+						(.child, nil):
+					preconditionFailure("Cannot delete the parent of non-anchor \(self)")
+					
+				}
 			}
 		}
 		

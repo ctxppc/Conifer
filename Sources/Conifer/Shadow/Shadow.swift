@@ -137,7 +137,9 @@ public protocol Shadow<Subject> : Sendable {
 	/// The location of the subject relative to the root component in `graph`.
 	///
 	/// - Invariant: `location` refers to an already rendered component in `graph`.
-	var location: ShadowGraph.Location { get }
+	var location: Location { get }
+	
+	typealias Location = ShadowGraph.Location
 	
 	/// A component represented by an instance of`Self`.
 	associatedtype Subject : Component
@@ -155,25 +157,21 @@ extension Shadow {
 
 extension Component {
 	
-	/// Creates a shadow over `self` with a given graph and a given location on the graph.
+	/// Creates a shadow for a component typed `Self` with a given graph and a given location on the graph.
 	///
 	/// - Parameters:
 	///   - graph: The graph.
-	///   - location: The location of `self` in `graph`.
-	///
-	/// - Requires: `location` refers to a rendered component in `graph` that is equal to `self`.
-	func makeShadow(graph: ShadowGraph, location: ShadowGraph.Location) -> some Shadow<Self> {
+	///   - location: The location of the shadow in `graph`.
+	static func makeShadow(graph: ShadowGraph, location: ShadowGraph.Location) -> some Shadow<Self> {
 		ShadowType(graph: graph, location: location)
 	}
 	
-	/// Creates an untyped shadow over `self` with a given graph and a given location on the graph.
+	/// Creates an untyped shadow for a component typed `Self` with a given graph and a given location on the graph.
 	///
 	/// - Parameters:
 	///   - graph: The graph.
-	///   - location: The location of `self` in `graph`.
-	///
-	/// - Requires: `location` refers to a rendered component in `graph` that is equal to `self`.
-	func makeUntypedShadow(graph: ShadowGraph, location: ShadowGraph.Location) -> some Shadow {
+	///   - location: The location of the shadow in `graph`.
+	static func makeUntypedShadow(graph: ShadowGraph, location: ShadowGraph.Location) -> some Shadow {
 		ShadowType<Self>(graph: graph, location: location)
 	}
 	

@@ -101,7 +101,7 @@ extension ShadowGraph {
 	fileprivate func renderChildren(of parent: some FoundationalComponent, under parentLocation: Location) async throws -> [Location] {
 		
 		// Determine child locations.
-		let shadow = parent.makeShadow(graph: self, location: parentLocation)
+		let shadow = type(of: parent).makeShadow(graph: self, location: parentLocation)
 		let relativeChildLocations = try await parent.childLocations(for: shadow)
 		let absoluteChildLocations = relativeChildLocations.map { parentLocation[$0] }
 		
@@ -129,7 +129,7 @@ extension ShadowGraph {
 		defer { renderingLocation = nil }
 		
 		var component = component
-		try await component.updateDynamicProperties(for: component.makeShadow(graph: self, location: location))
+		try await component.updateDynamicProperties(for: type(of: component).makeShadow(graph: self, location: location))
 		update(component, at: location)
 		
 	}
@@ -145,10 +145,11 @@ extension ShadowGraph {
 	
 }
 
+@available(*, deprecated)
 private extension ShadowSnapshot {
 	
 	/// A Boolean indicating whether `subject` needs to be rerendered the next time it is requested.
-	var subjectNeedsRerendering: Bool {	// TODO: Generalised dependency tracking?
+	var subjectNeedsRerendering: Bool {
 		get { self[\.subjectNeedsRerendering] ?? false }
 		set { self[\.subjectNeedsRerendering] = newValue }
 	}

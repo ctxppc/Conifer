@@ -9,6 +9,8 @@ protocol FoundationalComponent : Component where Body == Never {
 	///
 	/// Locations can be used as stable identifiers across renderings.
 	///
+	/// - Postcondition: For each returned location `l`, `l.parent == .anchor`.
+	///
 	/// - Warning: Accessing `shadow`'s descendants may cause an infinite loop.
 	///
 	/// - Parameter shadow: The shadow over `self`.
