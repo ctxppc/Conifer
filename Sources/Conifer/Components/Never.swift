@@ -17,6 +17,10 @@ extension Never : FoundationalComponent {
 		switch self {}
 	}
 	
+	func typeOfChild(at location: ShadowGraph.Location, for shadow: some Shadow<Self>) async throws -> any Component.Type {
+		switch self {}
+	}
+	
 	func child(at location: ShadowGraph.Location, for shadow: some Shadow<Self>) async throws -> any Component {
 		switch self {}
 	}

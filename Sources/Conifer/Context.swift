@@ -59,23 +59,23 @@ extension Shadow {
 	
 	/// The context of the shadow, i.e., including contextual values from parent shadows.
 	var context: Context {
-		get async {
+		get async throws {
 			if let context = await self.computedContext {
 				return context
 			} else {
 				// FIXME: Collapse multiple suspension points to avoid read-write races.
-				let context = await parent?.context ?? .init()	// TODO: Quid dependency tracking?
-				try! await set(\.computedContext, context)	// FIXME: Handle error
+				let context = try await parent?.context ?? .init()	// TODO: Quid dependency tracking?
+				try await set(\.computedContext, context)
 				return context
 			}
 		}
 	}
 	
 	/// Assigns or reassigns the contextual value for given key.
-	func set<Value>(_ key: Context.Key<Value>, _ value: Value) async {
-		var context = await self.context
+	func set<Value>(_ key: Context.Key<Value>, _ value: Value) async throws {
+		var context = try await self.context
 		context[keyPath: key] = value
-		try! await self.set(\.computedContext, context)	// FIXME: Handle error
+		try await self.set(\.computedContext, context)	// FIXME: Handle error
 	}
 	
 }

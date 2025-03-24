@@ -33,6 +33,10 @@ extension Modified : FoundationalComponent {
 		[.anchor.body]
 	}
 	
+	func typeOfChild(at location: ShadowGraph.Location, for shadow: some Shadow<Self>) async throws -> any Component.Type {
+		Content.self
+	}
+	
 	func child(at location: ShadowGraph.Location, for shadow: some Shadow<Self>) async throws -> any Component {
 		precondition(location == .anchor.body, "Expected body location")
 		return content

@@ -2,7 +2,7 @@
 
 extension Shadow {
 	
-	/// The locations of the children of `subject` in the graph.
+	/// The (absolute) locations of the children of `subject` in the graph.
 	var childLocations: [ShadowGraph.Location] {
 		get async throws {
 			try await withGraph { graph in
@@ -10,29 +10,31 @@ extension Shadow {
 					if let subject = try await subject as? any FoundationalComponent {
 						return try await childLocations(of: subject)
 					} else {
-						return [.anchor.body]
+						return [location[.anchor.body]]
 					}
 				}
 			}
 		}
 	}
 	
-	/// Determines the child locations of the subject.
+	/// Determines the (absolute) child locations of the subject.
 	///
 	/// - Requires: `subject` is the same as `self.subject`. The parameter only exists to open the existential.
 	///
 	/// - Parameter subject: The subject whose child locations to determine.
 	///
-	/// - Returns: The child locations of `subject`.
+	/// - Returns: The (absolute) child locations of `subject`.
 	private func childLocations<Subject : FoundationalComponent>(of subject: Subject) async throws -> [Location] {
-		try await subject.childLocations(for: Subject.makeShadow(graph: graph, location: location))
+		try await subject
+			.childLocations(for: Subject.makeShadow(graph: graph, location: location))
+			.map { location[$0] }
 	}
 	
 }
 
 extension ShadowSnapshot {
 	
-	/// The locations of the children of `subject` in the graph, or `nil` if not determined yet.
+	/// The (absolute) locations of the children of `subject` in the graph, or `nil` if not determined yet.
 	var childLocations: [ShadowGraph.Location]? {
 		get { self[\.childLocations] }
 		set { self[\.childLocations] = newValue }

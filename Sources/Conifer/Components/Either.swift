@@ -31,6 +31,21 @@ extension Either : FoundationalComponent {
 		}
 	}
 	
+	func typeOfChild(at location: ShadowGraph.Location, for shadow: some Shadow<Self>) async throws -> any Component.Type {
+		switch (self, location) {
+			
+			case (.first, .anchor.child(at: 0)):
+			return First.self
+			
+			case (.second, .anchor.child(at: 1)):
+			return Second.self
+			
+			case (.first, _), (.second, _):
+			preconditionFailure("\(location) does not exist on \(shadow)")
+			
+		}
+	}
+	
 	func child(at location: ShadowGraph.Location, for shadow: some Shadow<Self>) async throws -> any Component {
 		switch (self, location) {
 			

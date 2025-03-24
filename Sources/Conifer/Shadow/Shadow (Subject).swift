@@ -9,12 +9,19 @@ extension Shadow {
 		get async throws {
 			let subject = try await withGraph { graph in
 				try await cached(in: \.subject) {
-					guard let parent = await actualParent else { preconditionFailure("The root component cannot be rerendered.") }
+					let parent = try await actualParent !! "The root component cannot be rerendered."
 					let parentComponent = try await parent.subject
 					let raw = if let parentComponent = parentComponent as? any FoundationalComponent {
-						try await renderUntypedSubject(childOf: parentComponent, parentLocation: parent.location, in: graph)
+						try await renderUntypedSubject(
+							parentComponent:	parentComponent,
+							parentLocation:		parent.location,
+							in:					graph
+						)
 					} else {
-						try await renderUntypedSubject(childOf: parentComponent, parentLocation: parent.location)
+						try await renderUntypedSubject(
+							parentComponent:	parentComponent,
+							parentLocation:		parent.location
+						)
 					}
 					var subject = raw as? Subject !! "Expected subject of type \(Subject.self); got \(type(of: subject)) instead"
 					try await subject.updateDynamicProperties(for: self)
@@ -24,6 +31,9 @@ extension Shadow {
 			return subject as? Subject !! "Expected subject of type \(Subject.self); got \(type(of: subject)) instead"
 		}
 	}
+	
+	/// The type of `subject`.
+	public var subjectType: Subject.Type { Subject.self }
 	
 	/// Renders and returns the subject.
 	///
@@ -36,9 +46,9 @@ extension Shadow {
 	///
 	/// - Returns: The subject.
 	private func renderUntypedSubject(
-		childOf parentComponent:	some FoundationalComponent,
-		parentLocation:				Location,
-		in graph:					ShadowGraph
+		parentComponent:	some FoundationalComponent,
+		parentLocation:		Location,
+		in graph:			ShadowGraph
 	) async throws -> any Component {
 		let direction = with(location) { $0.parent = nil }
 		let parentShadow = type(of: parentComponent).makeShadow(graph: graph, location: parentLocation)
@@ -56,8 +66,8 @@ extension Shadow {
 	///
 	/// - Returns: The subject.
 	private func renderUntypedSubject(
-		childOf parentComponent:	some Component,
-		parentLocation:				Location
+		parentComponent:	some Component,
+		parentLocation:		Location
 	) async throws -> any Component {
 		let direction = with(location) { $0.parent = nil }
 		precondition(direction == .anchor.body, "Child of non-foundational component is at \(direction) instead of \(Location.anchor.body)")

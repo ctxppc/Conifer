@@ -8,12 +8,12 @@ extension Shadow {
 	///
 	/// - Invariant: `parent` is not a foundational component.
 	public var parent: (any Shadow)? {
-		get async {
+		get async throws {
 			// Sequence.map and .compactMap do not support await (yet) so we use a conventional loop.
 			for location in sequence(first: location, next: \.parent) {
-				let subjectType = await graph[location].subjectType !! "Expected known subject type for parent at \(location)"
-				if !(subjectType is any FoundationalComponent.Type) {
-					return subjectType.makeUntypedShadow(graph: graph, location: location)
+				let shadow = try await graph.shadow(at: location)
+				if !(shadow.subjectType is any FoundationalComponent.Type) {
+					return shadow
 				}
 			}
 			return nil
@@ -24,10 +24,9 @@ extension Shadow {
 	///
 	/// The parent may be a foundational component. For the nearest non-foundational component, use `parent` instead.
 	var actualParent: (any Shadow)? {
-		get async {
+		get async throws {
 			guard let parentLocation = location.parent else { return nil }
-			let subjectType = await graph[parentLocation].subjectType !! "Expected known subject type for parent at \(location)"
-			return subjectType.makeUntypedShadow(graph: graph, location: parentLocation)
+			return try await graph.shadow(at: parentLocation)
 		}
 	}
 	

@@ -18,8 +18,8 @@ private struct ContextModifier<Value : Sendable> : Modifier, @unchecked Sendable
 	let value: Value
 	
 	// See protocol.
-	func update(_ shadow: some Shadow) async {
-		await shadow.set(key, value)
+	func update(_ shadow: some Shadow) async throws {
+		try await shadow.set(key, value)
 	}
 	
 }

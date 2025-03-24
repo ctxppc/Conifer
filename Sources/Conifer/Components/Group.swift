@@ -37,6 +37,24 @@ extension Group : FoundationalComponent {
 		return locations
 	}
 	
+	func typeOfChild(at location: ShadowGraph.Location, for shadow: some Shadow<Self>) async throws -> any Component.Type {
+		
+		guard case .positionalChild(position: let desiredPosition, parent: .anchor) = location else {
+			preconditionFailure("\(location) does not refer to a positional child in \(shadow)")
+		}
+		
+		var position = 0
+		for child in repeat each children {
+			if position == desiredPosition {
+				return type(of: child)
+			}
+			position += 1
+		}
+		
+		preconditionFailure("\(shadow) does not have a child at position \(desiredPosition)")
+		
+	}
+	
 	func child(at location: ShadowGraph.Location, for shadow: some Shadow<Self>) async throws -> any Component {
 		
 		guard case .positionalChild(position: let desiredPosition, parent: .anchor) = location else {

@@ -44,6 +44,10 @@ extension ForEach : FoundationalComponent {
 		}
 	}
 	
+	func typeOfChild(at location: ShadowGraph.Location, for shadow: some Shadow<Self>) async throws -> any Component.Type {
+		Content.self
+	}
+	
 	func child(at location: ShadowGraph.Location, for shadow: some Shadow<Self>) -> any Component {
 		guard case .child(identifier: _, position: let offset, parent: .anchor) = location else { preconditionFailure("No child at \(location) in \(self)") }
 		return contentProducer(data[data.index(data.startIndex, offsetBy: offset)])
