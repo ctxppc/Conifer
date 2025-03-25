@@ -9,7 +9,7 @@ extension Shadow {
 		get async throws {
 			let subject = try await withGraph { graph in
 				try await cached(in: \.subject) {
-					let parent = try await actualParent !! "The root component cannot be rerendered."
+					let parent = try await directParent !! "The root component cannot be rerendered."
 					let parentComponent = try await parent.subject
 					let raw = if let parentComponent = parentComponent as? any FoundationalComponent {
 						try await renderUntypedSubject(

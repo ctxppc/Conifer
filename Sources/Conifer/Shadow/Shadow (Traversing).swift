@@ -22,21 +22,38 @@ extension Shadow {
 	
 	/// The shadow of the nearest ancestor component, or `nil` if `self` is a root component.
 	///
-	/// The parent may be a foundational component. For the nearest non-foundational component, use `parent` instead.
-	var actualParent: (any Shadow)? {
+	/// The parent may be a foundational component. For the nearest non-foundational ancestor component, use `parent` instead.
+	var directParent: (any Shadow)? {
 		get async throws {
 			guard let parentLocation = location.parent else { return nil }
 			return try await graph.shadow(at: parentLocation)
 		}
 	}
 	
-	/// Returns the children of `self`, i.e., shadows over the non-foundational components that are direct descendants of `subject`.
+	/// Returns the nearest non-foundational descendants of `self`, i.e., shadows over the non-foundational components that are direct descendants of `subject`.
+	///
+	/// The returned sequence is unconstrained in the type of shadow. To constrain the type to a known fixed shadow type, use `children(ofType:)` instead.
+	///
+	/// - Postcondition: No component in the returned sequence is a foundational component.
+	public func children() -> some AsyncSequence<any Shadow, any Error> {
+		ShadowChildren(parent: self)
+	}
+	
+	/// Returns the nearest non-foundational descendants of `self`, i.e., shadows over the non-foundational components that are direct descendants of `subject`.
 	///
 	/// - Requires: Each child is typed `type`.
 	/// - Requires: `Child` conforms to `Shadow` or is an existential `Shadow` type. (This constraint cannot be formalised as of writing; existential types cannot conform to protocols yet.)
-	/// - Invariant: No component in `children` is a foundational component.
+	/// - Postcondition: No component in the returned sequence is a foundational component.
 	public func children<Child>(ofType type: Child.Type) -> some AsyncSequence<Child, any Error> {
 		ShadowChildren(parent: self)
+	}
+	
+	/// Returns the children of `self` as structured in the graph.
+	///
+	/// The children may be foundational components. For the nearest non-foundational descendant components, use `children(ofType:)` instead.
+	func directChildren() async throws -> some Sequence<any Shadow> {
+		try await childLocations
+			.asyncMap(graph.shadow(at:))
 	}
 	
 }

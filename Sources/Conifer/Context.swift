@@ -68,14 +68,14 @@ extension Shadow {
 	var context: Context {
 		get async throws {
 			try await cached(in: \.context) {	// TODO: Fine-grained dependency per contextual property?
-				let parentContext = try await parent?.context ?? .init()
+				let parentContext = try await directParent?.context ?? .init()
 				return parentContext.merging(assignmentsFrom: await self.assignedContext)
 			}
 		}
 	}
 	
 	/// Assigns or reassigns the contextual value for given key.
-	func set<Value>(_ key: Context.Key<Value>, _ value: Value) async throws {
+	func context<Value>(_ key: Context.Key<Value>, _ value: Value) async throws {
 		var context = Context()
 		context[key] = value
 		try await set(\.assignedContext, context)
