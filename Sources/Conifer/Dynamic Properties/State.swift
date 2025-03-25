@@ -20,7 +20,16 @@ public struct State<Value : Sendable> : MutableDynamicProperty {
 		}
 		
 		// Establish a back reference for sending updated values.
-		backReference = .init(shadow: UnownedShadow(shadow), keyPath: keyPath)
+		let shadow = UnownedShadow(shadow)
+		_send = { updatedValue in
+			Task {
+				try! await shadow.update(\.stateContainer) {	// FIXME: Handle error
+					with($0) {
+						$0[keyPath] = updatedValue
+					}
+				}
+			}
+		}
 		
 	}
 	
@@ -31,26 +40,23 @@ public struct State<Value : Sendable> : MutableDynamicProperty {
 	
 	// See protocol.
 	public func send(updatedValue: Value) {
-		guard let backReference else { preconditionFailure("Cannot update @State property outside of a rendering context") }
-		Task { [updatedValue] in
-			try! await backReference.shadow.update(\.stateContainer) {	// FIXME: Handle error
-				with($0) {
-					$0[backReference.keyPath] = updatedValue
-				}
-			}
-		}
+		let send = _send !! "Cannot update @State property outside of a rendering context"
+		send(updatedValue)
 	}
 	
 	/// The backing value.
 	private var storedValue: Value
 	
-	/// A reference to the shadow graph for sending updated values.
-	private var backReference: BackReference?
-	private struct BackReference : Sendable {
-		let shadow: any Shadow	// unowned
-		let keyPath: AnyKeyPath & Sendable
-	}
+	private var _send: Sender?
+	private typealias Sender = @Sendable (Value) -> ()
 	
+}
+
+fileprivate extension ShadowSnapshot {
+	var stateContainer: StateContainer {
+		get { self[\.stateContainer] ?? .init() }
+		set { self[\.stateContainer] = newValue }
+	}
 }
 
 /// A mapping of state properties to their values for a component.
@@ -73,11 +79,4 @@ private struct StateContainer : @unchecked Sendable {	// Conifer only provides s
 	/// The container's storage.
 	private var valuesByKeyPath = [AnyKeyPath : any Sendable]()
 	
-}
-
-fileprivate extension ShadowSnapshot {
-	var stateContainer: StateContainer {
-		get { self[\.stateContainer] ?? .init() }
-		set { self[\.stateContainer] = newValue }
-	}
 }

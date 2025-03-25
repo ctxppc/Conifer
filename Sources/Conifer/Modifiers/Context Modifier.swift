@@ -9,7 +9,7 @@ extension Component {
 	
 }
 
-private struct ContextModifier<Value : Sendable> : Modifier, @unchecked Sendable {	// Context.Key is immutable
+private struct ContextModifier<Value : Sendable> : Modifier, Sendable {
 	
 	/// The contextual key that is set.
 	let key: Context.Key<Value>

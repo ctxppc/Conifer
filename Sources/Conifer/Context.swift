@@ -37,20 +37,27 @@ import DepthKit
 ///		}
 ///
 /// Prefer contextual properties above ordinary properties when propagation makes sense, like a database connection or a font size.
-public struct Context : @unchecked Sendable {	// Only immutable key paths without functions
+public struct Context : Sendable {
 	
 	/// Creates an empty context.
 	init() {}
 	
 	/// The contextual values.
 	private var values = [AnyKey : any Sendable]()
-	private typealias AnyKey = PartialKeyPath<Self>
-	public typealias Key<Value> = WritableKeyPath<Self, Value> where Value : Sendable
+	private typealias AnyKey = PartialKeyPath<Self> & Sendable
+	public typealias Key<Value> = WritableKeyPath<Self, Value> & Sendable where Value : Sendable
 	
 	/// Accesses the contextual value at a given key.
 	public subscript <Value>(key: Key<Value>) -> Value {
 		get { (values[key as AnyKey] !! "\(key) not available in context (\(self))") as! Value }
 		set { values[key as AnyKey] = newValue }
+	}
+	
+	/// Returns a copy of `self` after replacing any assignments contained in a given context.
+	consuming func merging(assignmentsFrom assignments: Context) -> Context {
+		with(self) { result in
+			result.values.merge(assignments.values, uniquingKeysWith: { $1 })
+		}
 	}
 	
 }
@@ -60,22 +67,18 @@ extension Shadow {
 	/// The context of the shadow, i.e., including contextual values from parent shadows.
 	var context: Context {
 		get async throws {
-			if let context = await self.computedContext {
-				return context
-			} else {
-				// FIXME: Collapse multiple suspension points to avoid read-write races.
-				let context = try await parent?.context ?? .init()	// TODO: Quid dependency tracking?
-				try await set(\.computedContext, context)
-				return context
+			try await cached(in: \.context) {	// TODO: Fine-grained dependency per contextual property?
+				let parentContext = try await parent?.context ?? .init()
+				return parentContext.merging(assignmentsFrom: await self.assignedContext)
 			}
 		}
 	}
 	
 	/// Assigns or reassigns the contextual value for given key.
 	func set<Value>(_ key: Context.Key<Value>, _ value: Value) async throws {
-		var context = try await self.context
-		context[keyPath: key] = value
-		try await self.set(\.computedContext, context)	// FIXME: Handle error
+		var context = Context()
+		context[key] = value
+		try await set(\.assignedContext, context)
 	}
 	
 }
@@ -83,9 +86,15 @@ extension Shadow {
 fileprivate extension ShadowSnapshot {
 	
 	/// The context of the shadow, i.e., including contextual values from parent shadows, or `nil` if it has not been computed yet.
-	var computedContext: Context? {
-		get { self[\.computedContext] }
-		set { self[\.computedContext] = newValue }
+	var context: Context? {
+		get { self[\.context] }
+		set { self[\.context] = newValue }
+	}
+	
+	/// The context assigned on the shadow, or an empty context if the shadow does not represent a context modifier.
+	var assignedContext: Context {
+		get { self[\.assignedContext] ?? .init() }
+		set { self[\.assignedContext] = newValue }
 	}
 	
 }

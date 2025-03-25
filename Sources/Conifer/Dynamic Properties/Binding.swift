@@ -21,6 +21,11 @@ public struct Binding<Value : Sendable> : MutableDynamicProperty {
 		.init(get: { value }, send: { _ in })
 	}
 	
+	// See protocol.
+	public mutating func update<Component>(for shadow: some Shadow<Component>, keyPath: Path<Component>) {
+		// Bindings do not have external dependencies.
+	}
+	
 	/// The value owned by the source of truth.
 	public var wrappedValue: Value {
 		self.get()
@@ -42,11 +47,6 @@ public struct Binding<Value : Sendable> : MutableDynamicProperty {
 	// See protocol.
 	public var projectedValue: Self {
 		self
-	}
-	
-	// See protocol.
-	public mutating func update<Component>(for shadow: some Shadow<Component>, keyPath: Path<Component>) {
-		// Bindings do not have external dependencies.
 	}
 	
 }
