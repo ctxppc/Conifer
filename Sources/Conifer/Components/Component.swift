@@ -1,6 +1,6 @@
 // Conifer © 2019–2025 Constantino Tsarouhas
 
-/// A node in a domain-specific tree, managed and tracked by Conifer.
+/// A node in a domain-specific tree managed and tracked by Conifer.
 ///
 /// Components represent domain-specific elements, e.g., paragraphs, views, or (sub)computations, or collections thereof. Conifer clients should specialise this protocol to domain-specific types and restrict `Body` to conform to that protocol. For example, a web application framework that works with elements could define the following protocol:
 ///
@@ -8,7 +8,7 @@
 ///
 /// Components are assembled using other components, by implementing the `body` property and returning the component's content. Conifer provides several foundational component types that are produced in component builders.
 ///
-/// Do not access the `body` property directly. Access and traverve a component using its shadow, e.g., `makeShadow(over: component).property` instead of `component.property`. Conifer ensures that external dependencies are resolved and lazily renders parts of the traversed component.
+/// Do not access the `body` property directly. Access and traverve a component using its shadow, e.g., `makeShadow(over: component).property` instead of `component.property`. Conifer ensures that external dependencies are resolved and lazily renders as parts of the traversed component are accessed.
 ///
 /// Component values can be configured but are stateless by themselves. State should be stored externally (like an object graph) and accessed via property wrappers conforming to `DynamicProperty`. Dynamic properties are only valid during rendering, e.g., within `body`'s getter.
 public protocol Component : Sendable {

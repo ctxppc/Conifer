@@ -20,7 +20,7 @@ public struct State<Value : Sendable> : MutableDynamicProperty {
 		}
 		
 		// Establish a back reference for sending updated values.
-		backReference = .init(shadow: shadow, keyPath: keyPath)
+		backReference = .init(shadow: UnownedShadow(shadow), keyPath: keyPath)
 		
 	}
 	
@@ -46,9 +46,9 @@ public struct State<Value : Sendable> : MutableDynamicProperty {
 	
 	/// A reference to the shadow graph for sending updated values.
 	private var backReference: BackReference?
-	private struct BackReference : @unchecked Sendable {	// Conifer only provides sendable key paths
-		let shadow: any Shadow
-		let keyPath: AnyKeyPath
+	private struct BackReference : Sendable {
+		let shadow: any Shadow	// unowned
+		let keyPath: AnyKeyPath & Sendable
 	}
 	
 }

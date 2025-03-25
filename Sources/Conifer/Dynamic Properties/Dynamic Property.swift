@@ -8,8 +8,8 @@
 ///
 /// A dynamic property can itself declare and use dynamic properties, which the framework updates before invoking `update(for:keyPath:)`. Common nested dynamic properties are
 /// * `@State` properties for storing computed values such as database results that are then vended through `wrappedValue`,
-/// * `@Context` properties for reading contextual values such as a database connection, and
-/// * a `@StructuralIdentity` property for identifying `self` within the shadow graph.
+/// * `@Contextual` properties for reading contextual values such as a database connection, and
+/// * `@StructuralIdentity` properties for identifying a component within the shadow graph.
 public protocol DynamicProperty : Sendable {
 	
 	/// Updates the property's value.
@@ -24,6 +24,7 @@ public protocol DynamicProperty : Sendable {
 	/// - Warning: When this method is invoked, the children of `shadow` are not (re)rendered yet and therefore should not be accessed.
 	/// - Warning: `shadow.subject` is being updated and therefore cannot be accessed.
 	/// - Warning: Accessing `self` via `keyPath` from within this method is a concurrent access violation.
+	/// - Warning: A shadow holds a strong reference to its shadow graph, which holds a strong reference to any rendered components and their properties. Storing `shadow` in `self` therefore causes a strong reference cycle. Store an `UnownedShadow` instead.
 	///
 	/// - Parameter shadow: The shadow of the component being rendered.
 	/// - Parameter keyPath: A key path from `shadow`'s subject to `self`.

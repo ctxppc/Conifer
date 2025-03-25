@@ -54,20 +54,20 @@
 ///			fileprivate var isRootElement: Bool? { … }	// of optional type
 ///		}
 ///
-/// ## Conifer Provides a Conforming Type
-/// Conifer provides `ShadowType`, a concrete type that conforms to `Shadow`. There is usually no need for a custom type conforming to `Shadow`, nor will Conifer instantiate or store such types.
+/// ## Conifer Provides Conforming Types
+/// Conifer provides `OwnedShadow` and `UnownedShadow`, two concrete types that conform to `Shadow`. There is usually no need for a custom type conforming to `Shadow`, nor will Conifer instantiate or store such types.
 ///
-/// To add methods, subscripts, and computed properties, extend `Shadow`. To add stored shadow properties, extend `ShadowSnapshot` (cf above).
+/// To add methods, subscripts, and computed properties, extend the `Shadow` protocol. To add stored shadow properties, extend `ShadowSnapshot` (cf above).
 ///
 /// ## Specialising the Shadow Protocol
-/// When specialising the `Component` protocol, also specialise the `Shadow` protocol and add conformance to the concrete `ShadowType` type to enable dynamic casting. For example, given following `Component` specialisation
+/// When specialising the `Component` protocol, also specialise `Shadow` and add conformance to the concrete `OwnedShadow` type to enable dynamic casting. For example, given following `Component` specialisation
 ///
 /// 	protocol HTMLElement : Component where Body : HTMLElement { … }
 ///
-/// define this `Shadow` specialisation and `ShadowType` conformance
+/// define this `Shadow` specialisation and `OwnedShadow` conformance
 ///
 /// 	protocol HTMLElementShadow : Shadow where Subject : HTMLElement {}
-/// 	extension ShadowType : HTMLElementShadow where Subject : HTMLElement {}
+/// 	extension OwnedShadow : HTMLElementShadow where Subject : HTMLElement {}
 ///
 /// Add any extensions conditionally to the *general* `Shadow` protocol instead of adding them unconditionally to the `Shadow` *specialisation*. For example,
 ///
@@ -90,7 +90,7 @@
 /// 	}
 ///
 /// ## Do Not Store Shadows in a Shadow Graph
-/// A `Shadow` keeps a strong reference to the underlying shadow graph, i.e., a shadow graph exists as long as any `Shadow` references it. While this is desirable behaviour in most case, it causes a strong reference cycle if a shadow is stored in a shadow graph, which may cause a resource leak, as in the example below.
+/// A `Shadow` returned by Conifer keeps a strong reference to the underlying shadow graph, i.e., a shadow graph exists as long as any `Shadow` references it. While this is desirable behaviour in most case, it causes a strong reference cycle if a shadow is stored in a shadow graph, which may cause a resource leak, as in the example below.
 ///
 ///		extension ShadowSnapshot {
 ///			var selfReference: (any Shadow)? {
@@ -101,14 +101,14 @@
 ///		let component: some Component = …
 ///		let shadow = try await makeShadow(over: component)
 ///		let graph = shadow.graph
-///		await shadow.set(\.selfReference, shadow)	// this creates a strong reference cycle!
+///		await shadow.set(\.selfReference, shadow)					// this creates a strong reference cycle!
 ///		let shadow2 = await shadow.selfReference
 ///		// `graph`, `shadow`, and `shadow2` are not used anymore, yet `graph` is not deallocated
 ///
-/// To avoid this, store the shadow location and recreate the shadow whenever needed instead.
+/// To avoid this, create and store an `UnownedShadow` instead.
 ///
 ///		extension ShadowSnapshot {
-///			var selfReference: ShadowGraph.Location? {	// store a location instead of a shadow
+///			var selfReference: UnownedShadow? {						// store an unowned shadow instead
 ///				get { self[\.selfReference] }
 ///				get { self[\.selfReference] = newValue }
 ///			}
@@ -116,10 +116,13 @@
 ///		let component: some Component = …
 ///		let shadow = try await makeShadow(over: component)
 ///		let graph = shadow.graph
-///		await shadow.set(\.selfReference, shadow.location)	// store a location instead of a shadow
-///		let shadow2 = ShadowType(graph: graph, location: shadow.selfReference)	// recreate shadow
-///		// `graph`, `shadow`, and `shadow2` are not used anymore, thus `graph` is deallocated
-@dynamicMemberLookup	// properties on snapshot
+///		await shadow.set(\.selfReference, UnownedShadow(shadow))	// this does not create a strong reference cycle
+///		let shadow2 = await shadow.selfReference
+///		_ = shadow													// last use of `shadow` to ensure lifetime
+///		// `graph` and `shadow` are not used anymore, so `graph` is deallocated (and `shadow2` becomes an invalid reference)
+///
+///	An unowned shadow is only valid as long as its graph is valid.
+@dynamicMemberLookup	// properties on subject & snapshot
 public protocol Shadow<Subject> : Sendable {
 	
 	/// Creates a shadow in a given graph over a component at given location in the graph.
@@ -148,6 +151,11 @@ public protocol Shadow<Subject> : Sendable {
 
 extension Shadow {
 	
+	/// Converts a given shadow to an instance of `Self`.
+	public init(_ shadow: some Shadow<Subject>) {
+		self.init(graph: shadow.graph, location: shadow.location)
+	}
+	
 	/// Performs a given function within the shadow graph's isolation domain and returns its result.
 	func withGraph<E, R : Sendable>(perform: (isolated ShadowGraph) async throws(E) -> R) async throws(E) -> R {
 		try await perform(graph)
@@ -163,7 +171,7 @@ extension Component {
 	///   - graph: The graph.
 	///   - location: The location of the shadow in `graph`.
 	static func makeShadow(graph: ShadowGraph, location: ShadowGraph.Location) -> some Shadow<Self> {
-		ShadowType(graph: graph, location: location)
+		OwnedShadow(graph: graph, location: location)
 	}
 	
 	/// Creates an untyped shadow for a component typed `Self` with a given graph and a given location on the graph.
@@ -172,7 +180,7 @@ extension Component {
 	///   - graph: The graph.
 	///   - location: The location of the shadow in `graph`.
 	static func makeUntypedShadow(graph: ShadowGraph, location: ShadowGraph.Location) -> some Shadow {
-		ShadowType<Self>(graph: graph, location: location)
+		OwnedShadow<Self>(graph: graph, location: location)
 	}
 	
 }
@@ -188,5 +196,5 @@ extension Component {
 /// - Returns: A shadow over `subject` in a new shadow graph.
 public func makeShadow<C : Component>(over subject: C) async throws -> some Shadow<C> {
 	precondition(!(subject is any FoundationalComponent), "Cannot make a shadow over foundational component \(subject)")
-	return ShadowType(graph: try await .init(root: subject), location: .anchor)
+	return OwnedShadow(graph: try await .init(root: subject), location: .anchor)
 }

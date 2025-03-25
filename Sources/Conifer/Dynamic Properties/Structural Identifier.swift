@@ -1,6 +1,6 @@
 // Conifer © 2019–2025 Constantino Tsarouhas
 
-import Foundation
+import DepthKit
 
 /// A property identifying the component's location in the shadow graph.
 ///
@@ -9,6 +9,8 @@ import Foundation
 /// * the element's identifier in mapping components (`ForEach`)
 ///
 /// A location can be considered stable if identifiers in mapping components are assigned correctly between renderings.
+///
+/// - Note: A `@StructuralIdentifier` value always identifies a component, even when nested within a dynamic property.
 @propertyWrapper
 public struct StructuralIdentifier : DynamicProperty {
 	
@@ -16,11 +18,15 @@ public struct StructuralIdentifier : DynamicProperty {
 	public init() {}
 	
 	// See protocol.
-	public mutating func update<Component>(for shadow: some Shadow<Component>, keyPath: Path<Component>) async throws {
-		TODO.unimplemented
+	public mutating func update<Component>(for shadow: some Shadow<Component>, keyPath: Path<Component>) {
+		_wrappedValue = shadow.location
 	}
 	
 	// See protocol.
-	public private(set) var wrappedValue: Data = .init()
+	public var wrappedValue: ShadowGraph.Location {
+		_wrappedValue !! "Cannot determine structural identifier before rendering"
+	}
+	
+	private var _wrappedValue: ShadowGraph.Location?
 	
 }
