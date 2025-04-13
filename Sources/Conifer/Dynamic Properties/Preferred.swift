@@ -15,7 +15,7 @@ public struct Preferred<PreferenceType : Preference> : DynamicProperty {
 	// See protocol.
 	public mutating func update<Component>(for shadow: some Shadow<Component>, keyPath: Path<Component>) async throws {
 		// FIXME: Causes an infinite loop during the first rendering?
-		wrappedValue = try await shadow.preferences[PreferenceType.self]
+		wrappedValue = try await shadow.preference(ofType: PreferenceType.self)
 	}
 	
 }

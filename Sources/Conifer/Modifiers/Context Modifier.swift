@@ -19,7 +19,7 @@ private struct ContextModifier<Value : Sendable> : Modifier, Sendable {
 	
 	// See protocol.
 	func update(_ shadow: some Shadow) async throws {
-		try await shadow.context(key, value)
+		try await shadow.setContextualValue(value, for: key)
 	}
 	
 }

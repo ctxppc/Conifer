@@ -14,33 +14,28 @@ public protocol Preference : Sendable {
 	static var `default`: Self { get }
 	
 	/// Returns the combination of `self` and a given preference value of a successor component at the same level.
-	///
-	/// - Invariant: `Self.default.combine(with: x)` equals `x` for all `x`.
-	/// - Invariant: `x.combine(with: Self.default)` equals `x` for all `x`.
 	func combined(with next: Self) -> Self
 	
 }
 
 extension Shadow {
 	
-	/// The preferences of the shadow, i.e., including preferences from child shadows.
-	var preferences: Preferences {
-		get async throws {
-			try await cached(in: \.preferences) {	// TODO: Fine-grained dependency per preference type?
-				let descendantPreferences = try await directChildren()
-					.asyncMap { try await $0.preferences }
-					.reduce(into: Preferences()) { $0.combine(with: $1) }
-				return with(await self.assignedPreferences) {
-					$0.inherit(from: descendantPreferences)
-				}
+	func preference<P : Preference>(ofType type: P.Type) async throws -> P {
+		try await cached(in: \.preferences[PreferenceType<P>()]) {
+			if let preference = await self.assignedPreferences[PreferenceType<P>()] {
+				return preference
 			}
+			let childPreferences = try await directChildren()
+				.asyncMap { try await $0.preference(ofType: P.self) }
+			guard let (head, tail) = childPreferences.splittingFirst() else { return .default }
+			return tail.reduce(head) { $0.combined(with: $1) }
 		}
 	}
 	
 	/// Assigns a preference value.
-	func preference<P : Preference>(_ preference: P) async throws {
+	func setPreference<P : Preference>(_ preference: P) async throws {
 		try await update(\.assignedPreferences) {
-			$0[P.self] = preference
+			$0[PreferenceType<P>()] = preference
 		}
 	}
 	
@@ -48,9 +43,9 @@ extension Shadow {
 
 fileprivate extension ShadowSnapshot {
 	
-	/// The preferences of the shadow, i.e., including preferences from child shadows, or `nil` if they have not been computed yet.
-	var preferences: Preferences? {
-		get { self[\.preferences] }
+	/// The (partially) computed preferences of the shadow, i.e., including preferences from child shadows.
+	var preferences: Preferences {
+		get { self[\.preferences] ?? .init() }
 		set { self[\.preferences] = newValue }
 	}
 	
@@ -62,30 +57,26 @@ fileprivate extension ShadowSnapshot {
 	
 }
 
-struct Preferences : Sendable {
+private struct Preferences : Sendable {
 	
 	private var preferencesByType: [ObjectIdentifier : any Preference] = [:]
 	
-	subscript <P : Preference>(_ type: P.Type) -> P {
-		get { preferencesByType[.init(type)] as! P? ?? .default }
-		set { preferencesByType[.init(type)] = newValue }
+	/// Accesses a preference of a given type, with unknown or unassigned preferences represented by `nil`.
+	subscript <P : Preference>(_: PreferenceType<P>) -> P? {
+		get { preferencesByType[.init(P.self)] as! P? }
+		set { preferencesByType[.init(P.self)] = newValue }
 	}
 	
-	/// Combines `self` with a given set of preferences of a successor component at the same level.
-	fileprivate mutating func combine(with other: Preferences) {
-		
-		func combined<P : Preference>(_ first: P, with other: some Preference) -> any Preference {
-			guard let other = other as? P else { fatalError("Expected same-key preference to be of same type \(P.self)") }
-			return first.combined(with: other)
-		}
-		
-		preferencesByType.merge(other.preferencesByType) { combined($0, with: $1) }
-		
+}
+
+private struct PreferenceType<P : Preference> : Sendable, Hashable {
+	
+	static func == (lhs: Self, rhs: Self) -> Bool {
+		true
 	}
 	
-	/// Adds missing preferences from a given set of preferences from descendants.
-	fileprivate mutating func inherit(from descendantPreferences: Preferences) {
-		preferencesByType.merge(descendantPreferences.preferencesByType) { p, _ in p }
+	func hash(into hasher: inout Hasher) {
+		ObjectIdentifier(P.self).hash(into: &hasher)
 	}
 	
 }

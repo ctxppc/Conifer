@@ -28,7 +28,7 @@ import DepthKit
 ///
 /// 	}
 ///
-/// To declare a contextual property such as `firstName` in the example above, declare a property in an extension of this type and return `self[keyPath]` in the getter where `keyPath` is the key path of the new property. Conifer manages the property's storage.
+/// To declare a contextual property such as `firstName` in the example above, declare a property in an extension of this type and return `self[keyPath]` in the getter where `keyPath` is the key path of the new property. No setter is required; Conifer manages the property's storage.
 ///
 ///		extension Context {
 ///			var firstName: String {
@@ -45,38 +45,40 @@ public struct Context : Sendable {
 	/// The contextual values.
 	private var values = [AnyKey : any Sendable]()
 	private typealias AnyKey = PartialKeyPath<Self> & Sendable
-	public typealias Key<Value> = WritableKeyPath<Self, Value> & Sendable where Value : Sendable
+	public typealias Key<Value> = KeyPath<Self, Value> & Sendable where Value : Sendable
 	
 	/// Accesses the contextual value at a given key.
 	public subscript <Value>(key: Key<Value>) -> Value {
-		get { (values[key as AnyKey] !! "\(key) not available in context (\(self))") as! Value }
-		set { values[key as AnyKey] = newValue }
+		(values[key as AnyKey] !! "No value available for contextual property \(key)") as! Value
 	}
 	
-	/// Returns a copy of `self` after replacing any assignments contained in a given context.
-	mutating func inherit(from parentContext: Context) {
-		values.merge(parentContext.values, uniquingKeysWith: { v, _ in v })
+	/// Accesses the contextual value at a given key, with unknown or unassigned contextual values represented by `nil`.
+	fileprivate subscript <Value>(storage key: Key<Value>) -> Value? {
+		get { values[key as AnyKey] as! Value? }
+		set { values[key as AnyKey] = newValue }
 	}
 	
 }
 
 extension Shadow {
 	
-	/// The context of the shadow, i.e., including contextual values from parent shadows.
-	var context: Context {
-		get async throws {
-			try await cached(in: \.context) {	// TODO: Fine-grained dependency per contextual property?
-				var context = await self.assignedContext
-				context.inherit(from: try await directParent?.context ?? .init())
-				return context
+	/// Returns the contextual value for a given key.
+	func contextualValue<Value>(for key: Context.Key<Value>) async throws -> Value {
+		try await cached(in: \.context[storage: key]) {
+			if let value = await self.assignedContext[storage: key] {
+				return value
+			} else if let value = try await directParent?.contextualValue(for: key) {
+				return value
+			} else {
+				preconditionFailure("No value available for contextual property \(key)")
 			}
 		}
 	}
 	
 	/// Assigns or reassigns the contextual value for given key.
-	func context<Value>(_ key: Context.Key<Value>, _ value: Value) async throws {
+	func setContextualValue<Value>(_ value: Value, for key: Context.Key<Value>) async throws {
 		try await update(\.assignedContext) { context in
-			context[key] = value
+			context[storage: key] = value
 		}
 	}
 	
@@ -84,9 +86,9 @@ extension Shadow {
 
 fileprivate extension ShadowSnapshot {
 	
-	/// The context of the shadow, i.e., including contextual values from parent shadows, or `nil` if it has not been computed yet.
-	var context: Context? {
-		get { self[\.context] }
+	/// The (partially) computed context of the shadow, i.e., including contextual values from parent shadows.
+	var context: Context {
+		get { self[\.context] ?? .init() }
 		set { self[\.context] = newValue }
 	}
 	

@@ -20,7 +20,7 @@ public struct Contextual<Value : Sendable> : DynamicProperty, Sendable {
 	
 	// See protocol.
 	public mutating func update<Component>(for shadow: some Shadow<Component>, keyPath: Path<Component>) async throws {
-		storedValue = try await shadow.context[keyPath: key]
+		storedValue = try await shadow.contextualValue(for: key)
 	}
 	
 	// See protocol.
