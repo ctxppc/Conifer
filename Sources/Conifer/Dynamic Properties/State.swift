@@ -24,9 +24,7 @@ public struct State<Value : Sendable> : MutableDynamicProperty {
 		_send = { updatedValue in
 			Task {
 				try! await shadow.update(\.stateContainer) {	// FIXME: Handle error
-					with($0) {
-						$0[keyPath] = updatedValue
-					}
+					$0[keyPath] = updatedValue
 				}
 			}
 		}

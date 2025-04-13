@@ -31,11 +31,11 @@ extension Shadow {
 	/// This method invalidates all components that depend on the shadow property.
 	///
 	/// - Throws: `DependencyError.cycle` if a cyclic dependency is detected.
-	public func update<Value : Sendable>(_ property: ShadowSnapshot.Property<Value>, with transform: sending (Value) -> Value) async throws(DependencyError) {
+	public func update<Value : Sendable>(_ property: ShadowSnapshot.Property<Value>, with update: sending (inout Value) -> ()) async throws(DependencyError) {
 		try await withGraph { graph throws(DependencyError) in
 			recordRead(from: property, graph: graph)
 			try recordWrite(to: property, graph: graph)
-			graph[location][keyPath: property] = transform(graph[location][keyPath: property])
+			update(&graph[location][keyPath: property])
 		}
 	}
 	

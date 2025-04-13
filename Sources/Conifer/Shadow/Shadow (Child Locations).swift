@@ -5,13 +5,11 @@ extension Shadow {
 	/// The (absolute) locations of the children of `subject` in the graph.
 	var childLocations: [ShadowGraph.Location] {
 		get async throws {
-			try await withGraph { graph in
-				try await cached(in: \.childLocations) {
-					if let subject = try await subject as? any FoundationalComponent {
-						return try await childLocations(of: subject)
-					} else {
-						return [location[.anchor.body]]
-					}
+			try await cached(in: \.childLocations) {
+				if let subject = try await subject as? any FoundationalComponent {
+					return try await childLocations(of: subject)
+				} else {
+					return [location[.anchor.body]]
 				}
 			}
 		}

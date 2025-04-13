@@ -54,10 +54,8 @@ public struct Context : Sendable {
 	}
 	
 	/// Returns a copy of `self` after replacing any assignments contained in a given context.
-	consuming func merging(assignmentsFrom assignments: Context) -> Context {
-		with(self) { result in
-			result.values.merge(assignments.values, uniquingKeysWith: { $1 })
-		}
+	mutating func inherit(from parentContext: Context) {
+		values.merge(parentContext.values, uniquingKeysWith: { v, _ in v })
 	}
 	
 }
@@ -68,17 +66,18 @@ extension Shadow {
 	var context: Context {
 		get async throws {
 			try await cached(in: \.context) {	// TODO: Fine-grained dependency per contextual property?
-				let parentContext = try await directParent?.context ?? .init()
-				return parentContext.merging(assignmentsFrom: await self.assignedContext)
+				var context = await self.assignedContext
+				context.inherit(from: try await directParent?.context ?? .init())
+				return context
 			}
 		}
 	}
 	
 	/// Assigns or reassigns the contextual value for given key.
 	func context<Value>(_ key: Context.Key<Value>, _ value: Value) async throws {
-		var context = Context()
-		context[key] = value
-		try await set(\.assignedContext, context)
+		try await update(\.assignedContext) { context in
+			context[key] = value
+		}
 	}
 	
 }
