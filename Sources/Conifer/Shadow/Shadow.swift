@@ -57,7 +57,7 @@
 /// ## Conifer Provides Conforming Types
 /// Conifer provides `OwnedShadow` and `UnownedShadow`, two concrete types that conform to `Shadow`. There is usually no need for a custom type conforming to `Shadow`, nor will Conifer instantiate or store such types.
 ///
-/// To add methods, subscripts, and computed properties, extend the `Shadow` protocol. To add stored shadow properties, extend `ShadowSnapshot` (cf above).
+/// To add methods, subscripts, and computed properties, extend the `Shadow` protocol. To add stored shadow properties, extend `ShadowSnapshot` (cf. above).
 ///
 /// ## Specialising the Shadow Protocol
 /// When specialising the `Component` protocol, also specialise `Shadow` and add conformance to the concrete `OwnedShadow` type to enable dynamic casting. For example, given following `Component` specialisation
@@ -127,7 +127,7 @@ public protocol Shadow<Subject> : Sendable {
 	
 	/// Creates a shadow in a given graph over a component at given location in the graph.
 	///
-	/// - Requires: The component at `location` in `graph` exists and is a `Subject`. Or more formally, `graph.renderIfNeededComponent(at: location)` returns a component of type `Subject`.
+	/// - Requires: The component at `location` in `graph` exists and is a `Subject`.
 	///
 	/// - Parameters:
 	///   - graph: The graph.
@@ -142,6 +142,7 @@ public protocol Shadow<Subject> : Sendable {
 	/// - Invariant: `location` refers to an already rendered component in `graph`.
 	var location: Location { get }
 	
+	/// A location of a shadow in a graph.
 	typealias Location = ShadowGraph.Location
 	
 	/// A component represented by an instance of`Self`.

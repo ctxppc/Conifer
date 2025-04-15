@@ -12,7 +12,7 @@ public actor ShadowGraph {
 		self[.anchor].subject = root
 	}
 	
-	/// The latest shadow snapshots for each rendered component, keyed by location relative to the root component.
+	/// The latest shadow snapshots for each rendered component, keyed by absolute location.
 	///
 	/// - Invariant: `snapshotsbyLocation[.anchor]` is not `nil`. That is, `self` contains at least a rendered root component.
 	fileprivate var snapshotsbyLocation = [Location : ShadowSnapshot]()
@@ -20,7 +20,15 @@ public actor ShadowGraph {
 	/// Accesses the shadow snapshot of the component at given location relative to the root component.
 	subscript (location: Location) -> ShadowSnapshot {
 		get { snapshotsbyLocation[location] ?? .init() }
-		_modify { yield &snapshotsbyLocation[location, default: .init()] }
+		_modify {
+			yield &snapshotsbyLocation[location, default: .init()]
+			if let subscriptions = observationSubscriptionsByLocation[location] {
+				let snapshot = snapshotsbyLocation[location, default: .init()]
+				for subscription in subscriptions {
+					subscription.observe(snapshot)
+				}
+			}
+		}
 	}
 	
 	/// Returns a shadow over the component at a given location.
@@ -38,6 +46,42 @@ public actor ShadowGraph {
 				return parentComponent.makeUntypedShadowForBody(graph: self, bodyLocation: location)
 			}
 		}
+	}
+	
+	/// The observers of the graph, keyed by absolute location.
+	fileprivate var observationSubscriptionsByLocation = [Location : [ObservationSubscription]]()
+	
+	/// A value representing a graph observer.
+	struct ObservationSubscription : Sendable {
+		
+		/// The subscription's identifier, unique across the graph.
+		fileprivate let id: Int
+		
+		/// The location of the observed shadow.
+		fileprivate let location: Location
+		
+		/// A function invoked whenever the observed shadow changes.
+		fileprivate let observe: ObserveFunction
+		
+	}
+	
+	/// The identifier of the next observation subscription.
+	fileprivate var nextObservationSubscriptionID = 0
+	
+	/// Starts observing a shadow at a given location.
+	func observeShadow(at location: Location, observe: @escaping ObserveFunction) -> ObservationSubscription {
+		let subscription = ObservationSubscription(id: nextObservationSubscriptionID, location: location, observe: observe)
+		nextObservationSubscriptionID += 1
+		observationSubscriptionsByLocation[location, default: []].append(subscription)
+		return subscription
+	}
+	
+	/// A function invoked when a shadow has a new snapshot.
+	typealias ObserveFunction = @Sendable (ShadowSnapshot) -> ()
+	
+	/// Stops observing a shadow using a given subscription.
+	func stopObserving(subscription: ObservationSubscription) {
+		observationSubscriptionsByLocation[subscription.location]?.removeAll(where: { $0.id == subscription.id })
 	}
 	
 }
