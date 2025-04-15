@@ -27,11 +27,11 @@ extension ShadowGraph {
 		}
 		
 		/// A location that refers to the child identified by `identifier` in the component at `parent`.
-		case child(identifier: AnyIdentifier, position: Int, parent: Self = .anchor)
+		case child(identifier: AnyIdentifier, parent: Self = .anchor)
 		
 		/// Returns a location that refers to the child identified by `identifier` in the component at `self`.
-		func child(identifiedBy identifier: some Identifier, position: Int) -> Self {
-			.child(identifier: .init(identifier), position: position, parent: self)
+		func child(identifiedBy identifier: some Identifier) -> Self {
+			.child(identifier: .init(identifier), parent: self)
 		}
 		
 		/// The locations of the ancestors of the component referred to by `self`, or an empty sequence if `self` refers to an anchor component.
@@ -52,7 +52,7 @@ extension ShadowGraph {
 					
 					case .body(parent: let parent),
 						.positionalChild(position: _, parent: let parent),
-						.child(identifier: _, position: _, parent: let parent):
+						.child(identifier: _, parent: let parent):
 					return parent
 					
 				}
@@ -72,8 +72,8 @@ extension ShadowGraph {
 					case (.positionalChild(position: let position, parent: _), let newParent?):
 					self = .positionalChild(position: position, parent: newParent)
 					
-					case (.child(identifier: let identifier, position: let position, parent: _), let newParent?):
-					self = .child(identifier: identifier, position: position, parent: newParent)
+					case (.child(identifier: let identifier, parent: _), let newParent?):
+					self = .child(identifier: identifier, parent: newParent)
 					
 					case (.body, nil),
 						(.positionalChild, nil),
@@ -104,39 +104,12 @@ extension ShadowGraph {
 				case .positionalChild(position: let position, parent: let parent):
 				return .positionalChild(position: position, parent: parent.replacingAnchor(with: newAnchor))
 				
-				case .child(identifier: let identifier, position: let position, parent: let parent):
-				return .child(identifier: identifier, position: position, parent: parent.replacingAnchor(with: newAnchor))
+				case .child(identifier: let identifier, parent: let parent):
+				return .child(identifier: identifier, parent: parent.replacingAnchor(with: newAnchor))
 				
 			}
 		}
 		
 	}
 	
-}
-
-extension ShadowGraph.Location : Comparable {
-	public static func < (first: Self, second: Self) -> Bool {
-		switch (first, second) {
-			
-			case (_, .anchor):
-			return false
-			
-			case (.anchor, _):	// (.anchor, .anchor) is handled above
-			return true
-			
-			case (.body(parent: let a), .body(parent: let b)),
-				(.body(parent: let a), .positionalChild(_, parent: let b)),
-				(.body(parent: let a), .child(_, _, parent: let b)),
-				(.positionalChild(_, parent: let a), .body(parent: let b)),
-				(.positionalChild(_, parent: let a), .child(_, _, parent: let b)),
-				(.child(_, _, parent: let a), .body(parent: let b)),
-				(.child(_, _, parent: let a), .positionalChild(_, parent: let b)):
-			return a < b
-			
-			case (.positionalChild(position: let a, parent: let parentA), .positionalChild(position: let b, parent: let parentB)),
-				(.child(_, position: let a, parent: let parentA), .child(_, position: let b, parent: let parentB)):
-			return parentA == parentB ? a < b : parentA < parentB
-			
-		}
-	}
 }

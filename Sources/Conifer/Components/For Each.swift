@@ -1,5 +1,7 @@
 // Conifer © 2019–2025 Constantino Tsarouhas
 
+import DepthKit
+
 /// A mapping component; a component that represents a sequence of components generated from an underlying collection of data.
 ///
 /// ## Shadow Semantics
@@ -9,26 +11,22 @@
 /// The structural identity of each generated component is defined by the `ForEach` component's structural identity and by the identifier provided for that component. This means that the structural identity of a generated component remains the same as long as the `ForEach` component's location within the shadow and the provided identifier don't change.
 public struct ForEach<Data : RandomAccessCollection & Sendable, Identifier : Conifer.Identifier, Content : Component> : Component {
 	
-	/// Creates a component that produces components produced by `contentProducer` for each element in `data`, with each component identified by the identifier provided by `identifierProvider`.
-	public init(
-		_ data:								Data,
-		identifierProvider:					@escaping IdentifierProducer,
-		@ComponentBuilder contentProducer:	@escaping ContentProducer
-	) {
+	/// Creates a component that produces components produced by `content` for each element in `data`, with each component identified by the identifier provided by `id`.
+	public init(_ data: Data, id: @escaping IdentifierProducer, @ComponentBuilder content: @escaping ContentProducer) {
 		self.data = data
-		self.identifierProvider = identifierProvider
-		self.contentProducer = contentProducer
+		self.id = id
+		self.content = content
 	}
 	
 	/// The underlying collection.
 	public let data: Data
 	
 	/// A function taking an element from the underlying collection and producing an identifier.
-	public let identifierProvider: IdentifierProducer
+	public let id: IdentifierProducer
 	public typealias IdentifierProducer = @Sendable (Data.Element) -> Identifier
 	
 	/// A function taking an element from the underlying collection and producing a component.
-	public let contentProducer: ContentProducer
+	public let content: ContentProducer
 	public typealias ContentProducer = @Sendable (Data.Element) -> Content
 	
 	// See protocol.
@@ -38,19 +36,27 @@ public struct ForEach<Data : RandomAccessCollection & Sendable, Identifier : Con
 
 extension ForEach : FoundationalComponent {
 	
-	func childLocations(for shadow: some Shadow<Self>) -> [ShadowGraph.Location] {
-		data.enumerated().map { position, datum in
-			.anchor.child(identifiedBy: identifierProvider(datum), position: position)
-		}
+	func childLocations(for shadow: some Shadow<Self>) async throws -> [ShadowGraph.Location] {
+		let ids = data.map(id)
+		try await shadow.set(
+			\.offsetsByIdentifier,
+			 .init(uniqueKeysWithValues: ids.enumerated().lazy.map { (.init($1), $0) })
+		)
+		return ids.map { .anchor.child(identifiedBy: $0) }
 	}
 	
 	func typeOfChild(at location: ShadowGraph.Location, for shadow: some Shadow<Self>) async throws -> any Component.Type {
 		Content.self
 	}
 	
-	func child(at location: ShadowGraph.Location, for shadow: some Shadow<Self>) -> any Component {
-		guard case .child(identifier: _, position: let offset, parent: .anchor) = location else { preconditionFailure("No child at \(location) in \(self)") }
-		return contentProducer(data[data.index(data.startIndex, offsetBy: offset)])
+	func child(at location: ShadowGraph.Location, for shadow: some Shadow<Self>) async -> any Component {
+		guard case .child(identifier: let id, parent: .anchor) = location else {
+			preconditionFailure("No child at \(location) in \(self)")
+		}
+		guard let offset = await shadow.offsetsByIdentifier[id] else {
+			preconditionFailure("No child identified by \(id) in \(self)")
+		}
+		return content(data[data.index(data.startIndex, offsetBy: offset)])
 	}
 	
 }
@@ -58,8 +64,18 @@ extension ForEach : FoundationalComponent {
 extension ForEach where Data.Element : Identifiable, Identifier == Data.Element.ID {
 	
 	/// Creates a component that produces components produced by `contentProducer` for each element in `data`, with each component identified by the associated element's identifier.
-	public init(_ data: Data, @ComponentBuilder contentProducer: @escaping ContentProducer) {
-		self.init(data, identifierProvider: \.id, contentProducer: contentProducer)
+	public init(_ data: Data, @ComponentBuilder content: @escaping ContentProducer) {
+		self.init(data, id: \.id, content: content)
+	}
+	
+}
+
+private extension ShadowSnapshot {
+	
+	/// The offsets of each element, keyed by their identifier.
+	var offsetsByIdentifier: [AnyIdentifier : Int] {
+		get { self[\.offsetsByIdentifier] ?? [:] }
+		set { self[\.offsetsByIdentifier] = newValue }
 	}
 	
 }
