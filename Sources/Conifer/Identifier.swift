@@ -1,28 +1,37 @@
 // Conifer © 2019–2025 Constantino Tsarouhas
 
-public typealias Identifier = Hashable & Encodable & Sendable
+/// A value uniquely identifying a component or shadow among its siblings.
+public typealias Identifier = Sendable & Hashable & Encodable
 
-public struct AnyIdentifier : Hashable, Encodable, @unchecked Sendable {	// AnyHashable and encode functions are conditionally Sendable
+/// A type-erased value uniquely identifying a component or shadow among its siblings.
+public struct AnyIdentifier : Identifier {
 	
-	public init(_ identifier: some Identifier) {
-		hashable = .init(identifier)
-		encode = identifier.encode(to:)
+	// TODO: Remove type when any Equatable resp. any Hashable conform to Equatable resp. Hashable, or replace by such conformances.
+	
+	public init(_ base: some Identifier) {
+		self.base = base
 	}
 	
-	public func hash(into hasher: inout Hasher) {
-		hashable.hash(into: &hasher)
-	}
+	/// The underlying identifier.
+	public let base: any Identifier
 	
+	// See protocol.
 	public static func == (lhs: Self, rhs: Self) -> Bool {
-		lhs.hashable == rhs.hashable
+		func equal<T : Equatable>(_ first: T, _ other: some Equatable) -> Bool {
+			guard let other = other as? T else { return false }
+			return first == other
+		}
+		return equal(lhs.base, rhs.base)
 	}
 	
-	private let hashable: AnyHashable
+	// See protocol.
+	public func hash(into hasher: inout Hasher) {
+		base.hash(into: &hasher)
+	}
 	
+	// See protocol.
 	public func encode(to encoder: any Encoder) throws {
-		try self.encode(encoder)
+		try base.encode(to: encoder)
 	}
-	
-	private let encode: (any Encoder) throws -> ()
 	
 }

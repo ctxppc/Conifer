@@ -2,13 +2,11 @@
 
 extension ShadowGraph {
 	
-	/// A value that specifies the location of a component or dynamic property in a shadow graph relative to an anchor.
+	/// A value that specifies the location of a component or shadow in a shadow graph relative to an anchor.
 	///
 	/// A location is a path, i.e., a list of directions starting from the anchor. Each direction identifies the child to visit. When the anchor is a root component, the location is *absolute*; otherwise, it is a *relative* location.
 	///
-	/// Locations can be used as stable identifiers across renderings.
-	///
-	/// Locations are ordered in pre-order form: ancestors precede their descendants, siblings are ordered normally, and a component's or property's descendants are ordered before the siblings that follow that component or property.
+	/// Locations are ordered in pre-order form: ancestors precede their descendants, siblings are ordered normally, and a component's descendants are ordered before the siblings that follow that component.
 	public indirect enum Location : Sendable, Hashable {
 		
 		/// A location that refers to the anchor (or root) component.
