@@ -1,7 +1,7 @@
 // Conifer © 2019–2025 Constantino Tsarouhas
 
 /// A value uniquely identifying a component or shadow among its siblings.
-public typealias Identifier = Sendable & Hashable & Encodable
+public typealias Identifier = Sendable & Hashable
 
 /// A type-erased value uniquely identifying a component or shadow among its siblings.
 public struct AnyIdentifier : Identifier {
@@ -27,11 +27,6 @@ public struct AnyIdentifier : Identifier {
 	// See protocol.
 	public func hash(into hasher: inout Hasher) {
 		base.hash(into: &hasher)
-	}
-	
-	// See protocol.
-	public func encode(to encoder: any Encoder) throws {
-		try base.encode(to: encoder)
 	}
 	
 }
