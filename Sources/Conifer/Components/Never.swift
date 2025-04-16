@@ -4,8 +4,12 @@
 ///
 /// This component type is used as the type of `body` in foundational components.
 ///
-/// ## Shadow Semantics
+/// ## Adding Conformance to a Domain-Specific Shadow Protocol
+/// Conifer clients that specialise `Component` should add a conformance of `Never` to that protocol. For example, a web application framework that specialises `Component` as `Element` should add the following conformance:
 ///
+///     extension Never : Element {}
+///
+/// ## Shadow Semantics
 /// No instance of `Never` exists. It can therefore never exist in a shadow.
 extension Never : Component {
 	public var body: Self { hasNoBody }

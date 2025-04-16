@@ -4,8 +4,18 @@ import DepthKit
 
 /// A mapping component; a component that represents a sequence of components generated from an underlying collection of data.
 ///
-/// ## Shadow Semantics
+/// ## Adding Conformance to a Domain-Specific Shadow Protocol
+/// Conifer clients that specialise `Component` should add a conditional conformance of `ForEach` to that protocol. For example, a web application framework that specialises `Component` as `Element` should add the following conformance:
 ///
+///     extension ForEach : Element where Body : Element {}
+///
+/// Constrain `Identifier` when this is required by the application.
+///
+///	    extension ForEach : Element where Body : Element, Identifier : Codable {}
+///
+/// Constraints on `Identifier` do not carry statically over to shadows, which may require the use of forced casts, e.g., `identifier as! any Codable`.
+///
+/// ## Shadow Semantics
 /// A mapping component is replaced by its generated components in a shadow. A shadow never contains a `ForEach` but instead zero or more `Content`s (or their shadow equivalents) at the same location.
 ///
 /// The structural identity of each generated component is defined by the `ForEach` component's structural identity and by the identifier provided for that component. This means that the structural identity of a generated component remains the same as long as the `ForEach` component's location within the shadow and the provided identifier don't change.

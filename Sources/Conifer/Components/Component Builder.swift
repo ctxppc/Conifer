@@ -4,6 +4,14 @@
 @resultBuilder
 public enum ComponentBuilder {
 	
+	public static func buildExpression<C : Component>(_ expression: C) -> C {
+		expression
+	}
+	
+	public static func buildExpression<C>(_ expression: C?) -> Either<C, Empty> {
+		expression.map { .first($0) } ?? .second(.init())
+	}
+	
 	public static func buildIf<C>(_ component: C?) -> Either<C, Empty> {
 		component.map { .first($0) } ?? .second(.init())
 	}

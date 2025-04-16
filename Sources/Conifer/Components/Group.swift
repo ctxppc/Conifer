@@ -2,8 +2,12 @@
 
 /// A container component consisting of any number components in succession.
 ///
-/// ## Shadow Semantics
+/// ## Adding Conformance to a Domain-Specific Shadow Protocol
+/// Conifer clients that specialise `Component` should add a conditional conformance of `Group` to that protocol. For example, a web application framework that specialises `Component` as `Element` should add the following conformance:
 ///
+///     extension Group : Element where repeat each Child : Element {}
+///
+/// ## Shadow Semantics
 /// A group is replaced by its constituent components in a shadow. A shadow never contains a `Group` but instead its children in its place.
 public struct Group<each Child : Component> : Component {
 	

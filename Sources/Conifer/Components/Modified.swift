@@ -8,6 +8,17 @@
 ///       Title("Hello, World!")
 ///       Paragraph("Thank you for reading this sentence.")
 ///     }.modifier(.bold)
+///
+/// ## Adding Conformance to a Domain-Specific Shadow Protocol
+/// Conifer clients that specialise `Component` should add a conditional conformance of `Modified` to that protocol. For example, a web application framework that specialises `Component` as `Element` should add the following conformance:
+///
+///     extension Modified : Element where Content : Element {}
+///
+/// Constrain `ModifierType` when this is required by the application.
+///
+///	    extension ForEach : Element where Body : Element, ModifierType : ElementModifier {}
+///
+/// Constraints on `ModifierType` do not carry statically over to shadows, which may require the use of forced casts, e.g., `modifier as! any ElementModifier`.
 public struct Modified<Content : Component, ModifierType : Modifier> : Component {
 	
 	/// Applies a given modifier on a given component.
