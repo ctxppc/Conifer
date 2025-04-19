@@ -6,8 +6,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/ctxppc/DepthKit",
       "state" : {
-        "revision" : "310fcaa81b61cb18c2108df1ce2d7949e3811c60",
-        "version" : "0.16.0"
+        "revision" : "35b4d5c3325a58ddf297ef015f57746a2a53d4e9",
+        "version" : "0.16.1"
       }
     },
     {
