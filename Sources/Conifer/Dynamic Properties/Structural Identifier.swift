@@ -19,14 +19,14 @@ public struct StructuralIdentifier : DynamicProperty {
 	
 	// See protocol.
 	public mutating func update<Component>(for shadow: some Shadow<Component>, keyPath: Path<Component>) {
-		_wrappedValue = shadow.location
+		storedValue = shadow.location
 	}
 	
 	// See protocol.
 	public var wrappedValue: ShadowGraph.Location {
-		_wrappedValue !! "Cannot determine structural identifier before rendering"
+		storedValue !! "Cannot determine structural identifier before rendering"
 	}
 	
-	private var _wrappedValue: ShadowGraph.Location?
+	private var storedValue: ShadowGraph.Location?
 	
 }

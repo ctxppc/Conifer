@@ -28,7 +28,7 @@ public enum ComponentBuilder {
 		component
 	}
 	
-	public static func buildBlock<each C : Component>(_ children: repeat each C) -> Group<repeat each C> {
+	public static func buildBlock<each C>(_ children: repeat each C) -> Group<repeat each C> {
 		.init(repeat each children)
 	}
 	

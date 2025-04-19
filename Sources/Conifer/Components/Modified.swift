@@ -41,7 +41,7 @@ public struct Modified<Content : Component, ModifierType : Modifier> : Component
 extension Modified : FoundationalComponent {
 	
 	func childLocations(for shadow: some Shadow<Self>) async throws -> [ShadowGraph.Location] {
-		[.anchor.body]
+		[.anchor.modified]
 	}
 	
 	func typeOfChild(at location: ShadowGraph.Location, for shadow: some Shadow<Self>) async throws -> any Component.Type {
@@ -49,7 +49,7 @@ extension Modified : FoundationalComponent {
 	}
 	
 	func child(at location: ShadowGraph.Location, for shadow: some Shadow<Self>) async throws -> any Component {
-		precondition(location == .anchor.body, "Expected body location")
+		precondition(location == .anchor.modified, "Expected modified location")
 		return content
 	}
 	
