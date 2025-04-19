@@ -123,7 +123,7 @@
 ///
 ///	An unowned shadow is only valid as long as its graph is valid.
 @dynamicMemberLookup	// properties on subject & snapshot
-public protocol Shadow<Subject> : Sendable {
+public protocol Shadow<Subject> : Sendable, Hashable {
 	
 	/// Creates a shadow in a given graph over a component at given location in the graph.
 	///
@@ -160,6 +160,17 @@ extension Shadow {
 	/// Performs a given function within the shadow graph's isolation domain and returns its result.
 	func withGraph<E, R : Sendable>(perform: (isolated ShadowGraph) async throws(E) -> R) async throws(E) -> R {
 		try await perform(graph)
+	}
+	
+	// See protocol.
+	public static func == (lhs: Self, rhs: Self) -> Bool {
+		lhs.graph === rhs.graph && lhs.location == rhs.location
+	}
+	
+	// See protocol.
+	public func hash(into hasher: inout Hasher) {
+		ObjectIdentifier(graph).hash(into: &hasher)
+		location.hash(into: &hasher)
 	}
 	
 }
