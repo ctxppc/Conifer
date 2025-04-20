@@ -3,12 +3,12 @@
 /// A value representing a rendered component and properties related to it.
 ///
 /// ## Components Are Rendered in a Shadow Graph
-/// Every non-foundational component of type `T` is represented by some `Shadow<T>` value in a `ShadowGraph` in a process called **rendering**. Foundational components (`Either`, `Empty`, `ForEach`, `Group`, `Modified`, and `Never`) are part of a shadow graph but are not directly represented by shadows (except in a few internal cases). They are instead represented by their non-foundational children.
+/// Every non-foundational component of type `T` is represented by some `Shadow<T>` value in a `ShadowGraph` in a process called **rendering**. Foundational components (`Either`, `Empty`, `ForEach`, `Group`, `Modified`, and `Never`) are part of a shadow graph but are normally not directly represented by shadows. They are instead represented by their non-foundational children.
 ///
 /// A component can be rendered using the global `makeShadow(over:)` function.
 ///
 /// 	let documentComponent = HTMLDocument { … }
-/// 	let documentShadow = makeShadow(over: documentComponent)
+/// 	let documentShadow = await makeShadow(over: documentComponent)
 ///
 /// A shadow's descendants can be accessed via its `children` property. The shadow graph lazily renders components as they are accessed. A shadow's parent can be accessed via its `parent` property. A rendered component's ancestors are always rendered.
 ///
@@ -99,7 +99,7 @@
 ///			}
 ///		}
 ///		let component: some Component = …
-///		let shadow = try await makeShadow(over: component)
+///		let shadow = await makeShadow(over: component)
 ///		let graph = shadow.graph
 ///		await shadow.set(\.selfReference, shadow)					// this creates a strong reference cycle!
 ///		let shadow2 = await shadow.selfReference
@@ -114,7 +114,7 @@
 ///			}
 ///		}
 ///		let component: some Component = …
-///		let shadow = try await makeShadow(over: component)
+///		let shadow = await makeShadow(over: component)
 ///		let graph = shadow.graph
 ///		await shadow.set(\.selfReference, UnownedShadow(shadow))	// this does not create a strong reference cycle
 ///		let shadow2 = await shadow.selfReference
@@ -201,12 +201,11 @@ extension Component {
 ///
 /// This function creates a new shadow graph rooted in `subject`.
 ///
-/// - Requires: `subject` is not a foundational component.
+/// - Requires: `subject` is not a foundational component such as a `ForEach` or `Group`.
 ///
 /// - Parameter subject: The component over which to create a shadow.
 ///
 /// - Returns: A shadow over `subject` in a new shadow graph.
-public func makeShadow<C : Component>(over subject: C) async throws -> some Shadow<C> {
-	precondition(!(subject is any FoundationalComponent), "Cannot make a shadow over foundational component \(subject)")
-	return OwnedShadow(graph: try await .init(root: subject), location: .anchor)
+public func makeShadow<C : Component>(over subject: C) async -> some Shadow<C> {
+	return OwnedShadow(graph: await .init(root: subject), location: .anchor)
 }

@@ -8,7 +8,10 @@ import DepthKit
 public actor ShadowGraph {
 	
 	/// Creates a shadow graph with given root component.
-	init(root: some Component) async throws {
+	///
+	/// - Requires: `root` is non-foundational.
+	init(root: some Component) async {
+		precondition(!(root is any FoundationalComponent), "Cannot create shadow over a foundational component.")
 		self[.anchor].subject = root
 	}
 	
