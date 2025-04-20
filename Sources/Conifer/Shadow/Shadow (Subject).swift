@@ -81,6 +81,9 @@ extension Shadow {
 		}
 	}
 	
+	/// A Boolean value indicating whether `self` is a shadow over a foundational-component.
+	public var isFoundational: Bool { Subject.self is any FoundationalComponent }
+	
 }
 
 
