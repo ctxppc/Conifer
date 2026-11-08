@@ -1,4 +1,6 @@
 # Shadows
+
+## Overview
 Conifer lazily computes and caches components in a tree. This allows developers to easely write lazy algorithms on very large (possibly infinite) trees.
 
 Since Conifer is responsible for managing the computation of components, accesses to subcomponents are regulated through **shadows**, which represents an instantiated component in a component tree. A shadow allows for full traversal, including to the parent of the shadowing component.

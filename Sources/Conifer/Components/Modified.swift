@@ -10,7 +10,7 @@
 ///     }.modifier(.bold)
 ///
 /// ## Adding Conformance to a Domain-Specific Shadow Protocol
-/// Conifer clients that specialise `Component` should add a conditional conformance of `Modified` to that protocol. For example, a web application framework that specialises `Component` as `Element` should add the following conformance:
+/// Conifer clients that specialise `Component` should add a conditional conformance of `Modified` to that protocol. For example, a web application framework that specialises `Component` as `Element` should add the following conformance.
 ///
 ///     extension Modified : Element where Content : Element {}
 ///

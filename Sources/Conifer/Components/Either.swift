@@ -3,7 +3,7 @@
 /// A conditional component; a component that renders one of two components.
 ///
 /// ## Adding Conformance to a Domain-Specific Shadow Protocol
-/// Conifer clients that specialise `Component` should add a conditional conformance of `Either` to that protocol. For example, a web application framework that specialises `Component` as `Element` should add the following conformance:
+/// Conifer clients that specialise `Component` should add a conditional conformance of `Either` to that protocol. For example, a web application framework that specialises `Component` as `Element` should add the following conformance.
 ///
 ///     extension Either : Element where First : Element, Second : Element {}
 ///

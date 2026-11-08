@@ -22,10 +22,8 @@ public struct State<Value : Sendable> : MutableDynamicProperty {
 		// Establish a back reference for sending updated values.
 		let shadow = UnownedShadow(shadow)
 		_send = { updatedValue in
-			Task {
-				try! await shadow.update(\.stateContainer) {	// FIXME: Handle error
-					$0[keyPath] = updatedValue
-				}
+			try! await shadow.update(\.stateContainer) {	// FIXME: Handle error
+				$0[keyPath] = updatedValue
 			}
 		}
 		
@@ -37,16 +35,16 @@ public struct State<Value : Sendable> : MutableDynamicProperty {
 	}
 	
 	// See protocol.
-	public func send(updatedValue: Value) {
+	public func send(updatedValue: Value) async {
 		let send = _send !! "Cannot update @State property outside of a rendering context"
-		send(updatedValue)
+		await send(updatedValue)
 	}
 	
 	/// The backing value.
 	private var storedValue: Value
 	
 	private var _send: Sender?
-	private typealias Sender = @Sendable (Value) -> ()
+	private typealias Sender = @Sendable (Value) async -> ()
 	
 }
 
@@ -62,16 +60,11 @@ private struct StateContainer : @unchecked Sendable {	// Conifer only provides s
 	
 	/// Accesses a value in the state container.
 	subscript <Value : Sendable>(keyPath: AnyKeyPath) -> Value? {
-		
 		get {
 			guard let value = valuesByKeyPath[keyPath] else { return nil }
 			return value as? Value !! "Expected state value of type \(Value.self); got \(value) instead"
 		}
-		
-		set {
-			valuesByKeyPath[keyPath] = newValue
-		}
-		
+		set { valuesByKeyPath[keyPath] = newValue }
 	}
 	
 	/// The container's storage.

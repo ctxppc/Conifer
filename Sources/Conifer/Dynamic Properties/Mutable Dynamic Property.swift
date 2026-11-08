@@ -8,7 +8,7 @@ public protocol MutableDynamicProperty : DynamicProperty where Value : Sendable 
 	/// As `wrappedValue` can only change between rendering cycles, `wrappedValue` is unchanged immediately after this method returns. It might be equal to `value` in the next rendering cycle.
 	///
 	/// - Precondition: `self` has been updated, i.e., `update(for:keyPath:)` has been invoked.
-	func send(updatedValue: Value)
+	func send(updatedValue: Value) async
 	
 	/// A binding to this property.
 	var projectedValue: Binding<Value> { get }

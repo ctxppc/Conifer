@@ -1,4 +1,6 @@
 # Dependencies
+
+## Overview
 Conifer caches shadows and recomputes them in response to external changes. Conifer detects changes by tracking dependencies which components declare through **dynamic properties**. Conifer provides several built-in dynamic property types but libraries such as database and network frameworks can define their own for use in components.
 
 An `@Observed` property observes changes in an observable object, i.e., an object that conforms to Combine's `ObservableObject` protocol.

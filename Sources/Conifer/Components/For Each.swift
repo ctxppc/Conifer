@@ -5,7 +5,7 @@ import DepthKit
 /// A mapping component; a component that represents a sequence of components generated from an underlying collection of data.
 ///
 /// ## Adding Conformance to a Domain-Specific Shadow Protocol
-/// Conifer clients that specialise `Component` should add a conditional conformance of `ForEach` to that protocol. For example, a web application framework that specialises `Component` as `Element` should add the following conformance:
+/// Conifer clients that specialise `Component` should add a conditional conformance of `ForEach` to that protocol. For example, a web application framework that specialises `Component` as `Element` should add the following conformance.
 ///
 ///     extension ForEach : Element where Body : Element {}
 ///

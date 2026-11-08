@@ -32,8 +32,8 @@ public struct Binding<Value : Sendable> : MutableDynamicProperty {
 	}
 	
 	// See protocol.
-	public func send(updatedValue: Value) {
-		_send(updatedValue)
+	public func send(updatedValue: Value) async {
+		await _send(updatedValue)
 	}
 	
 	/// A function that retrieves a value from the source of truth.
@@ -42,11 +42,9 @@ public struct Binding<Value : Sendable> : MutableDynamicProperty {
 	
 	/// A function that sends a value to the source of truth, requesting it be updated.
 	private let _send: Sender
-	public typealias Sender = @Sendable (Value) -> ()
+	public typealias Sender = @Sendable (Value) async -> ()
 	
 	// See protocol.
-	public var projectedValue: Self {
-		self
-	}
+	public var projectedValue: Self { self }
 	
 }

@@ -1,4 +1,6 @@
 # Components
+
+## Overview
 Conifer is a tree building & manipulation framework. It provides a DSL, i.e., a domain-specific language, for expressing hierarchical data (e.g., user interface elements) as well as tools to conveniently transform this data (e.g., to HTML elements). Conifer operates on units called **components** which are similar to vertices in a tree. A component can contain zero or more subcomponents.
 
 ## Defining a data model

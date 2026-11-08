@@ -6,24 +6,24 @@
 ///
 /// A dynamic property can only be declared within a component (the *dependent component*) or within another dynamic property. Conifer ensures that all declared dynamic properties are properly updated before the dependent component is (re)rendered and its `body` is accessed.
 ///
-/// A dynamic property can itself declare and use dynamic properties, which the framework updates before invoking `update(for:keyPath:)`. Common nested dynamic properties are
-/// * `@State` properties for storing computed values such as database results that are then vended through `wrappedValue`,
+/// A dynamic property can itself declare and use dynamic properties, which the framework updates before invoking ``update(for:keyPath:)``. Common nested dynamic properties are
+/// * `@State` properties for storing computed values such as database results that are then vended through ``wrappedValue``,
 /// * `@Contextual` properties for reading contextual values such as a database connection, and
 /// * `@StructuralIdentity` properties for identifying a component within the shadow graph.
+///
+/// A dynamic property that can modified from within components also conforms to ``MutableDynamicProperty``.
 public protocol DynamicProperty : Sendable {
 	
 	/// Updates the property's value.
 	///
 	/// Conifer invokes this method after (re)rendering the ancestors of `shadow` and just before (re)rendering `shadow`.
 	///
-	/// This method updates `wrappedValue` or any properties underlying it. Additionally,
-	///
 	/// - Precondition: Any (nested) dynamic properties on `self` are updated. This means that this method can use those properties.
 	/// - Postcondition: `self` is updated, i.e., `wrappedValue` reflects the value at the source of truth.
 	///
-	/// - Warning: When this method is invoked, the children of `shadow` are not (re)rendered yet and therefore should not be accessed.
+	/// - Warning: When this method is invoked, the children of `shadow` are not (re)rendered yet and therefore cannot be accessed.
 	/// - Warning: `shadow.subject` is being updated and therefore cannot be accessed.
-	/// - Warning: Accessing `self` via `keyPath` from within this method is a concurrent access violation.
+	/// - Warning: Accessing `self` from within this method via an expression such as `self[keyPath: keyPath]` is a concurrent access violation.
 	/// - Warning: A shadow holds a strong reference to its shadow graph, which holds a strong reference to any rendered components and their properties. Storing `shadow` in `self` therefore causes a strong reference cycle. Store an `UnownedShadow` instead.
 	///
 	/// - Parameter shadow: The shadow of the component being rendered.
