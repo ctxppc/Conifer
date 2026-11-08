@@ -1,4 +1,4 @@
-// Conifer © 2019–2025 Constantino Tsarouhas
+// Conifer © 2019–2026 Constantino Tsarouhas
 
 /// A component with a modifier applied to it.
 ///

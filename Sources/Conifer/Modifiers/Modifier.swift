@@ -1,4 +1,4 @@
-// Conifer © 2019–2025 Constantino Tsarouhas
+// Conifer © 2019–2026 Constantino Tsarouhas
 
 /// A value applied on a component that modifies the component's shadow.
 public protocol Modifier : Sendable {

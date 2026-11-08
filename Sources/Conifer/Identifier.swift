@@ -1,4 +1,4 @@
-// Conifer © 2019–2025 Constantino Tsarouhas
+// Conifer © 2019–2026 Constantino Tsarouhas
 
 /// A value uniquely identifying a component or shadow among its siblings.
 public typealias Identifier = Sendable & Hashable

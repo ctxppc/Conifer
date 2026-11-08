@@ -1,4 +1,4 @@
-// Conifer © 2019–2025 Constantino Tsarouhas
+// Conifer © 2019–2026 Constantino Tsarouhas
 
 /// A shadow that has an unowned reference to its graph.
 ///

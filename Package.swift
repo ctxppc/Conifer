@@ -1,18 +1,18 @@
-// swift-tools-version:6.0
+// swift-tools-version:6.4
 
-// Conifer © 2019–2025 Constantino Tsarouhas
+// Conifer © 2019–2026 Constantino Tsarouhas
 
 import CompilerPluginSupport
 import PackageDescription
 
 let package = Package(
 	name: "Conifer",
-	platforms: [.macOS(.v15), .iOS(.v18), .tvOS(.v18), .watchOS(.v10), .visionOS(.v2)],
+	platforms: [.macOS(.v27), .iOS(.v27), .tvOS(.v27), .watchOS(.v27), .visionOS(.v27)],
 	products: [
 		.library(name: "Conifer", targets: ["Conifer"]),
 	],
 	dependencies: [
-		.package(url: "https://github.com/apple/swift-syntax", from: "509.0.0"),
+		.package(url: "https://github.com/apple/swift-syntax", from: "604.0.0"),
 		.package(url: "https://github.com/ctxppc/DepthKit", .upToNextMinor(from: "0.16.0")),
 		.package(url: "https://github.com/philipturner/swift-reflection-mirror", branch: "main"),
 	],

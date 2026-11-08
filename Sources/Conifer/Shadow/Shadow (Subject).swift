@@ -1,4 +1,4 @@
-// Conifer © 2019–2025 Constantino Tsarouhas
+// Conifer © 2019–2026 Constantino Tsarouhas
 
 import DepthKit
 
@@ -23,7 +23,7 @@ extension Shadow {
 							parentLocation:		parent.location
 						)
 					}
-					var subject = raw as? Subject !! "Expected subject of type \(Subject.self); got \(type(of: subject)) instead"
+					var subject = raw as? Subject !! "Expected subject of type \(Subject.self); got \(type(of: raw)) instead"
 					try await subject.updateDynamicProperties(for: self)
 					return subject
 				}

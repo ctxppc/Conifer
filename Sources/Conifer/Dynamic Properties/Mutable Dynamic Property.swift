@@ -1,4 +1,4 @@
-// Conifer © 2019–2025 Constantino Tsarouhas
+// Conifer © 2019–2026 Constantino Tsarouhas
 
 /// A dynamic property that can submit updates to its source of truth.
 public protocol MutableDynamicProperty : DynamicProperty where Value : Sendable {
